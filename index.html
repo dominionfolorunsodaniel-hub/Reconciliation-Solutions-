@@ -1,0 +1,591 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#070b1a">
+<title>Report Analyzer - turn any report into answers</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
+<style>
+  :root { --bg:#f4f6fb; --card:#fff; --ink:#151b2c; --mute:#6b7385; --brand:#2b59ff; --brand2:#7c3aed; --line:#e5e8f0; --navy:#070b1a; }
+  * { box-sizing:border-box; }
+  html { scroll-behavior:smooth; }
+  body { margin:0; font:15px/1.5 system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif; background:var(--bg); color:var(--ink); }
+  .hidden { display:none !important; }
+  button { padding:10px 16px; border:0; border-radius:10px; background:linear-gradient(135deg,var(--brand),var(--brand2)); color:#fff; font:inherit; font-weight:600; cursor:pointer; transition:transform .15s, box-shadow .15s, opacity .15s; }
+  button:hover { transform:translateY(-1px); box-shadow:0 8px 20px rgba(43,89,255,.28); }
+  button:disabled { opacity:.55; cursor:wait; transform:none; box-shadow:none; }
+  button.ghost { background:#eef1fb; color:var(--brand); box-shadow:none; }
+  button.danger { background:#fdecec; color:#c0392b; box-shadow:none; }
+  button.chip { background:#fff; color:var(--ink); border:1px solid var(--line); border-radius:999px; font-size:13px; font-weight:500; padding:6px 12px; text-align:left; box-shadow:none; }
+  button.chip:hover { border-color:var(--brand); color:var(--brand); }
+  select, input[type=text], input[type=password], input[type=number], input[type=file] { padding:10px 12px; border:1px solid var(--line); border-radius:10px; font:inherit; background:#fff; max-width:100%; }
+  input[type=text], input[type=password] { flex:1; min-width:150px; }
+  input:focus, select:focus { outline:2px solid rgba(43,89,255,.35); border-color:var(--brand); }
+
+  /* ============ LANDING ============ */
+  #landing { min-height:100vh; background:var(--navy); color:#fff; position:relative; overflow:hidden; }
+  .orb { position:absolute; border-radius:50%; filter:blur(90px); opacity:.55; animation:float 14s ease-in-out infinite; pointer-events:none; }
+  .o1 { width:520px; height:520px; background:#2b59ff; top:-160px; left:-120px; }
+  .o2 { width:480px; height:480px; background:#7c3aed; top:120px; right:-160px; animation-delay:-5s; }
+  .o3 { width:380px; height:380px; background:#06b6d4; bottom:-140px; left:30%; animation-delay:-9s; opacity:.35; }
+  @keyframes float { 0%,100% { transform:translate(0,0) scale(1); } 50% { transform:translate(40px,-30px) scale(1.08); } }
+  .wrap { position:relative; z-index:1; max-width:1150px; margin:0 auto; padding:0 20px; }
+  .nav { display:flex; align-items:center; justify-content:space-between; padding:22px 0; }
+  .logo { font-weight:800; font-size:19px; letter-spacing:-.3px; }
+  .logo b { background:linear-gradient(90deg,#60a5fa,#a78bfa); -webkit-background-clip:text; background-clip:text; color:transparent; }
+  .hero { display:grid; grid-template-columns:1.25fr 1fr; gap:36px; align-items:center; padding:28px 0 40px; }
+  .badge { display:inline-block; padding:6px 14px; border-radius:999px; background:rgba(255,255,255,.08); border:1px solid rgba(255,255,255,.16); font-size:13px; color:#c9d4ff; margin-bottom:16px; }
+  h1 { font-size:clamp(34px,5.4vw,58px); line-height:1.05; letter-spacing:-1.5px; margin:0 0 16px; font-weight:800; }
+  .grad { background:linear-gradient(90deg,#60a5fa,#a78bfa 55%,#22d3ee); -webkit-background-clip:text; background-clip:text; color:transparent; }
+  .lead { font-size:18px; color:#b8c2e0; max-width:560px; margin:0 0 20px; }
+  .pills { display:flex; gap:8px; flex-wrap:wrap; margin-bottom:26px; }
+  .pills span { padding:6px 12px; border-radius:999px; background:rgba(255,255,255,.07); border:1px solid rgba(255,255,255,.12); font-size:13px; color:#dbe3ff; }
+  .glass { background:rgba(255,255,255,.07); border:1px solid rgba(255,255,255,.14); backdrop-filter:blur(14px); -webkit-backdrop-filter:blur(14px); border-radius:18px; }
+  .login { padding:26px; display:grid; gap:12px; box-shadow:0 30px 80px rgba(0,0,0,.45); }
+  .login h2 { margin:0; font-size:22px; }
+  .login p { margin:0 0 4px; color:#b8c2e0; font-size:14px; }
+  .login input { background:rgba(255,255,255,.95); color:#151b2c; border:0; }
+  .login .err { color:#ff9a9a; min-height:20px; font-size:14px; }
+  .login button { padding:12px; font-size:16px; }
+  .secure { font-size:12.5px; color:#9fb0e6; text-align:center; }
+  .entry-switch { color:#c9d4ff; font-size:13px; text-align:center; margin-top:2px; }
+  .entry-switch button { background:transparent; color:#fff; padding:0 3px; text-decoration:underline; box-shadow:none; font-size:inherit; }
+  .entry-switch button:hover { transform:none; box-shadow:none; }
+  .register-fields { display:grid; gap:12px; }
+
+  /* animated dashboard preview */
+  .preview { position:relative; padding:16px 16px 14px; max-width:520px; box-shadow:0 30px 80px rgba(0,0,0,.4); animation:rise 1s ease both; }
+  @keyframes rise { from { opacity:0; transform:translateY(24px); } to { opacity:1; transform:none; } }
+  .pv-head { display:flex; align-items:center; gap:6px; margin-bottom:8px; }
+  .dot { width:10px; height:10px; border-radius:50%; } .dot.r { background:#ff5f57; } .dot.y { background:#febc2e; } .dot.g { background:#28c840; }
+  .pv-title { margin-left:8px; font-size:13px; color:#c9d4ff; }
+  .pv-chart { width:100%; height:auto; display:block; }
+  .bars rect { fill:url(#g1); transform-box:fill-box; transform-origin:bottom; animation:grow 1.1s cubic-bezier(.2,.8,.2,1) both; animation-delay:var(--d); }
+  @keyframes grow { from { transform:scaleY(0); } to { transform:scaleY(1); } }
+  .trend { fill:none; stroke:#22d3ee; stroke-width:3; stroke-linecap:round; stroke-linejoin:round; stroke-dasharray:600; stroke-dashoffset:600; animation:draw 2s .5s ease forwards; }
+  @keyframes draw { to { stroke-dashoffset:0; } }
+  .pv-rows { display:grid; grid-template-columns:repeat(3,1fr); gap:8px; margin-top:6px; }
+  .pv-rows div { background:rgba(255,255,255,.06); border-radius:10px; padding:8px 10px; font-size:12px; color:#b8c2e0; }
+  .pv-rows b { display:block; font-size:16px; color:#fff; }
+  .fchip { position:absolute; padding:7px 12px; border-radius:999px; font-size:12.5px; font-weight:600; background:#fff; color:#151b2c; box-shadow:0 10px 30px rgba(0,0,0,.35); animation:bob 5s ease-in-out infinite; white-space:nowrap; }
+  .c1 { top:-16px; right:14px; } .c2 { bottom:46px; left:-20px; animation-delay:-1.6s; } .c3 { bottom:-16px; right:24px; animation-delay:-3.2s; }
+  @keyframes bob { 0%,100% { transform:translateY(0); } 50% { transform:translateY(-8px); } }
+
+  .features { display:grid; grid-template-columns:repeat(3,1fr); gap:14px; padding:6px 0 50px; }
+  .feat { padding:20px; transition:transform .2s, background .2s; }
+  .feat:hover { transform:translateY(-4px); background:rgba(255,255,255,.1); }
+  .feat .ic { font-size:26px; } .feat h3 { margin:8px 0 4px; font-size:16px; } .feat p { margin:0; color:#b8c2e0; font-size:14px; }
+  .foot { text-align:center; color:#7f8bb0; font-size:13px; padding:0 0 28px; }
+  @media (max-width:900px) { .hero { grid-template-columns:1fr; } .features { grid-template-columns:1fr 1fr; } .c2 { left:-4px; } }
+  @media (max-width:560px) { .features { grid-template-columns:1fr; } }
+  @media (prefers-reduced-motion:reduce) { *, *::before, *::after { animation:none !important; transition:none !important; } .trend { stroke-dashoffset:0; } }
+
+  /* ============ APP ============ */
+  header.app { position:sticky; top:0; z-index:5; background:linear-gradient(135deg,#0b1230,#1b1450); color:#fff; padding:12px 20px; display:flex; gap:10px; align-items:center; flex-wrap:wrap; }
+  header.app .logo { flex:1; }
+  header.app .who { color:#c9d1e6; font-size:13px; }
+  header.app button { padding:7px 12px; font-size:13px; }
+  main { max-width:1100px; margin:0 auto; padding:16px; display:grid; gap:16px; }
+  .card { background:var(--card); border:1px solid var(--line); border-radius:16px; padding:18px; box-shadow:0 2px 10px rgba(20,30,60,.04); }
+  .card h2 { margin:0 0 10px; font-size:16px; }
+  .row { display:flex; gap:8px; flex-wrap:wrap; align-items:center; }
+  .mute { color:var(--mute); font-size:13px; }
+  .error { color:#c0392b; margin-top:8px; }
+  .insight { white-space:pre-wrap; background:linear-gradient(135deg,#f1f5ff,#f6f0ff); border-left:3px solid var(--brand); padding:12px 14px; border-radius:8px; margin:10px 0; }
+  .tablewrap { overflow:auto; max-height:420px; border:1px solid var(--line); border-radius:10px; }
+  table { border-collapse:collapse; width:100%; font-size:13px; }
+  th, td { padding:8px 11px; border-bottom:1px solid var(--line); text-align:left; white-space:nowrap; }
+  th { position:sticky; top:0; background:#f0f2f8; }
+  td.num { text-align:right; font-variant-numeric:tabular-nums; }
+  canvas { max-height:340px; }
+  ul { margin:0; padding-left:18px; } li { margin:4px 0; }
+  .urow { border:1px solid var(--line); border-radius:12px; padding:10px; display:grid; gap:8px; margin-bottom:8px; }
+  .urow label, .lbl { font-size:13px; margin-right:8px; }
+  pre.recon { background:#f7f8fb; padding:10px; border-radius:10px; overflow:auto; font-size:12.5px; }
+  code.secret { font-size:17px; letter-spacing:2px; background:#f1f4ff; padding:6px 10px; border-radius:8px; word-break:break-all; }
+</style>
+</head>
+<body>
+
+<!-- ======================= LANDING + LOGIN ======================= -->
+<div id="landing">
+  <span class="orb o1"></span><span class="orb o2"></span><span class="orb o3"></span>
+  <div class="wrap">
+    <div class="nav"><div class="logo">📊 Report<b>Analyzer</b></div></div>
+
+    <section class="hero">
+      <div>
+        <span class="badge">✨ AI report analysis for ATM, POS &amp; finance teams</span>
+        <h1>Turn any report into <span class="grad">answers</span> in seconds.</h1>
+        <p class="lead">Drop a CSV, Excel or PDF. Ask in plain English. Get exact tables, charts, alerts and a branded PDF your clients will love.</p>
+        <div class="pills"><span>📄 CSV · Excel · PDF</span><span>💬 Web + Telegram</span><span>🔒 Encrypted &amp; audited</span><span>⚖️ Reconciliation</span><span>📈 ATM cash forecast</span></div>
+
+        <div class="preview glass" aria-hidden="true">
+          <div class="pv-head"><span class="dot r"></span><span class="dot y"></span><span class="dot g"></span><span class="pv-title">Total amount by branch · last 6 months</span></div>
+          <svg viewBox="0 0 420 170" class="pv-chart">
+            <defs><linearGradient id="g1" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#60a5fa"/><stop offset="1" stop-color="#7c3aed"/></linearGradient></defs>
+            <g class="bars">
+              <rect x="14"  y="96"  width="44" height="64"  rx="7" style="--d:.1s"/>
+              <rect x="82"  y="70"  width="44" height="90"  rx="7" style="--d:.25s"/>
+              <rect x="150" y="84"  width="44" height="76"  rx="7" style="--d:.4s"/>
+              <rect x="218" y="42"  width="44" height="118" rx="7" style="--d:.55s"/>
+              <rect x="286" y="58"  width="44" height="102" rx="7" style="--d:.7s"/>
+              <rect x="354" y="22"  width="44" height="138" rx="7" style="--d:.85s"/>
+            </g>
+            <polyline class="trend" points="36,84 104,58 172,72 240,32 308,46 376,12"/>
+          </svg>
+          <div class="pv-rows"><div>Transactions<b>48,210</b></div><div>Success rate<b>97.4%</b></div><div>Open alerts<b>3</b></div></div>
+          <span class="fchip c1">🔴 ATM 114 · 38% failures</span>
+          <span class="fchip c2">✅ 4,821 matched · 3 mismatches</span>
+          <span class="fchip c3">📈 Cash lasts 4 more days</span>
+        </div>
+      </div>
+
+      <div class="glass login">
+        <h2>Welcome back 👋</h2>
+        <p>Sign in to your workspace.</p>
+        <input type="text" id="lUser" placeholder="Username" autocomplete="username">
+        <input type="password" id="lPass" placeholder="Password" autocomplete="current-password">
+        <div id="codeRow" class="hidden"><input type="text" id="lCode" placeholder="6-digit code from your authenticator app" inputmode="numeric" autocomplete="one-time-code" style="width:100%"></div>
+        <button id="lBtn">Sign in →</button>
+        <div class="err" id="lErr"></div>
+        <div class="secure">🔐 Encrypted storage · optional two-factor · every action is logged</div>
+        <div class="entry-switch" id="entrySwitch">New here? <button type="button" id="showRegister">Create an account</button></div>
+        <div class="hidden" id="registerPanel">
+          <h2 style="margin-top:8px">Create your account</h2>
+          <p>Ask your workspace administrator to create your login.</p>
+          <div class="register-fields">
+            <input type="text" id="rUser" placeholder="Choose a username" autocomplete="username">
+            <input type="email" id="rEmail" placeholder="Email address" autocomplete="email">
+            <input type="password" id="rPass" placeholder="Create a password (10+ characters)" autocomplete="new-password" minlength="10">
+            <button type="button" id="rBtn">Request an account</button>
+          </div>
+          <div class="err" id="rErr"></div>
+          <div class="entry-switch">Already have an account? <button type="button" id="showLogin">Sign in</button></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="features">
+      <div class="glass feat"><div class="ic">🧠</div><h3>Understands any report</h3><p>It tells you what the report is, the period it covers and what looks wrong - the moment you upload it.</p></div>
+      <div class="glass feat"><div class="ic">💬</div><h3>Ask in plain English</h3><p>"Failed transactions per ATM, top 10." Exact numbers from your data - never guessed.</p></div>
+      <div class="glass feat"><div class="ic">⚖️</div><h3>Reconcile in one click</h3><p>Match a switch log against the ledger and see exactly what is missing or different.</p></div>
+      <div class="glass feat"><div class="ic">📈</div><h3>ATM cash forecast</h3><p>How much cash each ATM will need, and the day it will run out.</p></div>
+      <div class="glass feat"><div class="ic">🚨</div><h3>Alerts on Telegram</h3><p>Failure spikes, silent terminals and odd amounts are pushed to your phone.</p></div>
+      <div class="glass feat"><div class="ic">📄</div><h3>Branded PDF reports</h3><p>Share a clean summary with your own logo and colours.</p></div>
+    </section>
+    <div class="foot">Built for teams that handle sensitive financial data.</div>
+  </div>
+</div>
+
+<!-- ======================= APP ======================= -->
+<div id="app" class="hidden">
+<header class="app">
+  <div class="logo">📊 Report<b>Analyzer</b></div>
+  <span id="who" class="who"></span>
+  <button class="ghost admin-only hidden" id="adminBtn">Admin</button>
+  <button class="ghost" id="twofaBtn">🔐 2FA</button>
+  <button class="ghost" id="logout">Log out</button>
+</header>
+
+<main>
+  <section class="card hidden" id="twofaCard">
+    <h2>🔐 Two-factor login</h2>
+    <div id="twofaStatus"></div>
+    <div class="mute" id="twofaMsg"></div>
+    <div id="twofaSetup" style="margin-top:8px">
+      <button id="twofaStart">Set up with an authenticator app</button>
+      <div id="twofaSecretBox" class="hidden" style="margin-top:10px">
+        <div class="mute">In Google Authenticator / Microsoft Authenticator / Authy choose "Enter a setup key" and type:</div>
+        <p><code class="secret" id="twofaSecret"></code></p>
+        <div class="mute">On a phone with the app you can also <a id="twofaUri" href="#">tap here to add it</a>. Then enter the 6-digit code:</div>
+        <div class="row" style="margin-top:8px"><input type="text" id="twofaCode" placeholder="123456" inputmode="numeric" style="max-width:160px"><button id="twofaEnable">Turn on</button></div>
+      </div>
+    </div>
+    <div id="twofaOff" class="hidden" style="margin-top:8px"><button class="danger" id="twofaDisable">Turn off two-factor</button></div>
+    <div class="error" id="twofaErr"></div>
+  </section>
+
+  <section class="card">
+    <h2>1. Company &amp; reports</h2>
+    <div class="row">
+      <select id="company"></select>
+      <span class="row admin-only hidden" id="newCoRow"><input type="text" id="newCompany" placeholder="New company name" style="max-width:220px"><button class="ghost" id="addCompany">Add company</button></span>
+    </div>
+    <div class="row analyst-up hidden" id="uploadRow" style="margin-top:10px">
+      <input type="file" id="file" accept=".csv,.txt,.xlsx,.xlsm,.xls,.pdf">
+      <button id="upload">Upload report</button>
+      <span class="mute" id="uploadMsg"></span>
+    </div>
+    <div class="row" style="margin-top:10px">
+      <select id="report"></select>
+      <button class="danger admin-only hidden" id="delReport">Delete report</button>
+    </div>
+    <div class="mute" id="preview" style="margin-top:8px"></div>
+  </section>
+
+  <section class="card hidden" id="aboutCard">
+    <h2>📄 About this report</h2>
+    <div id="aboutWhat"></div>
+    <div class="mute" id="aboutPeriod"></div>
+    <ul id="aboutPoints"></ul>
+    <div id="aboutAlerts" style="margin-top:8px"></div>
+    <div id="aboutFlags" style="color:#b9770e;margin-top:6px"></div>
+    <div class="mute" style="margin-top:8px">Try asking:</div>
+    <div class="row" id="aboutQs" style="margin-top:6px"></div>
+  </section>
+
+  <section class="card">
+    <h2>2. Ask anything</h2>
+    <div class="row">
+      <input type="text" id="question" placeholder='e.g. "total amount by branch and month, top 10"'>
+      <button id="ask">Analyze</button>
+    </div>
+    <label class="mute"><input type="checkbox" id="followup"> Refine the previous result</label>
+    <div class="row" style="margin-top:10px">
+      <button class="ghost" id="fBtn">📈 ATM cash forecast</button>
+      <input type="number" id="fDays" value="7" min="1" max="30" style="width:74px" title="days ahead"> <span class="mute">days</span>
+      <input type="number" id="fCash" placeholder="cash per ATM (optional)" style="width:190px">
+    </div>
+    <div class="error" id="error"></div>
+  </section>
+
+  <section class="card hidden" id="resultCard">
+    <div class="row" style="justify-content:space-between">
+      <h2 id="title" style="margin:0"></h2>
+      <span class="row"><a id="download"><button class="ghost">⬇ Excel</button></a><a id="downloadPdf"><button class="ghost">📄 PDF</button></a></span>
+    </div>
+    <div class="insight hidden" id="insight"></div>
+    <canvas id="chart" class="hidden"></canvas>
+    <div class="tablewrap" style="margin-top:10px"><table id="table"></table></div>
+    <div class="mute" id="rowInfo"></div>
+  </section>
+
+  <section class="card">
+    <h2>3. Reconcile two reports</h2>
+    <div class="mute">Compare e.g. an ATM switch log with the bank ledger: matches, amount differences, and items missing on either side.</div>
+    <div class="row" style="margin-top:8px"><select id="rA"></select> <span>vs</span> <select id="rB"></select></div>
+    <div class="row" style="margin-top:8px"><input type="text" id="rNote" placeholder="Optional note, e.g. match Reference with Ref No"><button id="rBtn">Reconcile</button></div>
+    <div class="error" id="rErr"></div>
+    <div id="rOut" class="hidden" style="margin-top:10px">
+      <pre class="recon" id="rText"></pre>
+      <span class="row"><a id="rDownload"><button class="ghost">⬇ Excel (all details)</button></a><a id="rPdf"><button class="ghost">📄 PDF</button></a></span>
+      <div class="tablewrap" style="margin-top:10px"><table id="rTable"></table></div>
+      <div class="mute" id="rInfo"></div>
+    </div>
+  </section>
+
+  <section class="card analyst-up hidden" id="digestCard">
+    <h2>🗓 Scheduled digests</h2>
+    <div class="mute">Runs a question on a schedule and sends the answer + PDF to this company's linked Telegram users. Times use the server's timezone.</div>
+    <ul id="digestList" style="margin:8px 0"></ul>
+    <div class="row">
+      <select id="dDay"><option value="-1">Every day</option><option value="0">Monday</option><option value="1">Tuesday</option><option value="2">Wednesday</option><option value="3">Thursday</option><option value="4">Friday</option><option value="5">Saturday</option><option value="6">Sunday</option></select>
+      <input type="text" id="dTime" value="08:00" style="max-width:90px">
+      <select id="dScope"><option value="latest">latest report</option><option value="all">all reports</option></select>
+      <input type="text" id="dQ" placeholder="Question to run, e.g. failed transactions per ATM">
+      <button id="dAdd">Add digest</button>
+    </div>
+    <div class="error" id="dErr"></div>
+  </section>
+
+  <section class="card">
+    <h2>Recent questions</h2>
+    <ul id="history"></ul>
+  </section>
+
+  <section class="card hidden" id="adminCard">
+    <h2>🔐 Admin - users &amp; access</h2>
+    <div class="mute" style="margin-bottom:8px">Roles: viewer (ask questions) &lt; analyst (also upload) &lt; admin (everything). Users only see the companies ticked for them. Telegram ID links a user to the bot.</div>
+    <div id="users"></div>
+    <h2 style="margin-top:14px">Add user</h2>
+    <div class="row">
+      <input type="text" id="nuName" placeholder="Username"><input type="password" id="nuPass" placeholder="Password (10+ chars)">
+      <select id="nuRole"><option>viewer</option><option selected>analyst</option><option>admin</option></select>
+      <input type="number" id="nuTg" placeholder="Telegram ID (optional)" style="width:190px">
+    </div>
+    <div class="row" id="nuCos" style="margin-top:6px"></div>
+    <button id="nuBtn" style="margin-top:8px">Create user</button>
+    <div class="error" id="aErr"></div>
+
+    <h2 style="margin-top:18px">🎨 Company branding (for PDFs)</h2>
+    <div class="row"><select id="bCo"></select><input type="text" id="bName" placeholder="Name shown on PDFs"><input type="color" id="bColor" value="#2b59ff" title="Brand colour"><input type="file" id="bLogo" accept="image/png,image/jpeg"><button id="bBtn">Save branding</button><span class="mute" id="bMsg"></span></div>
+
+    <h2 style="margin-top:18px">🤖 AI usage today</h2>
+    <div class="mute" id="usageInfo"></div>
+    <div class="tablewrap"><table id="usageTable"></table></div>
+
+    <h2 style="margin-top:18px">💾 Backup</h2>
+    <div class="row"><button class="ghost" id="backupBtn">Back up now</button><span class="mute" id="backupMsg">A backup also runs automatically every night.</span></div>
+
+    <h2 style="margin-top:18px">Audit log</h2>
+    <div class="tablewrap"><table id="auditTable"></table></div>
+  </section>
+</main>
+</div>
+
+<script>
+const $ = id => document.getElementById(id);
+const S = { user: null, plan: null, chart: null, companies: [], reports: [] };
+
+function el(tag, text, cls) { const e = document.createElement(tag); if (text !== undefined) e.textContent = text; if (cls) e.className = cls; return e; }
+async function api(path, opts) {
+  const r = await fetch(path, opts);
+  if (!r.ok) {
+    let data = {}, m = r.statusText;
+    try { data = await r.json(); m = data.detail || m; } catch (e) {}
+    if (r.status === 401 && path !== "/api/login" && path !== "/api/me") showLanding();
+    const err = new Error(typeof m === "string" ? m : JSON.stringify(m)); err.data = data; err.status = r.status; throw err;
+  }
+  return r.json();
+}
+const jsend = (method, p, b) => api(p, { method, headers: { "Content-Type": "application/json" }, body: JSON.stringify(b) });
+const jpost = (p, b) => jsend("POST", p, b);
+const fill = (sel, items, label, val) => sel.replaceChildren(...items.map(i => { const o = el("option", label(i)); o.value = val(i); return o; }));
+function fillTable(t, columns, rows) {
+  const head = el("tr"); columns.forEach(c => head.appendChild(el("th", c)));
+  const body = rows.map(row => { const tr = el("tr"); columns.forEach(c => { const v = row[c]; const td = el("td", v === null || v === undefined ? "" : (typeof v === "number" ? v.toLocaleString(undefined, { maximumFractionDigits: 2 }) : String(v))); if (typeof v === "number") td.className = "num"; tr.appendChild(td); }); return tr; });
+  t.replaceChildren(head, ...body);
+}
+
+/* ---------- landing / login ---------- */
+function showLanding() { $("landing").classList.remove("hidden"); $("app").classList.add("hidden"); window.scrollTo(0, 0); }
+function showApp() { $("landing").classList.add("hidden"); $("app").classList.remove("hidden"); window.scrollTo(0, 0); }
+/* ---------- landing entry: login / registration panel ---------- */
+$("showRegister").onclick = () => {
+  $("registerPanel").classList.remove("hidden");
+  $("entrySwitch").classList.add("hidden");
+  $("lUser").closest(".login").querySelector("h2").textContent = "Welcome back 👋";
+  $("lUser").closest(".login").querySelector("p").classList.add("hidden");
+  ["lUser", "lPass", "lBtn", "codeRow", "lErr", "lUser"].forEach(id => $(id).classList.add("hidden"));
+};
+$("showLogin").onclick = () => {
+  $("registerPanel").classList.add("hidden");
+  $("entrySwitch").classList.remove("hidden");
+  ["lUser", "lPass", "lBtn", "lErr"].forEach(id => $(id).classList.remove("hidden"));
+  $("codeRow").classList.add("hidden");
+  $("lUser").closest(".login").querySelector("p").classList.remove("hidden");
+};
+$("rBtn").onclick = () => {
+  $("rErr").textContent = "Account creation is not connected yet. Please ask your workspace administrator to create your account.";
+};
+$("lBtn").onclick = async () => {
+  $("lErr").textContent = ""; $("lBtn").disabled = true;
+  try {
+    await jpost("/api/login", { username: $("lUser").value, password: $("lPass").value, code: $("lCode").value || null });
+    $("lPass").value = ""; $("lCode").value = ""; $("codeRow").classList.add("hidden"); await start();
+  } catch (e) {
+    if (e.data && e.data.need_code) { $("codeRow").classList.remove("hidden"); $("lCode").focus(); }
+    $("lErr").textContent = e.message;
+  }
+  $("lBtn").disabled = false;
+};
+["lUser", "lPass", "lCode"].forEach(id => $(id).addEventListener("keydown", e => { if (e.key === "Enter") $("lBtn").click(); }));
+$("logout").onclick = async () => { await jpost("/api/logout", {}); showLanding(); };
+
+async function start() {
+  S.user = await api("/api/me");
+  showApp();
+  $("who").textContent = `${S.user.username} · ${S.user.role}`;
+  const admin = S.user.role === "admin", canUp = S.user.role !== "viewer";
+  document.querySelectorAll(".admin-only").forEach(e => e.classList.toggle("hidden", !admin));
+  document.querySelectorAll(".analyst-up").forEach(e => e.classList.toggle("hidden", !canUp));
+  $("adminCard").classList.add("hidden"); $("twofaCard").classList.add("hidden");
+  if (S.user.needs_2fa_setup) {
+    document.querySelectorAll("main > section").forEach(s => s.classList.add("hidden"));
+    $("twofaCard").classList.remove("hidden"); $("twofaMsg").textContent = "Admin accounts must turn on two-factor login before continuing."; renderTwofa(); return;
+  }
+  await loadCompanies();
+}
+
+/* ---------- two-factor ---------- */
+function renderTwofa() {
+  const on = S.user.totp_enabled;
+  $("twofaStatus").textContent = on ? "Two-factor login is ON ✅" : "Two-factor login is OFF";
+  $("twofaSetup").classList.toggle("hidden", on); $("twofaOff").classList.toggle("hidden", !on); $("twofaSecretBox").classList.add("hidden"); $("twofaErr").textContent = "";
+}
+$("twofaBtn").onclick = () => { $("twofaCard").classList.toggle("hidden"); renderTwofa(); };
+$("twofaStart").onclick = async () => { try { const r = await api("/api/2fa/setup", { method: "POST" }); $("twofaSecret").textContent = r.secret; $("twofaUri").href = r.uri; $("twofaSecretBox").classList.remove("hidden"); } catch (e) { $("twofaErr").textContent = e.message; } };
+$("twofaEnable").onclick = async () => { try { await jpost("/api/2fa/enable", { code: $("twofaCode").value }); location.reload(); } catch (e) { $("twofaErr").textContent = e.message; } };
+$("twofaDisable").onclick = async () => { const pw = prompt("Enter your password to turn off two-factor login:"); if (!pw) return; try { await jpost("/api/2fa/disable", { password: pw }); location.reload(); } catch (e) { $("twofaErr").textContent = e.message; } };
+
+/* ---------- companies & reports ---------- */
+async function loadCompanies(selectId) {
+  S.companies = await api("/api/companies");
+  fill($("company"), S.companies, c => `${c.name} (${c.reports})`, c => c.id);
+  if (!S.companies.length) { $("report").replaceChildren(); $("preview").textContent = S.user.role === "admin" ? "Add a company to begin." : "No company assigned to you yet - ask your admin."; $("aboutCard").classList.add("hidden"); return; }
+  if (selectId) $("company").value = selectId;
+  await loadReports();
+}
+async function loadReports(selectId) {
+  const cid = $("company").value;
+  const reports = await api(`/api/companies/${cid}/reports`); S.reports = reports;
+  const items = [{ id: "all", label: "All reports combined" }, ...reports.map(r => ({ id: r.id, label: `#${r.id} ${r.filename} (${r.rows} rows)` }))];
+  fill($("report"), items, i => i.label, i => i.id);
+  const one = reports.map(r => ({ id: r.id, label: `#${r.id} ${r.filename}` }));
+  fill($("rA"), one, i => i.label, i => i.id); fill($("rB"), one, i => i.label, i => i.id);
+  if (one.length > 1) { $("rB").value = one[one.length - 1].id; $("rA").value = one[one.length - 2].id; }
+  if (selectId) $("report").value = selectId; else if (reports.length) $("report").value = reports[reports.length - 1].id;
+  await showPreview(); await loadHistory(); await loadDigests();
+}
+async function showPreview() {
+  const id = $("report").value;
+  $("preview").textContent = ""; $("aboutCard").classList.add("hidden");
+  if (id === "all") { $("preview").textContent = "Analyzing all saved reports together (columns _report and _uploaded tell them apart)."; return; }
+  if (!id) return;
+  try { const p = await api(`/api/reports/${id}/preview`); $("preview").textContent = p.columns.join(" • "); } catch (e) {}
+  $("aboutCard").classList.remove("hidden"); $("aboutWhat").textContent = "Reading the report…";
+  try { renderAbout(await api(`/api/reports/${id}/describe`)); } catch (e) { $("aboutCard").classList.add("hidden"); }
+}
+function renderAbout(d) {
+  $("aboutCard").classList.remove("hidden");
+  $("aboutWhat").textContent = d.what_it_is || ""; $("aboutPeriod").textContent = d.period ? "🗓 " + d.period : "";
+  $("aboutPoints").replaceChildren(...(d.key_points || []).map(p => el("li", p)));
+  const icon = { high: "🔴", medium: "🟠", info: "ℹ️" };
+  $("aboutAlerts").replaceChildren(...(d.alerts || []).map(a => el("div", `${icon[a.severity] || "•"} ${a.text}`)));
+  $("aboutFlags").textContent = (d.flags && d.flags.length) ? "⚠️ Worth checking: " + d.flags.join(" • ") : "";
+  $("aboutQs").replaceChildren(...(d.suggested_questions || []).map(q => { const b = el("button", q, "chip"); b.onclick = () => { $("question").value = q; $("followup").checked = false; $("ask").click(); }; return b; }));
+}
+async function loadHistory() {
+  const cid = $("company").value; if (!cid) return;
+  const h = await api(`/api/companies/${cid}/history`);
+  $("history").replaceChildren(...h.map(q => { const li = el("li", `${q.created_at.slice(0, 16)}  ${q.question}`); li.style.cursor = "pointer"; li.onclick = () => { $("question").value = q.question; }; return li; }));
+}
+$("company").onchange = () => loadReports();
+$("report").onchange = showPreview;
+$("addCompany").onclick = async () => { const name = $("newCompany").value.trim(); if (!name) return; try { const c = await jpost("/api/companies", { name }); $("newCompany").value = ""; await loadCompanies(c.id); } catch (e) { $("error").textContent = e.message; } };
+$("upload").onclick = async () => {
+  const f = $("file").files[0]; if (!f) { $("uploadMsg").textContent = "Choose a file first."; return; }
+  const fd = new FormData(); fd.append("file", f);
+  $("upload").disabled = true; $("uploadMsg").textContent = "Reading…";
+  try {
+    const r = await api(`/api/companies/${$("company").value}/reports`, { method: "POST", body: fd });
+    $("uploadMsg").textContent = `Saved: ${r.rows} rows, ${r.columns.length} columns. ${r.notes.join(" ")}`;
+    $("file").value = ""; const cid = $("company").value; await loadCompanies(cid); await loadReports(r.id);
+  } catch (e) { $("uploadMsg").textContent = "❌ " + e.message; }
+  $("upload").disabled = false;
+};
+$("delReport").onclick = async () => { const id = $("report").value; if (id === "all" || !confirm("Delete this report permanently?")) return; try { await api(`/api/reports/${id}`, { method: "DELETE" }); const cid = $("company").value; await loadCompanies(cid); } catch (e) { $("error").textContent = e.message; } };
+
+/* ---------- ask / forecast ---------- */
+$("question").addEventListener("keydown", e => { if (e.key === "Enter") $("ask").click(); });
+$("ask").onclick = async () => {
+  const q = $("question").value.trim(); if (!q) return;
+  $("error").textContent = ""; $("ask").disabled = true; $("ask").textContent = "Analyzing…";
+  try {
+    const rid = $("report").value;
+    const r = await jpost("/api/analyze", { company_id: Number($("company").value), report_id: rid === "all" ? null : Number(rid), question: q, prev_plan: $("followup").checked ? S.plan : null });
+    if (r.clarify) $("error").textContent = "🤔 " + r.clarify; else { S.plan = r.plan; renderResult(r); loadHistory(); }
+  } catch (e) { $("error").textContent = "❌ " + e.message; }
+  $("ask").disabled = false; $("ask").textContent = "Analyze";
+};
+$("fBtn").onclick = async () => {
+  $("error").textContent = ""; $("fBtn").disabled = true;
+  try {
+    const rid = $("report").value;
+    renderResult(await jpost("/api/forecast", { company_id: Number($("company").value), report_id: rid === "all" ? null : Number(rid), days: Number($("fDays").value) || 7, cash: $("fCash").value ? Number($("fCash").value) : null }));
+  } catch (e) { $("error").textContent = "❌ " + e.message; }
+  $("fBtn").disabled = false;
+};
+function renderResult(r) {
+  $("resultCard").classList.remove("hidden");
+  $("title").textContent = r.title; $("download").href = `/api/download/${r.result_id}`; $("downloadPdf").href = `/api/download/${r.result_id}/pdf`;
+  const ins = $("insight"); ins.textContent = r.insight || ""; ins.classList.toggle("hidden", !r.insight);
+  const cv = $("chart"); if (S.chart) { S.chart.destroy(); S.chart = null; }
+  if (r.chart) { cv.classList.remove("hidden"); const c = r.chart; S.chart = new Chart(cv, { type: c.type, data: { labels: c.labels, datasets: [{ label: c.metric, data: c.values, borderWidth: 2, backgroundColor: "rgba(43,89,255,.55)", borderColor: "#2b59ff", tension: .3 }] }, options: { responsive: true, plugins: { legend: { display: c.type === "pie" } } } }); } else cv.classList.add("hidden");
+  fillTable($("table"), r.columns, r.rows);
+  $("rowInfo").textContent = r.total_rows > r.rows.length ? `Showing ${r.rows.length} of ${r.total_rows} rows - download Excel for all.` : `${r.total_rows} row(s)`;
+  $("resultCard").scrollIntoView({ behavior: "smooth" });
+}
+
+/* ---------- reconcile ---------- */
+$("rBtn").onclick = async () => {
+  $("rErr").textContent = ""; $("rOut").classList.add("hidden");
+  if (!$("rA").value || !$("rB").value || $("rA").value === $("rB").value) { $("rErr").textContent = "Pick two different reports."; return; }
+  $("rBtn").disabled = true; $("rBtn").textContent = "Reconciling…";
+  try {
+    const r = await jpost("/api/reconcile", { company_id: Number($("company").value), report_a: Number($("rA").value), report_b: Number($("rB").value), instruction: $("rNote").value });
+    if (r.clarify) $("rErr").textContent = "🤔 " + r.clarify;
+    else {
+      $("rOut").classList.remove("hidden"); $("rText").textContent = r.text; $("rDownload").href = `/api/download/${r.result_id}`; $("rPdf").href = `/api/download/${r.result_id}/pdf`;
+      fillTable($("rTable"), r.columns, r.rows);
+      $("rInfo").textContent = r.total_problem_rows ? `${r.total_problem_rows} unmatched/mismatched row(s)` + (r.total_problem_rows > r.rows.length ? ` - showing ${r.rows.length}, download Excel for all.` : "") : "✅ Everything matched.";
+    }
+  } catch (e) { $("rErr").textContent = "❌ " + e.message; }
+  $("rBtn").disabled = false; $("rBtn").textContent = "Reconcile";
+};
+
+/* ---------- digests ---------- */
+const DAYS = { "-1": "Every day", 0: "Mon", 1: "Tue", 2: "Wed", 3: "Thu", 4: "Fri", 5: "Sat", 6: "Sun" };
+async function loadDigests() {
+  if (S.user.role === "viewer") return;
+  const cid = $("company").value; if (!cid) return;
+  const rows = await api(`/api/companies/${cid}/digests`);
+  $("digestList").replaceChildren(...rows.map(d => {
+    const li = el("li", `${DAYS[d.weekday]} ${String(d.hour).padStart(2, "0")}:${String(d.minute).padStart(2, "0")} (${d.scope}) - ${d.question} `);
+    const b = el("button", "✕", "ghost"); b.style.padding = "2px 9px";
+    b.onclick = async () => { try { await api(`/api/digests/${d.id}`, { method: "DELETE" }); loadDigests(); } catch (e) { $("dErr").textContent = e.message; } };
+    li.appendChild(b); return li;
+  }));
+}
+$("dAdd").onclick = async () => {
+  $("dErr").textContent = "";
+  try { await jpost(`/api/companies/${$("company").value}/digests`, { question: $("dQ").value, weekday: Number($("dDay").value), time: $("dTime").value, scope: $("dScope").value }); $("dQ").value = ""; loadDigests(); }
+  catch (e) { $("dErr").textContent = e.message; }
+};
+
+/* ---------- admin ---------- */
+$("adminBtn").onclick = async () => { $("adminCard").classList.toggle("hidden"); if (!$("adminCard").classList.contains("hidden")) { try { await loadAdmin(); } catch (e) { $("aErr").textContent = e.message; } $("adminCard").scrollIntoView({ behavior: "smooth" }); } };
+function labeled(text, input) { const l = el("label", ""); l.appendChild(input); l.appendChild(document.createTextNode(" " + text)); return l; }
+function checkbox(checked, value) { const c = document.createElement("input"); c.type = "checkbox"; c.checked = !!checked; if (value !== undefined) c.value = value; return c; }
+async function loadAdmin() {
+  const [users, audit, usage] = await Promise.all([api("/api/users"), api("/api/audit?limit=100"), api("/api/usage")]);
+  $("users").replaceChildren(...users.map(userRow));
+  $("nuCos").replaceChildren(...S.companies.map(c => labeled(c.name, checkbox(false, c.id))));
+  fillTable($("auditTable"), ["ts", "username", "source", "action", "company", "detail"], audit);
+  $("usageInfo").textContent = `Limits per day: ${usage.per_user_limit} AI requests per user, ${usage.total_limit} in total.`;
+  fillTable($("usageTable"), ["user", "calls", "tokens_in", "tokens_out"], usage.today);
+  fill($("bCo"), S.companies, c => c.name, c => c.id); await loadBranding();
+}
+function userRow(u) {
+  const d = el("div", "", "urow"), isMe = u.id === S.user.id;
+  const role = document.createElement("select"); ["viewer", "analyst", "admin"].forEach(r => role.appendChild(el("option", r))); role.value = u.role; role.disabled = isMe;
+  const active = checkbox(u.active); active.disabled = isMe; const alerts = checkbox(u.alerts); const reset2 = checkbox(false);
+  const tg = document.createElement("input"); tg.type = "number"; tg.placeholder = "Telegram ID"; tg.value = u.telegram_id || ""; tg.style.width = "160px";
+  const pw = document.createElement("input"); pw.type = "password"; pw.placeholder = "New password (optional)";
+  const cos = S.companies.map(c => labeled(c.name, checkbox(u.company_ids.includes(c.id), c.id)));
+  const save = el("button", "Save"), msg = el("span", "", "mute");
+  save.onclick = async () => {
+    const body = { role: role.value, alerts: alerts.checked, telegram_id: tg.value ? Number(tg.value) : null, company_ids: cos.map(l => l.firstChild).filter(c => c.checked).map(c => Number(c.value)) };
+    if (!isMe) body.active = active.checked; else delete body.role;
+    if (pw.value) body.password = pw.value; if (reset2.checked) body.reset_2fa = true;
+    try { await jsend("PATCH", `/api/users/${u.id}`, body); msg.textContent = "Saved ✓"; pw.value = ""; reset2.checked = false; } catch (e) { msg.textContent = "❌ " + e.message; }
+  };
+  const r1 = el("div", "", "row"); r1.append(el("b", u.username + (u.totp_enabled ? "  🔐" : "")), role, labeled("active", active), labeled("Telegram alerts", alerts), tg);
+  const r2 = el("div", "", "row"); r2.append(...cos);
+  const r3 = el("div", "", "row"); r3.append(pw, labeled("reset their 2FA", reset2), save, msg);
+  d.append(r1, r2, r3); return d;
+}
+$("nuBtn").onclick = async () => {
+  $("aErr").textContent = "";
+  try { await jpost("/api/users", { username: $("nuName").value, password: $("nuPass").value, role: $("nuRole").value, telegram_id: $("nuTg").value ? Number($("nuTg").value) : null, company_ids: [...$("nuCos").querySelectorAll("input:checked")].map(c => Number(c.value)) });
+    $("nuName").value = ""; $("nuPass").value = ""; $("nuTg").value = ""; await loadAdmin(); } catch (e) { $("aErr").textContent = e.message; }
+};
+async function loadBranding() {
+  const cid = $("bCo").value; if (!cid) return;
+  const b = await api(`/api/companies/${cid}/branding`);
+  $("bName").value = b.display_name; $("bColor").value = b.color; $("bMsg").textContent = b.has_logo ? "Logo saved ✓" : "No logo yet";
+}
+$("bCo").onchange = loadBranding;
+$("bBtn").onclick = async () => {
+  const fd = new FormData(); fd.append("display_name", $("bName").value); fd.append("color", $("bColor").value);
+  if ($("bLogo").files[0]) fd.append("logo", $("bLogo").files[0]);
+  try { await api(`/api/companies/${$("bCo").value}/branding`, { method: "PUT", body: fd }); $("bMsg").textContent = "Saved ✓"; $("bLogo").value = ""; } catch (e) { $("bMsg").textContent = "❌ " + e.message; }
+};
+$("backupBtn").onclick = async () => { $("backupBtn").disabled = true; try { const r = await api("/api/backup", { method: "POST" }); $("backupMsg").textContent = `Saved ${r.file} (${(r.size / 1024).toFixed(0)} KB) in ${r.folder}/ - copy it off the server too.`; } catch (e) { $("backupMsg").textContent = "❌ " + e.message; } $("backupBtn").disabled = false; };
+
+api("/api/me").then(start).catch(showLanding);
+</script>
+</body>
+</html>
