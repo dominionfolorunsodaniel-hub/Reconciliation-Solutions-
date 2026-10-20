@@ -437,6 +437,56 @@ def verify_login(username: str, password: str) -> dict | None:
     return _user(row)
 
 
+def sync_env_admin() -> dict | None:
+    """Ensure the Render-configured credentials map to one persistent admin record.
+
+    Existing customer data is preserved. The environment variables are authoritative
+    for web admin authentication; this function only synchronizes the admin identity.
+    """
+    username = os.getenv("DASHBOARD_USER", "").strip()
+    password = os.getenv("DASHBOARD_PASSWORD", "")
+    if not username or not password or len(password) < 10:
+        return None
+    if not USERNAME_RE.match(username):
+        log.error("DASHBOARD_USER is invalid; admin login is disabled")
+        return None
+    # Hash outside the transaction to keep database locks short.
+    password_hash = security.hash_password(password)
+    with _db() as con:
+        target = con.execute("SELECT * FROM users WHERE username = ?", (username,)).fetchone()
+        if target is not None and target["role"] != "admin":
+            log.error("DASHBOARD_USER conflicts with a non-admin account; admin login is disabled")
+            return None
+        admins = con.execute("SELECT * FROM users WHERE role = 'admin' ORDER BY id").fetchall()
+        credentials_changed = False
+        if target is None:
+            if admins:
+                admin_id = admins[0]["id"]
+                # Keep the existing admin row and all associated data, changing only its login identity.
+                con.execute("UPDATE users SET username = ?, password_hash = ?, active = 1 WHERE id = ?",
+                            (username, password_hash, admin_id))
+                target_id = admin_id
+                credentials_changed = True
+            else:
+                cur = con.execute(
+                    "INSERT INTO users(username, password_hash, role, created_at, active) VALUES (?, ?, 'admin', ?, 1)",
+                    (username, password_hash, _now()))
+                target_id = cur.lastrowid
+                credentials_changed = True
+        else:
+            target_id = target["id"]
+            stored_hash = target["password_hash"]
+            credentials_changed = (not security.verify_password(password, stored_hash) or not target["active"])
+            if credentials_changed:
+                con.execute("UPDATE users SET password_hash = ?, active = 1 WHERE id = ?",
+                            (password_hash, target_id))
+        # Revoke sessions only when the configured admin credentials actually change.
+        if credentials_changed:
+            con.execute("DELETE FROM sessions WHERE user_id IN (SELECT id FROM users WHERE role = 'admin')")
+        row = con.execute("SELECT * FROM users WHERE id = ?", (target_id,)).fetchone()
+        return _user(row)
+
+
 def bootstrap_admin() -> bool:
     """First start: create the admin from DASHBOARD_USER / DASHBOARD_PASSWORD."""
     with _db() as con:

@@ -1,26 +1,25 @@
-# Report Analyzer V2 — Consolidated Upgrade Status
+# Report Analyzer V2 — Build and Deployment Status
 
-## Included
-- Existing V2 Python/FastAPI application and features.
-- Accessible show/hide controls for password fields on login, registration, and dynamically-created password inputs.
-- Existing billing, reconciliation, customer registration/approval, scoped access, PDF/Excel exports, audit history, scheduling, alerts, and backup/restore functionality.
-- Python bytecode/cache files excluded from the package.
+## Included in this package
+- Existing V2 Python/FastAPI application and Telegram bot.
+- Render environment variables (`DASHBOARD_USER` and `DASHBOARD_PASSWORD`) are authoritative for web dashboard admin login.
+- Admin credentials can be changed through the V2 Render environment settings; on login, the app synchronizes the configured identity with an admin record and revokes admin sessions when credentials change.
+- Customer accounts and company/report data are not deleted by the admin credential synchronization.
+- Password visibility controls on login and registration forms.
+- Existing billing, reconciliation, registration/approval, scoped access, PDF/Excel exports, audit history, scheduling, alerts, and backup/restore functionality.
+- Neon/PostgreSQL support when `DATABASE_URL` is set; SQLite is used when it is not set. In PostgreSQL mode, encrypted report files and logos are stored in the database.
+- Python cache files are excluded from the ZIP.
 
-## Tests run in the build workspace
+## Local checks completed for this build
 - `python -m py_compile *.py` — passed.
 - `python billing_test.py` — 12 tests passed.
-- `python smoke_test.py` — all checks passed.
+- `python smoke_test.py` — all checks passed, including admin login with Render-style environment credentials, credential change with existing customer records, old admin credential rejection, and customer-account preservation.
 
-## Neon PostgreSQL support (added)
-Set `DATABASE_URL` to use Neon PostgreSQL; leave it unset for SQLite. See `NEON_SETUP.md`. Database access goes through `dbcompat.py`; report files and logos are stored in the database in PostgreSQL mode. Not yet tested against a live Neon database.
+## Important deployment limitation
+These are local tests, not a live Render/Neon test. The package has not been verified against your actual Neon database, and the live service's `DATABASE_URL` connection and persistence across redeployment still need to be tested. Do not delete customer data or replace V1. Deploy only to the separate V2 branch/service, then verify `/api/health`, admin login, customer registration/approval, report upload/export, and a test customer's login after a controlled redeploy before inviting real customers to rely on it.
 
-## IMPORTANT: deployment readiness (SQLite mode only)
-This package still uses SQLite. It has **not** been migrated to Neon PostgreSQL and has not been tested against a live Neon database or a Render redeployment. Do not deploy this package expecting PostgreSQL persistence. The password visibility feature is present in `static/index.html`, but visually verify it on the V2 service after a safe test deployment.
-
-Before a final persistent-storage deployment:
-1. Migrate the database layer and every SQLite-dependent module to PostgreSQL-compatible operations.
-2. Add a PostgreSQL driver and set `DATABASE_URL` only on the V2 Render service.
-3. Test registration/login, roles and company isolation, report storage, billing, exports, backup/restore, and persistence across redeployment.
-4. Keep V1 unchanged.
-
-Do not place database credentials in source code or upload `.env` files to GitHub.
+## Deployment safety
+- Keep V1 and `backup-before-registration` untouched.
+- Use only the V2 Render service and V2 GitHub branch.
+- Do not expose `DATABASE_URL`, `DASHBOARD_PASSWORD`, Telegram tokens, or API keys.
+- If `DASHBOARD_USER` matches an existing non-admin customer username, admin synchronization fails safely; choose a distinct username.

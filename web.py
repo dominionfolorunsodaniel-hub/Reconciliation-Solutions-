@@ -287,7 +287,23 @@ async def login(body: LoginIn, request: Request, response: Response):
     FAILS[key] = [t for t in FAILS.get(key, []) if now - t < 900]
     if len(FAILS[key]) >= 5:
         raise HTTPException(429, "Too many failed attempts. Try again in 15 minutes.")
-    user = await asyncio.to_thread(db.verify_login, body.username, body.password)
+    # Render environment credentials are authoritative for web admin access.
+    # Sync the configured admin before checking the database-backed customer login.
+    env_admin_user = os.getenv("DASHBOARD_USER", "").strip()
+    env_admin_password = os.getenv("DASHBOARD_PASSWORD", "")
+    env_admin_match = bool(env_admin_user and env_admin_password and
+                           secrets.compare_digest(body.username.strip(), env_admin_user) and
+                           secrets.compare_digest(body.password, env_admin_password))
+    user = None
+    if env_admin_user and env_admin_password:
+        configured_admin = await asyncio.to_thread(db.sync_env_admin)
+        if env_admin_match and configured_admin:
+            user = configured_admin
+    if user is None:
+        user = await asyncio.to_thread(db.verify_login, body.username, body.password)
+        # Database-stored admin credentials must never override Render's configured credentials.
+        if user and user["role"] == "admin" and not env_admin_match:
+            user = None
     if not user:
         FAILS[key].append(now)
         db.audit(None, "login_failed", detail=body.username[:60])
@@ -780,6 +796,16 @@ def billing_status(company_id: int, user: dict = Depends(current_user)):
     # Do not advertise temporarily unavailable plans; keep the current plan visible for existing subscribers.
     result["plans"] = {key: plan for key, plan in db.PLANS.items()
                         if plan.get("available", True) or key == result.get("plan")}
+    # Support two temporary receiving accounts; secrets/details stay in Render environment variables.
+    result["banks"] = [
+        {"name": os.getenv("MONIEPOINT_BANK_NAME", "Moniepoint"),
+         "account_number": os.getenv("MONIEPOINT_ACCOUNT", ""),
+         "account_name": os.getenv("MONIEPOINT_OWNER", "")},
+        {"name": os.getenv("OPAY_BANK_NAME", "OPay"),
+         "account_number": os.getenv("OPAY_ACCOUNT", ""),
+         "account_name": os.getenv("OPAY_OWNER", "")},
+    ]
+    # Backward compatibility for any older frontend using the original single-account fields.
     result["bank"] = {"name": os.getenv("BANK_NAME", ""), "account_number": os.getenv("BANK_ACCOUNT", ""),
                       "account_name": os.getenv("BANK_OWNER", "")}
     return result
@@ -790,6 +816,9 @@ def billing_payment_request(body: PaymentRequestIn, user: dict = Depends(current
     need_company(user, body.company_id)
     if user.get("role") == "admin":
         raise HTTPException(400, "Admin accounts do not need customer subscriptions.")
+    plan = db.PLANS.get(body.plan)
+    if not plan or int(plan.get("price_ngn", 0)) > 150000:
+        raise HTTPException(400, "Plans above ₦150,000 require contacting the admin before payment. No payment request was created.")
     try:
         row = db.create_payment_request(body.company_id, user["id"], body.plan, body.transfer_reference)
     except ValueError as e:

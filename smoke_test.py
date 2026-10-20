@@ -12,6 +12,9 @@ os.environ["DATA_DIR"] = tempfile.mkdtemp()
 os.environ["BACKUP_DIR"] = os.path.join(os.environ["DATA_DIR"], "backups")
 os.environ.pop("GEMINI_API_KEY", None)  # force the offline fallbacks
 os.environ.pop("ANTHROPIC_API_KEY", None)  # legacy key is not used
+# The web API test below uses the same authoritative admin credentials as Render.
+os.environ["DASHBOARD_USER"] = "boss"
+os.environ["DASHBOARD_PASSWORD"] = "boss-password-1"
 try:
     from cryptography.fernet import Fernet
 
@@ -565,6 +568,23 @@ def main():
     check(half_week_grant.status_code == 200, "web: admin grant accepts 10.5-day Business duration")
     check(bill_client.post("/api/admin/billing/grant", json={"company_id": bill_cid, "plan": "starter", "days": 7}).status_code == 403,
           "web: non-admin cannot grant plans")
+
+    # Render-configured admin credentials remain authoritative even with customer data present.
+    web.FAILS.clear()
+    os.environ["DASHBOARD_USER"] = "boss_recovered"
+    os.environ["DASHBOARD_PASSWORD"] = "new-boss-password-2026"
+    recovered_admin = TestClient(web.app)
+    recovered = recovered_admin.post("/api/login", json={"username": "boss_recovered", "password": "new-boss-password-2026"})
+    check(recovered.status_code == 200 and recovered.json().get("role") == "admin",
+          "web: changed Render credentials restore admin access with customer records present")
+    check(recovered_admin.get("/api/users").status_code == 200,
+          "web: recovered Render admin session has admin permissions")
+    web.FAILS.clear()
+    old_admin_attempt = TestClient(web.app).post("/api/login", json={"username": "boss", "password": "boss-password-1"})
+    check(old_admin_attempt.status_code == 401,
+          "web: old database admin credentials stop working after Render credential change")
+    check(db.verify_login("billuser", "billing-user-pass-123") is not None,
+          "web: admin credential change preserves customer account")
 
     print("\nAll checks passed.")
 
