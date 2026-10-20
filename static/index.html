@@ -263,6 +263,11 @@
   <section class="card hidden" id="billingCard">
     <h2>💳 Plan &amp; usage</h2>
     <div id="billingStatus" class="mute">Loading plan…</div>
+    <div class="urow" style="border-color:#f59e0b;background:#fffbeb;color:#78350f">
+      <strong>Temporary payment notice</strong>
+      <div>We currently use Moniepoint and OPay while online checkout is being prepared. These accounts have limited transaction capacity. Sorry for the inconvenience.</div>
+      <div><strong>For payments above ₦150,000, contact the admin before paying.</strong> Do not split payments to get around account limits.</div>
+    </div>
     <div id="bankDetails" class="urow"></div>
     <div class="row" style="margin-top:8px">
       <select id="billingPlan">
@@ -814,13 +819,16 @@ async function loadBilling() {
     const b = await api(`/api/billing/status?company_id=${encodeURIComponent(cid)}`);
     const term = b.term_label || (b.plan === "expired" ? "access expired" : `${b.duration_days} day term`);
     $("billingStatus").textContent = `${b.name} plan: ${b.plan.toUpperCase()} · ${b.used}/${b.monthly_limit} analyses used this month · ${b.remaining} remaining · ${term}` + (b.expires_at ? ` · expires ${b.expires_at} UTC` : "");
-    const bank = b.bank || {};
+    const banks = Array.isArray(b.banks) ? b.banks : (b.bank && b.bank.name ? [b.bank] : []);
     $("bankDetails").replaceChildren();
-    const title = el("b", "Bank transfer details");
-    const detail = el("div", `Bank: ${bank.name || "Not configured yet"} · Account: ${bank.account_number || "Not configured yet"} · Name: ${bank.account_name || "Not configured yet"}`);
-    $("bankDetails").append(title, detail);
-    $("submitPayment").disabled = !bank.name || !bank.account_number || !bank.account_name;
-    if (!bank.name || !bank.account_number || !bank.account_name) $("billingMsg").textContent = "Bank details have not been configured by the administrator yet.";
+    $("bankDetails").append(el("b", "Temporary bank transfer details"));
+    banks.forEach(bank => {
+      const detail = el("div", `${bank.name}: ${bank.account_number} · Account name: ${bank.account_name}`);
+      $("bankDetails").append(detail);
+    });
+    const ready = banks.some(bank => bank.name && bank.account_number && bank.account_name);
+    $("submitPayment").disabled = !ready;
+    if (!ready) $("billingMsg").textContent = "Temporary payment details have not been configured by the administrator yet.";
     else if (b.pending_payment_requests) $("billingMsg").textContent = "You already have a payment request awaiting review.";
   } catch (e) { $("billingStatus").textContent = "Could not load plan: " + e.message; }
 }
@@ -828,6 +836,11 @@ $("submitPayment").onclick = async () => {
   const cid = Number($("company").value), plan = $("billingPlan").value, reference = $("transferReference").value.trim();
   $("billingMsg").textContent = "";
   if (!cid || !reference) { $("billingMsg").textContent = "Choose a company and enter the bank transfer reference."; return; }
+  const planPrices = {starter:25000, growth:100000, professional:350000, business:1000000, corporate:2500000, enterprise:5000000};
+  if ((planPrices[plan] || 0) > 150000) {
+    $("billingMsg").textContent = "This plan costs more than ₦150,000. Please DM the admin before making any payment. No payment request has been submitted.";
+    return;
+  }
   const btn = $("submitPayment"); btn.disabled = true;
   try {
     const r = await jpost("/api/billing/payment-requests", { company_id: cid, plan, transfer_reference: reference });
