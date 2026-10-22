@@ -140,6 +140,36 @@
   .support-contact small { display:block; font-size:10px; font-weight:500; opacity:.9; line-height:1.2; }
   @media(max-width:560px) { main { padding:12px 10px 90px; } .support-contact { right:12px; bottom:12px; padding:10px 13px; font-size:13px; } .support-contact small { font-size:9px; } }
 
+
+/* V2 usability upgrade: sidebar navigation + plain-language guided tour */
+.app-sidebar{position:fixed;z-index:30;left:0;top:68px;bottom:0;width:224px;padding:18px 12px;background:rgba(9,16,37,.97);border-right:1px solid rgba(148,163,184,.18);overflow:auto;display:none;color:#e5edff}
+#app.v2-nav-ready .app-sidebar{display:block}
+.app-sidebar .nav-label{font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:#91a1c5;padding:4px 10px 10px}
+.app-sidebar a{display:flex;gap:10px;align-items:center;color:#cbd5e1;text-decoration:none;padding:10px;border-radius:10px;margin:3px 0;font-size:13px;transition:background .2s,color .2s}
+.app-sidebar a:hover,.app-sidebar a:focus{background:rgba(59,130,246,.18);color:#fff;outline:none}
+.app-sidebar .nav-icon{width:22px;text-align:center}
+#app.v2-nav-ready main{margin-left:224px;max-width:1400px}
+.v2-tour-launch{margin-left:4px}
+.v2-tour-backdrop{position:fixed;inset:0;background:rgba(2,6,23,.78);z-index:1000;display:flex;align-items:center;justify-content:center;padding:18px}
+.v2-tour-card{width:min(100%,440px);background:#101a35;color:#f8fafc;border:1px solid rgba(96,165,250,.45);border-radius:20px;padding:24px;box-shadow:0 24px 90px #0009}
+.v2-tour-card h2{font-size:22px;margin:0 0 10px}
+.v2-tour-card p{color:#cbd5e1;margin:0 0 18px;line-height:1.65}
+.v2-tour-progress{font-size:12px;color:#93c5fd;margin-bottom:10px}
+.v2-tour-actions{display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end}
+.v2-tour-actions button{min-width:76px}
+.v2-tour-actions .secondary{background:#25324f;color:#e5edff}
+.v2-help-link{border:1px solid rgba(96,165,250,.35);background:#17233e;color:#dbeafe}
+@media(max-width:760px){
+ #app.v2-nav-ready .app-sidebar{top:auto;bottom:0;left:0;right:0;width:auto;height:auto;max-height:112px;padding:7px;background:#091025;border-right:0;border-top:1px solid #26324d;display:flex;overflow-x:auto;overflow-y:hidden;gap:5px}
+ .app-sidebar .nav-label{display:none}
+ .app-sidebar a{flex:0 0 78px;display:flex;flex-direction:column;gap:2px;justify-content:center;text-align:center;font-size:10px;padding:7px 3px;margin:0}
+ .app-sidebar .nav-icon{font-size:17px}
+ #app.v2-nav-ready main{margin-left:0;padding-bottom:120px}
+ #app header.app{gap:6px;flex-wrap:wrap}
+ #app header.app .logo{font-size:14px}
+ #app header.app button{padding:8px 9px;font-size:12px}
+}
+
 </style>
 </head>
 <body>
@@ -220,11 +250,22 @@
   <div class="logo">📊 Report<b>Analyzer</b></div>
   <span id="who" class="who"></span>
   <button class="ghost admin-only hidden" id="adminBtn">Admin</button>
+  <button class="ghost v2-help-link v2-tour-launch" id="v2TourLaunch" type="button">❔ Help</button>
   <button class="ghost" id="twofaBtn">🔐 2FA</button>
   <button class="ghost" id="logout">Log out</button>
 </header>
-
-<main>
+<nav class="app-sidebar" id="v2Sidebar" aria-label="App sections">
+  <div class="nav-label">Go to a section</div>
+  <a href="#v2-home"><span class="nav-icon">🏠</span><span>Home</span></a>
+  <a href="#v2-files"><span class="nav-icon">📁</span><span>My Files</span></a>
+  <a href="#v2-ask"><span class="nav-icon">💬</span><span>Ask a Question</span></a>
+  <a href="#v2-compare"><span class="nav-icon">⚖️</span><span>Compare Files</span></a>
+  <a href="#v2-results"><span class="nav-icon">🔎</span><span>Results</span></a>
+  <a href="#v2-past"><span class="nav-icon">🕘</span><span>Past Questions</span></a>
+  <a href="#v2-plan"><span class="nav-icon">💳</span><span>My Plan</span></a>
+  <a href="#v2-guide"><span class="nav-icon">📘</span><span>Help & Guide</span></a>
+</nav>
+<main id="v2-home">
   <section class="card hidden" id="twofaCard">
     <h2>🔐 Two-factor login</h2>
     <div id="twofaStatus"></div>
@@ -307,8 +348,8 @@
     <div class="row" id="aboutQs" style="margin-top:6px"></div>
   </section>
 
-  <section class="card">
-    <h2>2. Ask anything</h2>
+  <section class="card" id="v2-ask">
+    <h2>2. Ask a question</h2>
     <div class="row">
       <input type="text" id="question" placeholder='e.g. "total amount by branch and month, top 10"'>
       <button id="ask">Analyze</button>
@@ -322,7 +363,7 @@
     <div class="error" id="error"></div>
   </section>
 
-  <section class="card hidden" id="resultCard">
+  <section class="card hidden" id="resultCard" >
     <div class="row" style="justify-content:space-between">
       <h2 id="title" style="margin:0"></h2>
       <span class="row"><a id="download"><button class="ghost">⬇ Excel</button></a><a id="downloadPdf"><button class="ghost">📄 PDF</button></a></span>
@@ -333,8 +374,8 @@
     <div class="mute" id="rowInfo"></div>
   </section>
 
-  <section class="card">
-    <h2>3. Reconcile two reports</h2>
+  <section class="card" id="v2-compare">
+    <h2>3. Compare two files</h2>
     <div class="mute">Compare e.g. an ATM switch log with the bank ledger: matches, amount differences, and items missing on either side.</div>
     <div class="row" style="margin-top:8px"><select id="rA"></select> <span>vs</span> <select id="rB"></select></div>
     <div class="row" style="margin-top:8px"><input type="text" id="rNote" placeholder="Optional note, e.g. match Reference with Ref No"><button id="rBtn">Reconcile</button></div>
@@ -989,6 +1030,42 @@ $("bBtn").onclick = async () => {
 $("backupBtn").onclick = async () => { $("backupBtn").disabled = true; try { const r = await api("/api/backup", { method: "POST" }); $("backupMsg").textContent = `Saved ${r.file} (${(r.size / 1024).toFixed(0)} KB) in ${r.folder}/ - copy it off the server too.`; } catch (e) { $("backupMsg").textContent = "❌ " + e.message; } $("backupBtn").disabled = false; };
 
 api("/api/me").then(start).catch(showLanding);
+
+/* Beginner-friendly guided tour and sidebar helpers */
+(function(){
+ const steps=[
+  {title:"Welcome to Report Analyzer!",body:"This is your work area. Use the menu to jump to any part of the app. You can come back to this guide any time.",target:"#v2-home"},
+  {title:"Add your files",body:"Choose your company, then upload the report you want to check. You can also pick a report you already added.",target:"#v2-files"},
+  {title:"Ask a question",body:"Ask a question about your report using everyday words. For example: “Which payments failed?”",target:"#v2-ask"},
+  {title:"Compare two files",body:"Use this part to compare two reports and find numbers that do not match.",target:"#v2-compare"},
+  {title:"See your results",body:"After you run a check, look here for the answer and any differences that need attention.",target:"#resultCard"},
+  {title:"Get help any time",body:"Tap Help in the top bar to see this tour again. On a phone, the menu sits along the bottom of the screen.",target:"#guideCard"}
+ ];
+ let step=0, overlay=null;
+ function showStep(n){
+  step=Math.max(0,Math.min(n,steps.length-1));
+  if(!overlay){overlay=document.createElement("div");overlay.className="v2-tour-backdrop";overlay.id="v2TourOverlay";overlay.setAttribute("role","dialog");overlay.setAttribute("aria-modal","true");document.body.appendChild(overlay);}
+  const s=steps[step];
+  overlay.innerHTML='<div class="v2-tour-card"><div class="v2-tour-progress">STEP '+(step+1)+' OF '+steps.length+'</div><h2></h2><p></p><div class="v2-tour-actions"><button type="button" class="secondary" id="v2TourSkip">Skip tour</button><button type="button" class="secondary" id="v2TourBack">Back</button><button type="button" id="v2TourNext">'+(step===steps.length-1?'Finish':'Next')+'</button></div></div>';
+  overlay.querySelector("h2").textContent=s.title; overlay.querySelector("p").textContent=s.body;
+  overlay.querySelector("#v2TourBack").disabled=step===0;
+  overlay.querySelector("#v2TourSkip").onclick=closeTour;
+  overlay.querySelector("#v2TourBack").onclick=()=>showStep(step-1);
+  overlay.querySelector("#v2TourNext").onclick=()=>step===steps.length-1?closeTour():showStep(step+1);
+ }
+ function closeTour(){if(overlay){overlay.remove();overlay=null;}try{localStorage.setItem("ra_v2_tour_seen","1");}catch(e){}}
+ function ready(){
+  const app=document.getElementById("app");
+  if(app){const obs=new MutationObserver(()=>{if(!app.classList.contains("hidden")){app.classList.add("v2-nav-ready");let seen=false;try{seen=localStorage.getItem("ra_v2_tour_seen")==="1";}catch(e){}if(!seen&&!overlay)setTimeout(()=>{if(!app.classList.contains("hidden")&&!overlay)showStep(0);},900);}});obs.observe(app,{attributes:true,attributeFilter:["class"]});if(!app.classList.contains("hidden"))app.classList.add("v2-nav-ready");}
+  const launch=document.getElementById("v2TourLaunch");
+  if(launch)launch.addEventListener("click",()=>showStep(0));
+  document.querySelectorAll(".app-sidebar a").forEach(a=>a.addEventListener("click",e=>{const target=document.querySelector(a.getAttribute("href"));if(target){e.preventDefault();target.scrollIntoView({behavior:"smooth",block:"start"});}}));
+  let seen=false;try{seen=localStorage.getItem("ra_v2_tour_seen")==="1";}catch(e){}
+  if(!seen){const appEl=document.getElementById("app");if(appEl&&!appEl.classList.contains("hidden"))setTimeout(()=>showStep(0),900);}
+ }
+ if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",ready);else ready();
+})();
+
 </script>
 
 <a class="support-contact" href="https://wa.me/2348100481004?text=Hello%2C%20I%20would%20like%20to%20say%20something%20about%20your%20Reconciliation%20Solutions%20Website" target="_blank" rel="noopener noreferrer" aria-label="Contact Report Analyzer support on WhatsApp">
