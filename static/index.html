@@ -7,7 +7,7 @@
 <title>Report Analyzer - turn any report into answers</title>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
 <style>
-  :root { --bg:#f4f6fb; --card:#fff; --ink:#151b2c; --mute:#6b7385; --brand:#2b59ff; --brand2:#7c3aed; --line:#e5e8f0; --navy:#070b1a; }
+  :root { --bg:#f4f6fb; --card:#fff; --ink:#151b2c; --mute:#6b7385; --brand:#2b59ff; --brand2:#06b6d4; --line:#e5e8f0; --navy:#0a1236; }
   * { box-sizing:border-box; }
   html { scroll-behavior:smooth; }
   body { margin:0; font:15px/1.5 system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif; background:var(--bg); color:var(--ink); }
@@ -170,6 +170,35 @@
  #app header.app button{padding:8px 9px;font-size:12px}
 }
 
+
+  /* Mobile freeze fix: heavy blur/animation + autofill popup can hang Chrome on phones */
+  @media (max-width:900px), (hover:none) {
+    .orb { display:none !important; animation:none !important; filter:none !important; }
+    .glass { backdrop-filter:none !important; -webkit-backdrop-filter:none !important; background:rgba(22,30,66,.92) !important; }
+    .preview, .fchip, .bars rect, .trend { animation:none !important; }
+    .trend { stroke-dashoffset:0 !important; }
+    .bars rect { transform:none !important; }
+  }
+
+  /* ===== Catchy landing sections ===== */
+  .trust { text-align:center; color:#b8c2e0; font-size:13.5px; padding:6px 0 26px; }
+  .sec { padding:40px 0 10px; }
+  .sec h2 { font-size:clamp(24px,4.6vw,34px); margin:0 0 8px; text-align:center; letter-spacing:-.5px; }
+  .sec .sub { text-align:center; color:#b8c2e0; max-width:540px; margin:0 auto 24px; }
+  .steps3 { display:grid; grid-template-columns:repeat(3,1fr); gap:14px; }
+  .step { padding:20px; text-align:left; }
+  .step .n { display:inline-flex; width:34px; height:34px; align-items:center; justify-content:center; border-radius:50%; background:linear-gradient(135deg,var(--brand),var(--brand2)); font-weight:800; margin-bottom:8px; }
+  .step b { display:block; font-size:17px; margin-bottom:4px; }
+  .step span.d { color:#b8c2e0; font-size:14px; }
+  .faq { max-width:720px; margin:0 auto; display:grid; gap:10px; }
+  .faq details { padding:14px 18px; }
+  .faq summary { cursor:pointer; font-weight:700; }
+  .faq p { margin:8px 0 0; color:#b8c2e0; font-size:14px; }
+  .cta { text-align:center; padding:44px 0 36px; }
+  .cta h2 { font-size:clamp(24px,4.6vw,34px); margin:0 0 8px; }
+  .cta p { color:#b8c2e0; margin:0 0 18px; }
+  .cta button { padding:14px 26px; font-size:17px; box-shadow:0 10px 28px rgba(43,89,255,.4); }
+  @media (max-width:900px) { .steps3 { grid-template-columns:1fr; } }
 </style>
 </head>
 <body>
@@ -183,8 +212,8 @@
     <section class="hero">
       <div>
         <span class="badge">✨ AI report analysis for ATM, POS &amp; finance teams</span>
-        <h1>Turn any report into <span class="grad">answers</span> in seconds.</h1>
-        <p class="lead">Drop a CSV, Excel or PDF. Ask in plain English. Get exact tables, charts, alerts and a branded PDF your clients will love.</p>
+        <h1>Find the missing money in <span class="grad">seconds</span>.</h1>
+        <p class="lead">Upload your ATM, POS or ledger reports and see exactly what does not match. Ask in plain English and get exact tables, alerts and a branded PDF.</p>
         <div class="pills"><span>📄 CSV · Excel · PDF</span><span>💬 Web + Telegram</span><span>🔒 Encrypted &amp; audited</span><span>⚖️ Reconciliation</span><span>📈 ATM cash forecast</span></div>
 
         <div class="preview glass" aria-hidden="true">
@@ -214,7 +243,7 @@
         <input type="text" id="lUser" placeholder="Username" autocomplete="username">
         <input type="password" id="lPass" placeholder="Password" autocomplete="current-password">
         <div id="codeRow" class="hidden"><input type="text" id="lCode" placeholder="6-digit code from your authenticator app" inputmode="numeric" autocomplete="one-time-code" style="width:100%"></div>
-        <button id="lBtn">Sign in →</button>
+        <button id="lBtn">Open my dashboard →</button>
         <div class="err" id="lErr"></div>
         <details style="text-align:left;margin-top:4px">
           <summary style="cursor:pointer;color:#c9d4ff">New customer? Request an account</summary>
@@ -232,6 +261,8 @@
       </div>
     </section>
 
+    <div class="trust">🔐 Encrypted &nbsp;·&nbsp; ✅ Two-factor ready &nbsp;·&nbsp; 📊 Built for ATM &amp; POS teams &nbsp;·&nbsp; 💬 WhatsApp support</div>
+
     <section class="features">
       <div class="glass feat"><div class="ic">🧠</div><h3>Understands any report</h3><p>It tells you what the report is, the period it covers and what looks wrong - the moment you upload it.</p></div>
       <div class="glass feat"><div class="ic">💬</div><h3>Ask in plain English</h3><p>"Failed transactions per ATM, top 10." Exact numbers from your data - never guessed.</p></div>
@@ -239,6 +270,30 @@
       <div class="glass feat"><div class="ic">📈</div><h3>ATM cash forecast</h3><p>How much cash each ATM will need, and the day it will run out.</p></div>
       <div class="glass feat"><div class="ic">🚨</div><h3>Alerts on Telegram</h3><p>Failure spikes, silent terminals and odd amounts are pushed to your phone.</p></div>
       <div class="glass feat"><div class="ic">📄</div><h3>Branded PDF reports</h3><p>Share a clean summary with your own logo and colours.</p></div>
+    </section>
+    <section class="sec">
+      <h2>Reconcile in 3 simple steps</h2>
+      <p class="sub">No spreadsheets. No headaches.</p>
+      <div class="steps3">
+        <div class="glass step"><div class="n">1</div><b>📤 Upload</b><span class="d">Drop your two reports: CSV, Excel or PDF.</span></div>
+        <div class="glass step"><div class="n">2</div><b>⚡ Compare</b><span class="d">Every row is matched in seconds.</span></div>
+        <div class="glass step"><div class="n">3</div><b>✅ Fix</b><span class="d">See exactly what is missing or different.</span></div>
+      </div>
+    </section>
+
+    <section class="sec">
+      <h2>Questions? Answered.</h2>
+      <div class="faq">
+        <details class="glass"><summary>Is my data safe?</summary><p>Yes. Data is encrypted, two-factor login is available, and every action is logged.</p></details>
+        <details class="glass"><summary>Can I use it on my phone?</summary><p>Yes. The site works on mobile, and you can also use the Telegram bot.</p></details>
+        <details class="glass"><summary>How do I get started?</summary><p>Tap "Request an account" in the login box. Once an administrator approves it, you can sign in.</p></details>
+      </div>
+    </section>
+
+    <section class="cta">
+      <h2>Ready to stop chasing mismatches?</h2>
+      <p>Join teams who reconcile faster and sleep better.</p>
+      <button type="button" onclick="document.querySelector('.login').scrollIntoView({behavior:'smooth',block:'center'})">Get started →</button>
     </section>
     <div class="foot">Built for teams that handle sensitive financial data.</div>
   </div>
