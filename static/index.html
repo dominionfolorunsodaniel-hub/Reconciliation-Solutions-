@@ -1111,7 +1111,7 @@ api("/api/me").then(start).catch(showLanding);
  function closeTour(){if(overlay){overlay.remove();overlay=null;}try{localStorage.setItem("ra_v2_tour_seen","1");}catch(e){}}
  function ready(){
   const app=document.getElementById("app");
-  if(app){const obs=new MutationObserver(()=>{if(!app.classList.contains("hidden")){app.classList.add("v2-nav-ready");let seen=false;try{seen=localStorage.getItem("ra_v2_tour_seen")==="1";}catch(e){}if(!seen&&!overlay)setTimeout(()=>{if(!app.classList.contains("hidden")&&!overlay)showStep(0);},900);}});obs.observe(app,{attributes:true,attributeFilter:["class"]});if(!app.classList.contains("hidden"))app.classList.add("v2-nav-ready");}
+  if(app){let navDone=false;const obs=new MutationObserver(()=>{if(navDone&&app.classList.contains("v2-nav-ready"))return;if(!app.classList.contains("hidden")){navDone=true;if(!app.classList.contains("v2-nav-ready"))app.classList.add("v2-nav-ready");let seen=false;try{seen=localStorage.getItem("ra_v2_tour_seen")==="1";}catch(e){}if(!seen&&!overlay)setTimeout(()=>{if(!app.classList.contains("hidden")&&!overlay)showStep(0);},900);}});obs.observe(app,{attributes:true,attributeFilter:["class"]});if(!app.classList.contains("hidden"))app.classList.add("v2-nav-ready");}
   const launch=document.getElementById("v2TourLaunch");
   if(launch)launch.addEventListener("click",()=>showStep(0));
   document.querySelectorAll(".app-sidebar a").forEach(a=>a.addEventListener("click",e=>{const target=document.querySelector(a.getAttribute("href"));if(target){e.preventDefault();target.scrollIntoView({behavior:"smooth",block:"start"});}}));
