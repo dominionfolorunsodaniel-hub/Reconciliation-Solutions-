@@ -199,6 +199,157 @@
   .cta p { color:#b8c2e0; margin:0 0 18px; }
   .cta button { padding:14px 26px; font-size:17px; box-shadow:0 10px 28px rgba(43,89,255,.4); }
   @media (max-width:900px) { .steps3 { grid-template-columns:1fr; } }
+
+  /* ================= NEW DASHBOARD LAYOUT (sidebar + cards) ================= */
+  .view-off { display:none !important; }
+  #app { min-height:100vh; background:#eef3fb; }
+  #app main, #app.v2-nav-ready main { margin-left:0 !important; max-width:1360px !important; margin:0 auto !important; padding:18px 18px 90px !important; gap:16px; }
+  .shell { margin-left:262px; min-width:0; }
+
+  /* Sidebar */
+  .sb { position:fixed; z-index:60; left:0; top:0; bottom:0; width:262px; padding:16px 12px 14px; overflow-y:auto; color:#e6eeff; background:linear-gradient(180deg,#070f2c 0%,#0a1a4a 100%); border-right:1px solid rgba(120,160,255,.14); display:flex; flex-direction:column; gap:2px; }
+  .sb-brand { display:flex; gap:10px; align-items:center; padding:4px 8px 16px; }
+  .sb-logo { width:40px; height:40px; border-radius:12px; display:grid; place-items:center; font-size:22px; background:linear-gradient(135deg,#1d6bff,#22d3ee); flex:0 0 40px; }
+  .sb-brand b { display:block; font-size:17px; letter-spacing:-.3px; }
+  .sb-brand small { display:block; color:#9fb2dd; font-size:10.5px; line-height:1.3; }
+  #v2Sidebar .sb-item, #v2Sidebar .sb-q { all:unset; box-sizing:border-box; display:flex; align-items:center; gap:12px; width:100%; padding:11px 12px; border-radius:12px; cursor:pointer; color:#cfdaf5; font-size:14px; font-weight:600; transition:background .15s,color .15s; }
+  #v2Sidebar .sb-item .ic { width:22px; text-align:center; font-size:17px; }
+  #v2Sidebar .sb-item:hover, #v2Sidebar .sb-q:hover { background:rgba(80,130,255,.16); color:#fff; transform:none; box-shadow:none; }
+  #v2Sidebar .sb-item.active { background:linear-gradient(135deg,#1769ff,#2aa0f4); color:#fff; box-shadow:0 8px 20px rgba(23,105,255,.35); }
+  #v2Sidebar .sb-item:focus-visible, #v2Sidebar .sb-q:focus-visible, #v2Sidebar .sb-btn:focus-visible { outline:2px solid #5ad9e9; outline-offset:2px; }
+  .sb-nav { display:grid; gap:2px; }
+  .sb-label { font-size:11px; letter-spacing:.12em; text-transform:uppercase; color:#8ea3d3; padding:16px 12px 6px; }
+  #v2Sidebar .sb-q { justify-content:space-between; background:rgba(40,80,190,.22); border:1px solid rgba(120,160,255,.18); margin:3px 0; font-weight:600; font-size:13.5px; text-decoration:none; }
+  #v2Sidebar .sb-q i { font-style:normal; color:#8ea3d3; font-size:18px; }
+  .sb-card { margin-top:12px; padding:14px; border-radius:16px; background:rgba(30,60,150,.25); border:1px solid rgba(120,160,255,.28); }
+  .sb-card b { display:block; font-size:15px; margin:2px 0 4px; }
+  .sb-card p { margin:0 0 10px; color:#b5c4e8; font-size:12.5px; }
+  .sb-card small { color:#9fb2dd; font-size:11.5px; display:block; }
+  .sb-heart { font-size:22px; }
+  #v2Sidebar .sb-btn { all:unset; box-sizing:border-box; display:inline-block; padding:8px 18px; border-radius:10px; background:#e8f0ff; color:#0b2a7a; font-weight:700; font-size:13px; cursor:pointer; margin-top:8px; }
+  #v2Sidebar .sb-plan .sb-btn { background:#1769ff; color:#fff; }
+  .sb-bar { height:7px; border-radius:99px; background:rgba(255,255,255,.14); margin:8px 0 6px; overflow:hidden; }
+  .sb-bar i { display:block; height:100%; width:0; background:linear-gradient(90deg,#22d3ee,#34d399); border-radius:99px; }
+  .sb-ver { margin-top:auto; padding:14px 8px 0; color:#7f93c4; font-size:11.5px; }
+  .sb-scrim { display:none; }
+  .sb-burger { display:none; }
+  .hdr-brand { display:none; font-weight:700; }
+
+  /* Top bar */
+  #app header.app { position:sticky; top:0; z-index:40; display:flex; align-items:center; gap:10px; flex-wrap:nowrap; padding:12px 18px; background:linear-gradient(100deg,#08143a 0%,#0c2a73 100%); box-shadow:0 6px 22px rgba(7,21,47,.22); border-bottom:1px solid rgba(117,177,255,.2); }
+  .hdr-spacer { flex:1; }
+  .app-search { flex:0 1 460px; display:flex; align-items:center; gap:8px; padding:0 12px; border-radius:12px; background:rgba(255,255,255,.09); border:1px solid rgba(255,255,255,.16); min-width:0; }
+  .app-search input { flex:1; min-width:0 !important; background:transparent !important; border:0 !important; color:#fff; padding:10px 4px !important; outline:none !important; }
+  .app-search input::placeholder { color:#a9bbe6; }
+  #adminBtn { display:none !important; }
+  .who-chip { display:flex; align-items:center; gap:8px; padding:3px 10px 3px 3px; border-radius:999px; background:rgba(255,255,255,.09); border:1px solid rgba(255,255,255,.14); }
+  .avatar { width:30px; height:30px; border-radius:50%; display:grid; place-items:center; background:linear-gradient(135deg,#1d6bff,#22d3ee); font-weight:800; font-size:14px; color:#fff; }
+  .who-chip .who { color:#e2ebff; font-size:12.5px; white-space:nowrap; }
+  #app header.app button.ghost { background:rgba(255,255,255,.1); color:#e8f0ff; border:1px solid rgba(255,255,255,.18); }
+
+  /* Hero */
+  .d-hero { display:grid; grid-template-columns:1.2fr 1fr; gap:18px; align-items:center; padding:24px; border-radius:22px; color:#fff; background:radial-gradient(120% 160% at 85% 0%,#3b3fd6 0%,#0f2a86 42%,#071236 100%); box-shadow:0 14px 34px rgba(14,30,100,.25); }
+  .d-greet { font-size:clamp(22px,3.4vw,32px); font-weight:800; letter-spacing:-.6px; }
+  .d-greet-sub { color:#c5d2f5; margin:6px 0 16px; }
+  .d-chips { display:flex; gap:8px; flex-wrap:wrap; }
+  .d-chip { background:rgba(255,255,255,.12) !important; border:1px solid rgba(255,255,255,.2) !important; color:#fff !important; box-shadow:none !important; padding:8px 14px !important; border-radius:999px !important; font-size:13.5px; }
+  .d-hero-card { display:flex; align-items:center; justify-content:space-between; gap:12px; padding:18px; border-radius:18px; background:rgba(255,255,255,.08); border:1px solid rgba(255,255,255,.18); }
+  .d-hero-card b { font-size:18px; display:block; line-height:1.3; }
+  .d-hero-card p { margin:6px 0; color:#c5d2f5; font-size:13px; }
+  .d-hero-card small { color:#9fe6f2; font-weight:700; }
+  .d-hero-card svg { width:150px; flex:0 0 150px; }
+
+  /* KPI cards */
+  .d-kpis { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:14px; }
+  .d-kpi { position:relative; display:flex; gap:12px; align-items:flex-start; padding:16px; border-radius:18px; color:#fff; overflow:hidden; box-shadow:0 10px 24px rgba(20,40,110,.18); min-height:118px; }
+  .d-kpi .ico { width:42px; height:42px; flex:0 0 42px; border-radius:50%; display:grid; place-items:center; font-size:20px; background:rgba(255,255,255,.22); }
+  .d-kpi .body { min-width:0; }
+  .d-kpi small { display:block; font-size:12.5px; opacity:.92; font-weight:600; }
+  .d-kpi b { display:block; font-size:clamp(22px,2.6vw,30px); letter-spacing:-.6px; margin:4px 0 2px; overflow-wrap:anywhere; }
+  .d-kpi em { font-style:normal; font-size:11.5px; opacity:.85; }
+  .d-kpi .sp { position:absolute; right:12px; bottom:10px; width:46%; max-width:130px; height:34px; opacity:.95; }
+  .d-kpi .sp svg { width:100%; height:100%; display:block; }
+  .k1 { background:linear-gradient(135deg,#1747c8,#2d7bff); }
+  .k2 { background:linear-gradient(135deg,#047a62,#17b98a); }
+  .k3 { background:linear-gradient(135deg,#c02a3a,#f0585f); }
+  .k4 { background:linear-gradient(135deg,#5a2bc9,#8b5cf6); }
+
+  /* Panels */
+  .d-panel { background:#fff; border:1px solid #e0e8f5; border-radius:18px; padding:16px; box-shadow:0 8px 24px rgba(24,48,92,.06); min-width:0; }
+  .d-panel h3 { margin:0; font-size:16px; color:#142747; }
+  .d-sub { margin:2px 0 12px; color:#68758e; font-size:12.5px; }
+  .d-grid2 { display:grid; grid-template-columns:1.25fr 1fr; gap:14px; }
+  .d-grid3 { display:grid; grid-template-columns:1.35fr 1fr; gap:14px; }
+  .d-head { display:flex; justify-content:space-between; gap:10px; align-items:flex-start; flex-wrap:wrap; }
+  .d-link { background:none !important; box-shadow:none !important; color:#1769ff !important; padding:4px 2px !important; font-size:13px; }
+  .d-chartbox { position:relative; height:220px; }
+  .d-chartbox canvas { max-height:none !important; }
+  .d-empty { position:absolute; inset:0; display:flex; align-items:center; justify-content:center; text-align:center; padding:12px; color:#7a8aa6; font-size:13px; background:rgba(255,255,255,.88); }
+  .d-donut { display:flex; gap:16px; align-items:center; flex-wrap:wrap; }
+  .d-donut-box { position:relative; width:170px; height:170px; flex:0 0 170px; }
+  .d-donut-c { position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center; pointer-events:none; }
+  .d-donut-c b { font-size:24px; color:#142747; }
+  .d-donut-c small { color:#68758e; font-size:11px; }
+  .d-legend { flex:1; min-width:150px; display:grid; gap:7px; font-size:13px; }
+  .d-legend div { display:flex; align-items:center; gap:8px; }
+  .d-legend i { width:10px; height:10px; border-radius:50%; flex:0 0 10px; }
+  .d-legend span { flex:1; color:#33435f; }
+  .d-legend b { color:#142747; font-variant-numeric:tabular-nums; }
+  .d-minis { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+  .d-mini { border:1px solid #e0e8f5; border-radius:14px; padding:12px; min-width:0; background:#fbfdff; }
+  .d-mini b { display:block; font-size:22px; letter-spacing:-.4px; }
+  .d-mini small { display:block; color:#68758e; font-size:12px; margin-top:2px; }
+  .d-mini .sp { height:26px; margin-top:6px; }
+  .d-mini .sp svg { width:100%; height:100%; display:block; }
+  .pill { display:inline-block; padding:3px 10px; border-radius:999px; font-size:12px; font-weight:700; }
+  .pill.ok { background:#dcfce7; color:#166534; }
+  .pill.warn { background:#fef3c7; color:#92400e; }
+  .pill.bad { background:#fee2e2; color:#991b1b; }
+  .d-btn { display:inline-block; margin-top:6px; padding:11px 20px; border-radius:12px; background:linear-gradient(120deg,#1769ff,#2aa0f4); color:#fff; font-weight:700; text-decoration:none; }
+  .d-upgrade { display:flex; align-items:center; gap:14px; padding:14px 18px; border-radius:18px; color:#fff; background:linear-gradient(100deg,#0a1a52 0%,#0f4fbf 60%,#12b5d8 100%); box-shadow:0 10px 26px rgba(14,60,160,.22); flex-wrap:wrap; }
+  .d-upgrade .rocket { font-size:30px; }
+  .d-upgrade .txt { flex:1; min-width:200px; }
+  .d-upgrade b { display:block; font-size:16px; }
+  .d-upgrade span { color:#d3e4ff; font-size:13px; }
+  .d-upgrade button { background:#fff !important; color:#0b3aa6 !important; box-shadow:none !important; font-weight:800; }
+  .ops-intro { display:none; }
+
+  /* Tablet / phone */
+  @media (max-width:1100px) { .d-kpis { grid-template-columns:repeat(2,minmax(0,1fr)); } }
+  @media (max-width:900px) {
+    .shell { margin-left:0; }
+    .sb { transform:translateX(-100%); transition:transform .22s ease; width:280px; box-shadow:12px 0 40px rgba(0,0,0,.4); }
+    body.sb-open .sb { transform:none; }
+    body.sb-open .sb-scrim { display:block; position:fixed; inset:0; z-index:55; background:rgba(2,6,23,.6); }
+    .sb-burger { display:inline-flex !important; align-items:center; justify-content:center; width:40px; height:40px; padding:0 !important; font-size:20px; background:rgba(255,255,255,.12) !important; border:1px solid rgba(255,255,255,.2); box-shadow:none !important; }
+    .hdr-brand { display:inline; font-size:15px; color:#fff; white-space:nowrap; }
+    .app-search { display:none; }
+    #app header.app { gap:6px; padding:10px 12px; overflow-x:auto; }
+    #app header.app button { padding:8px 10px; font-size:12px; white-space:nowrap; }
+    .who-chip .who { display:none; }
+    .who-chip { padding:3px; }
+    #app main, #app.v2-nav-ready main { padding:12px 10px 90px !important; }
+    .d-hero { grid-template-columns:1fr; padding:18px; }
+    .d-hero-card svg { display:none; }
+    .d-grid2, .d-grid3 { grid-template-columns:1fr; }
+  }
+  @media (max-width:430px) { .d-kpis { grid-template-columns:1fr; } .d-kpi { min-height:104px; } .d-minis { grid-template-columns:1fr 1fr; } }
+
+  /* polish */
+  .d-kpi { min-height:128px; }
+  .d-kpi em { display:block; max-width:60%; line-height:1.3; }
+  .d-kpi .sp { width:34%; }
+  .sb-burger, .hdr-brand, .who-chip, #app header.app button, .hdr-spacer { flex-shrink:0; }
+  .hdr-spacer { flex:1 1 0; flex-shrink:1; }
+  @media (max-width:900px) {
+    #app header.app .v2-help-link, #app header.app #twofaBtn { display:none !important; }
+    .sb-burger { flex:0 0 40px; }
+  }
+  @media (max-width:560px) {
+    .support-contact { padding:0 !important; width:46px; height:46px; justify-content:center; border-radius:50% !important; right:12px; bottom:14px; }
+    .support-contact > span:not(.wa-icon) { display:none; }
+    .support-contact .wa-icon { background:transparent; }
+  }
 </style>
 </head>
 <body>
@@ -300,28 +451,117 @@
 </div>
 
 <!-- ======================= APP ======================= -->
-<div id="app" class="hidden">
+<div id="app" class="hidden" data-view="dashboard">
+<aside id="v2Sidebar" class="sb" aria-label="App sections">
+  <div class="sb-brand"><span class="sb-logo">📊</span><div><b>Report Analyzer</b><small>Smarter Reports. Better Decisions.</small></div></div>
+  <nav class="sb-nav">
+    <button type="button" class="sb-item" data-nav="dashboard"><span class="ic">🏠</span><span>Dashboard</span></button>
+    <button type="button" class="sb-item analyst-up hidden" data-nav="upload"><span class="ic">⬆️</span><span>Upload Report</span></button>
+    <button type="button" class="sb-item" data-nav="reports"><span class="ic">📄</span><span>My Reports</span></button>
+    <button type="button" class="sb-item" data-nav="analytics"><span class="ic">💬</span><span>Ask &amp; Analytics</span></button>
+    <button type="button" class="sb-item" data-nav="insights"><span class="ic">📊</span><span>Company Insights</span></button>
+    <button type="button" class="sb-item" data-nav="reconciliation"><span class="ic">⚖️</span><span>Reconciliation</span></button>
+    <button type="button" class="sb-item" data-nav="discrepancies"><span class="ic">🚨</span><span>Discrepancies</span></button>
+    <button type="button" class="sb-item admin-only hidden" data-nav="team"><span class="ic">👥</span><span>Team &amp; Access</span></button>
+    <button type="button" class="sb-item" data-nav="plan"><span class="ic">💳</span><span>Plan &amp; Billing</span></button>
+    <button type="button" class="sb-item" data-nav="donations"><span class="ic">❤️</span><span>Donations</span></button>
+    <button type="button" class="sb-item" data-nav="settings"><span class="ic">⚙️</span><span>Settings</span></button>
+    <button type="button" class="sb-item" data-nav="guide"><span class="ic">📘</span><span>Help &amp; Guide</span></button>
+  </nav>
+  <div class="sb-label">Quick actions</div>
+  <button type="button" class="sb-q analyst-up hidden" data-nav="upload"><span>⬆️ Upload a Report</span><i>›</i></button>
+  <button type="button" class="sb-q" data-nav="analytics"><span>📈 View Analytics</span><i>›</i></button>
+  <a class="sb-q" href="https://wa.me/2348100481004?text=Hello%2C%20I%20need%20support%20with%20Report%20Analyzer" target="_blank" rel="noopener noreferrer"><span>🎧 Get Support</span><i>›</i></a>
+  <div class="sb-card">
+    <div class="sb-heart">❤️</div><b>Support Our Mission</b>
+    <p>Help us keep Report Analyzer running and improving.</p>
+    <button type="button" class="sb-btn" data-nav="donations">Donate Now</button>
+  </div>
+  <div class="sb-card sb-plan">
+    <small>Current Plan</small><b id="sbPlanName">-</b>
+    <div class="sb-bar"><i id="sbPlanBar"></i></div><small id="sbPlanUse"></small>
+    <button type="button" class="sb-btn" data-nav="plan">View Plans</button>
+  </div>
+  <div class="sb-ver">Report Analyzer · V2</div>
+</aside>
+<div class="sb-scrim" id="sbScrim"></div>
+<div class="shell">
 <header class="app">
-  <div class="logo">📊 Report<b>Analyzer</b></div>
-  <span id="who" class="who"></span>
+  <button type="button" class="sb-burger" id="sbToggle" aria-label="Open menu">☰</button>
+  <span class="hdr-brand">📊 Report<b>Analyzer</b></span>
+  <div class="app-search"><span aria-hidden="true">🔍</span><input type="text" id="dSearch" placeholder="Search your reports…" autocomplete="off" aria-label="Search reports"></div>
+  <span class="hdr-spacer"></span>
   <button class="ghost admin-only hidden" id="adminBtn">Admin</button>
   <button class="ghost v2-help-link v2-tour-launch" id="v2TourLaunch" type="button">❔ Help</button>
   <button class="ghost" id="twofaBtn">🔐 2FA</button>
+  <div class="who-chip"><span class="avatar" id="avatar">U</span><span id="who" class="who"></span></div>
   <button class="ghost" id="logout">Log out</button>
 </header>
-<nav class="app-sidebar" id="v2Sidebar" aria-label="App sections">
-  <div class="nav-label">Go to a section</div>
-  <a href="#v2-home"><span class="nav-icon">🏠</span><span>Home</span></a>
-  <a href="#v2-files"><span class="nav-icon">📁</span><span>My Files</span></a>
-  <a href="#v2-ask"><span class="nav-icon">💬</span><span>Ask a Question</span></a>
-  <a href="#v2-compare"><span class="nav-icon">⚖️</span><span>Compare Files</span></a>
-  <a href="#v2-results"><span class="nav-icon">🔎</span><span>Results</span></a>
-  <a href="#v2-past"><span class="nav-icon">🕘</span><span>Past Questions</span></a>
-  <a href="#v2-plan"><span class="nav-icon">💳</span><span>My Plan</span></a>
-  <a href="#v2-guide"><span class="nav-icon">📘</span><span>Help & Guide</span></a>
-</nav>
 <main id="v2-home">
-  <section class="card hidden" id="twofaCard">
+  <section class="d-hero" data-views="dashboard">
+    <div>
+      <div class="d-greet" id="dGreet">Welcome 👋</div>
+      <div class="d-greet-sub">Here's what's happening with your reports today.</div>
+      <div class="d-chips">
+        <button type="button" class="d-chip" data-nav="analytics">📈 Analyze</button>
+        <button type="button" class="d-chip" data-nav="reconciliation">⚖️ Reconcile</button>
+        <button type="button" class="d-chip" data-nav="discrepancies">🔎 Track</button>
+        <button type="button" class="d-chip" data-nav="insights">🌱 Grow</button>
+      </div>
+    </div>
+    <div class="d-hero-card">
+      <div><b>Turning data into financial clarity.</b><p>Better insights. Stronger decisions. A healthier financial future.</p><small id="dCompany"></small></div>
+      <svg viewBox="0 0 150 90" aria-hidden="true"><defs><linearGradient id="hg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#34d399"/><stop offset="1" stop-color="#2563eb"/></linearGradient></defs><rect x="8" y="58" width="20" height="26" rx="4" fill="url(#hg)"/><rect x="38" y="44" width="20" height="40" rx="4" fill="url(#hg)"/><rect x="68" y="50" width="20" height="34" rx="4" fill="url(#hg)"/><rect x="98" y="26" width="20" height="58" rx="4" fill="url(#hg)"/><rect x="126" y="10" width="20" height="74" rx="4" fill="url(#hg)"/><polyline points="12,50 44,36 76,42 108,18 138,4" fill="none" stroke="#fbbf24" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </div>
+  </section>
+
+  <section class="d-kpis" data-views="dashboard">
+    <div class="d-kpi k1"><div class="ico">📄</div><div class="body"><small>Total Reports Processed</small><b id="kv1">-</b><em id="ks1"></em></div><div class="sp" id="sp1"></div></div>
+    <div class="d-kpi k2"><div class="ico">✅</div><div class="body"><small>Reconciliation Success Rate</small><b id="kv2">-</b><em id="ks2"></em></div><div class="sp" id="sp2"></div></div>
+    <div class="d-kpi k3"><div class="ico">⚠️</div><div class="body"><small>Open Discrepancies</small><b id="kv3">-</b><em id="ks3"></em></div><div class="sp" id="sp3"></div></div>
+    <div class="d-kpi k4"><div class="ico">💰</div><div class="body"><small>Net Difference Found</small><b id="kv4">-</b><em id="ks4"></em></div><div class="sp" id="sp4"></div></div>
+  </section>
+
+  <section class="d-grid2" data-views="dashboard">
+    <div class="d-panel"><h3>Reconciliation Performance</h3><p class="d-sub">Success rate by day (last 90 days)</p>
+      <div class="d-chartbox"><canvas id="perfChart"></canvas><div class="d-empty" id="perfEmpty">Run a reconciliation to see your success rate here.</div></div></div>
+    <div class="d-panel"><h3>Report Overview</h3><p class="d-sub">Your reports by file type</p>
+      <div class="d-donut"><div class="d-donut-box"><canvas id="typeChart"></canvas><div class="d-donut-c"><b id="dDonutN">0</b><small>Total Reports</small></div></div><div id="dTypeList" class="d-legend"></div></div></div>
+  </section>
+
+  <section class="d-grid2" data-views="dashboard">
+    <div class="d-panel"><h3>Discrepancies by Category</h3><p class="d-sub">Where your differences come from</p>
+      <div class="d-chartbox"><canvas id="catChart"></canvas><div class="d-empty" id="catEmpty">No discrepancy cases yet. 🎉</div></div></div>
+    <div class="d-panel"><h3>Reconciliation Activity</h3><p class="d-sub">Reconciliation runs per day (last 90 days)</p>
+      <div class="d-chartbox"><canvas id="actChart"></canvas><div class="d-empty" id="actEmpty">No reconciliation runs yet.</div></div></div>
+  </section>
+
+  <section class="d-grid3" data-views="dashboard">
+    <div class="d-panel"><div class="d-head"><div><h3>Recent Reports</h3><p class="d-sub">Your latest uploaded reports</p></div><button type="button" class="d-link" data-nav="reports">View all →</button></div>
+      <div class="tablewrap"><table id="recentTable"></table></div></div>
+    <div class="d-panel"><h3>Company Insights</h3><p class="d-sub">Key numbers at a glance</p>
+      <div class="d-minis" id="dMinis"></div></div>
+  </section>
+
+  <section class="d-upgrade" id="dUpgrade" data-views="dashboard">
+    <div class="rocket">🚀</div><div class="txt"><b>Ready to unlock more features?</b><span>Upgrade your plan for more analyses, team members and automated reports.</span></div>
+    <button type="button" data-nav="plan">View Plans →</button>
+  </section>
+
+  <section class="d-panel" data-views="reports">
+    <div class="d-head"><div><h3>My Reports</h3><p class="d-sub" id="rptCount"></p></div><button type="button" class="analyst-up hidden" data-nav="upload">⬆️ Upload report</button></div>
+    <div class="tablewrap"><table id="reportsTable"></table></div>
+    <div class="mute" id="reportsEmpty"></div>
+  </section>
+
+  <section class="d-panel" data-views="donations">
+    <h3>❤️ Support Our Mission</h3>
+    <p>Report Analyzer exists to make financial reconciliation simple and affordable for teams like yours. Your support helps cover hosting, security and new features.</p>
+    <p class="mute">Online donations are still being set up. If you would like to support the project today, message us on WhatsApp and we will share the details.</p>
+    <a class="d-btn" href="https://wa.me/2348100481004?text=Hello%2C%20I%20would%20like%20to%20support%20Report%20Analyzer" target="_blank" rel="noopener noreferrer">Message us on WhatsApp</a>
+  </section>
+
+  <section class="card hidden" id="twofaCard" data-views="settings">
     <h2>🔐 Two-factor login</h2>
     <div id="twofaStatus"></div>
     <div class="mute" id="twofaMsg"></div>
@@ -338,8 +578,8 @@
     <div class="error" id="twofaErr"></div>
   </section>
 
-  <section class="card">
-    <h2>1. Company &amp; reports</h2>
+  <section class="card" data-views="upload reports analytics">
+    <h2>Company &amp; reports</h2>
     <div class="row">
       <select id="company"></select>
       <span class="row admin-only hidden" id="newCoRow"><input type="text" id="newCompany" placeholder="New company name" style="max-width:220px"><button class="ghost" id="addCompany">Add company</button></span>
@@ -356,7 +596,7 @@
     <div class="mute" id="preview" style="margin-top:8px"></div>
   </section>
 
-  <section class="card hidden" id="billingCard">
+  <section class="card hidden" id="billingCard" data-views="plan">
     <h2>💳 Plan &amp; usage</h2>
     <div id="billingStatus" class="mute">Loading plan…</div>
     <div class="urow" style="border-color:#f59e0b;background:#fffbeb;color:#78350f">
@@ -381,7 +621,7 @@
     <div class="mute" style="margin-top:6px">Transfer must be verified by an administrator before paid access is activated. Enterprise Plus is temporarily unavailable while high-value payment limits are confirmed. Never submit your bank password or PIN.</div>
   </section>
 
-  <section class="card" id="guideCard">
+  <section class="card" id="guideCard" data-views="guide">
     <h2>📘 Getting started</h2>
     <ol>
       <li>Upload a CSV, Excel or supported PDF report.</li>
@@ -392,7 +632,7 @@
     </ol>
     <p class="mute">Paid access starts only after an administrator verifies the bank transfer. AI findings can be wrong; validate high-impact financial decisions against source records.</p>
   </section>
-  <section class="card hidden" id="aboutCard">
+  <section class="card hidden" id="aboutCard" data-views="upload analytics">
     <h2>📄 About this report</h2>
     <div id="aboutWhat"></div>
     <div class="mute" id="aboutPeriod"></div>
@@ -403,8 +643,8 @@
     <div class="row" id="aboutQs" style="margin-top:6px"></div>
   </section>
 
-  <section class="card" id="v2-ask">
-    <h2>2. Ask a question</h2>
+  <section class="card" id="v2-ask" data-views="analytics">
+    <h2>Ask a question</h2>
     <div class="row">
       <input type="text" id="question" placeholder='e.g. "total amount by branch and month, top 10"'>
       <button id="ask">Analyze</button>
@@ -418,7 +658,7 @@
     <div class="error" id="error"></div>
   </section>
 
-  <section class="card hidden" id="resultCard" >
+  <section class="card hidden" id="resultCard" data-views="analytics">
     <div class="row" style="justify-content:space-between">
       <h2 id="title" style="margin:0"></h2>
       <span class="row"><a id="download"><button class="ghost">⬇ Excel</button></a><a id="downloadPdf"><button class="ghost">📄 PDF</button></a></span>
@@ -429,8 +669,8 @@
     <div class="mute" id="rowInfo"></div>
   </section>
 
-  <section class="card" id="v2-compare">
-    <h2>3. Compare two files</h2>
+  <section class="card" id="v2-compare" data-views="reconciliation">
+    <h2>Compare two files</h2>
     <div class="mute">Compare e.g. an ATM switch log with the bank ledger: matches, amount differences, and items missing on either side.</div>
     <div class="row" style="margin-top:8px"><select id="rA"></select> <span>vs</span> <select id="rB"></select></div>
     <div class="row" style="margin-top:8px"><input type="text" id="rNote" placeholder="Optional note, e.g. match Reference with Ref No"><button id="rBtn">Reconcile</button></div>
@@ -443,16 +683,16 @@
     </div>
   </section>
 
-  <section class="card" id="operationsCard">
-    <h2>🧰 Company operations</h2>
-    <p class="mute">Review discrepancy cases, compare reconciliation history, configure recurring reconciliation, manage notifications and invoices, and create secure integration tokens. These tools use the selected company's access permissions.</p>
+  <section class="card" id="operationsCard" data-views="reconciliation discrepancies insights plan settings">
+    <h2 id="opsTitle">🧰 Company operations</h2>
+    <p class="mute ops-intro">Review discrepancy cases, compare reconciliation history, configure recurring reconciliation, manage notifications and invoices, and create secure integration tokens. These tools use the selected company's access permissions.</p>
     <div class="row" style="margin-bottom:12px"><label for="opsCompany">Company</label><select id="opsCompany"></select><button class="ghost" id="opsRefresh">Refresh all</button></div>
-    <div class="urow">
+    <div class="urow" data-views="discrepancies">
       <b>Discrepancy cases &amp; resolution history</b>
       <div class="row"><select id="caseStatus"><option value="all">All statuses</option><option value="open">Open</option><option value="in_review">In review</option><option value="resolved">Resolved</option><option value="accepted">Accepted</option></select><button id="loadCases" class="ghost">Load cases</button></div>
       <div id="caseList" class="mute">Load cases to review and resolve discrepancies.</div>
     </div>
-    <div class="urow">
+    <div class="urow" data-views="insights reconciliation">
       <b>Historical comparisons &amp; trends</b>
       <div class="row"><select id="trendDays"><option value="30">Last 30 days</option><option value="90" selected>Last 90 days</option><option value="180">Last 180 days</option><option value="365">Last 365 days</option></select><button id="loadTrends" class="ghost">Load trends</button><button id="loadReconHistory" class="ghost">Run history</button></div>
       <div id="trendSummary" class="mute">No trend data loaded.</div>
@@ -465,30 +705,30 @@
       <div class="analytics-grid"><div class="analytics-panel"><h3>Daily reconciliation activity</h3><canvas id="trendRunsChart"></canvas></div><div class="analytics-panel"><h3>Matched vs discrepancy rows</h3><canvas id="trendQualityChart"></canvas></div></div>
       <div id="reconHistory" class="mute"></div>
     </div>
-    <div class="urow">
+    <div class="urow" data-views="reconciliation">
       <b>Scheduled automatic reconciliation</b>
       <div class="row"><select id="opsReportA"></select><span>vs</span><select id="opsReportB"></select></div>
       <div class="row"><input type="number" id="scheduleHours" min="1" max="2160" value="24" style="max-width:140px" title="Hours between runs"><input type="text" id="scheduleNote" placeholder="Optional matching instruction"><button id="addSchedule">Create schedule</button></div>
       <div id="scheduleMsg" class="mute"></div><div id="scheduleList" class="mute"></div>
     </div>
-    <div class="urow">
+    <div class="urow" data-views="settings">
       <b>Email alerts &amp; usage warnings</b>
       <div class="mute">Set up to 10 notification email addresses separated by commas. Email delivery requires SMTP environment variables.</div>
       <div class="row"><input type="text" id="notifyEmails" placeholder="finance@example.com, owner@example.com"><input type="number" id="quotaThreshold" min="1" max="100" value="80" style="max-width:120px" title="Usage warning percent"><button id="saveNotify">Save notification settings</button></div>
       <div id="notifyMsg" class="mute"></div>
     </div>
-    <div class="urow">
+    <div class="urow" data-views="plan">
       <b>Billing history &amp; invoices</b>
       <button id="loadInvoices" class="ghost">Load invoices / receipts</button><div id="invoiceList" class="mute"></div>
     </div>
-    <div class="urow admin-only hidden">
+    <div class="urow admin-only hidden" data-views="settings">
       <b>External accounting integrations</b>
       <div class="mute">Create a scoped token for the generic report-import API. Vendor-specific QuickBooks/Xero/etc. adapters still require their provider credentials and mapping.</div>
       <div class="row"><input type="text" id="integrationLabel" placeholder="Integration label, e.g. Accounting export"><button id="createIntegration">Create integration token</button><button id="loadIntegrations" class="ghost">List tokens</button></div>
       <div id="integrationMsg" class="mute"></div><div id="integrationList" class="mute"></div>
       <div class="mute">Upload endpoint: POST /api/integrations/{company_id}/reports with header X-Integration-Token and a file field.</div>
     </div>
-    <div class="urow admin-only hidden">
+    <div class="urow admin-only hidden" data-views="settings">
       <b>Automated backup &amp; restore check</b>
       <div class="mute">Creates a fresh encrypted backup (when encryption is configured), validates archive/database integrity, and restores into a temporary folder without overwriting live data.</div>
       <button id="backupRestoreCheck">Run backup + restore check</button><div id="backupCheckMsg" class="mute"></div>
@@ -496,7 +736,7 @@
     <div id="opsError" class="error"></div>
   </section>
 
-  <section class="card analyst-up hidden" id="digestCard">
+  <section class="card analyst-up hidden" id="digestCard" data-views="settings">
     <h2>🗓 Scheduled digests</h2>
     <div class="mute">Runs a question on a schedule and sends the answer + PDF to this company's linked Telegram users. Times use the server's timezone.</div>
     <ul id="digestList" style="margin:8px 0"></ul>
@@ -510,13 +750,14 @@
     <div class="error" id="dErr"></div>
   </section>
 
-  <section class="card">
+  <section class="card" data-views="analytics">
     <h2>Recent questions</h2>
     <ul id="history"></ul>
   </section>
 
-  <section class="card hidden" id="adminCard">
-    <h2>🔐 Admin - users &amp; access</h2>
+  <section class="card hidden" id="adminCard" data-views="team plan settings">
+    <h2 data-views="team">🔐 Admin - users &amp; access</h2>
+    <div data-views="team">
     <div class="mute" style="margin-bottom:8px">Owner controls: customer accounts are created as analysts and assigned to their own company. They cannot see other companies unless you explicitly assign access. Telegram ID links a customer to the bot.</div>
     <h2 style="margin-top:12px">📝 Customer registration requests</h2>
     <div class="mute">Public sign-up requests stay pending until you approve them. Approved customers get Analyst access to their own company only.</div>
@@ -542,6 +783,8 @@
     <div class="row" id="nuCos" style="margin-top:6px"></div>
     <button id="nuBtn" style="margin-top:8px">Create user</button>
     <div class="error" id="aErr"></div>
+    </div>
+    <div data-views="plan">
 
     <h2 style="margin-top:18px">💳 Billing &amp; free plan grants</h2>
     <div class="mute">Verify the actual bank transfer in your account before approving. A reference alone is not proof of payment.</div>
@@ -559,6 +802,8 @@
     <h3 style="margin-top:12px">Subscription history</h3>
     <div id="billingSubscriptions"></div>
 
+    </div>
+    <div data-views="settings">
     <h2 style="margin-top:18px">🎨 Company branding (for PDFs)</h2>
     <div class="row"><select id="bCo"></select><input type="text" id="bName" placeholder="Name shown on PDFs"><input type="color" id="bColor" value="#2b59ff" title="Brand colour"><input type="file" id="bLogo" accept="image/png,image/jpeg"><button id="bBtn">Save branding</button><span class="mute" id="bMsg"></span></div>
 
@@ -571,8 +816,10 @@
 
     <h2 style="margin-top:18px">Audit log</h2>
     <div class="tablewrap"><table id="auditTable"></table></div>
+    </div>
   </section>
 </main>
+</div>
 </div>
 
 <script>
@@ -1094,7 +1341,7 @@ api("/api/me").then(start).catch(showLanding);
   {title:"Ask a question",body:"Ask a question about your report using everyday words. For example: “Which payments failed?”",target:"#v2-ask"},
   {title:"Compare two files",body:"Use this part to compare two reports and find numbers that do not match.",target:"#v2-compare"},
   {title:"See your results",body:"After you run a check, look here for the answer and any differences that need attention.",target:"#resultCard"},
-  {title:"Get help any time",body:"Tap Help in the top bar to see this tour again. On a phone, the menu sits along the bottom of the screen.",target:"#guideCard"}
+  {title:"Get help any time",body:"Tap Help in the top bar to see this tour again. On a phone, tap the ☰ button at the top left to open the menu.",target:"#guideCard"}
  ];
  let step=0, overlay=null;
  function showStep(n){
@@ -1119,6 +1366,231 @@ api("/api/me").then(start).catch(showLanding);
   if(!seen){const appEl=document.getElementById("app");if(appEl&&!appEl.classList.contains("hidden"))setTimeout(()=>showStep(0),900);}
  }
  if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",ready);else ready();
+})();
+
+</script>
+
+<script>
+/* ===== New dashboard + sidebar navigation (no observers, no loops) ===== */
+(function () {
+  const D = {};              // chart instances
+  let view = "dashboard", query = "", tok = 0;
+  const TITLES = {
+    reconciliation: "⚖️ Reconciliation history & schedules",
+    discrepancies: "🚨 Discrepancy cases",
+    insights: "📊 Company insights & trends",
+    plan: "🧾 Billing history",
+    settings: "⚙️ Notifications & integrations"
+  };
+  const OPS_VIEWS = ["reconciliation", "discrepancies", "insights", "plan", "settings"];
+  const COLORS = ["#2563eb", "#10b981", "#f59e0b", "#7c3aed", "#94a3b8"];
+
+  const fmt = n => Number(n || 0).toLocaleString(undefined, { maximumFractionDigits: 0 });
+  const extOf = name => { const m = /\.([a-z0-9]+)$/i.exec(name || ""); return m ? m[1].toLowerCase() : ""; };
+  const typeOf = name => {
+    const e = extOf(name);
+    if (e === "csv") return "CSV";
+    if (["xlsx", "xls", "xlsm"].includes(e)) return "Excel";
+    if (e === "pdf") return "PDF";
+    if (e === "txt") return "Text";
+    return "Other";
+  };
+
+  function spark(vals, color) {
+    vals = (vals || []).map(Number).filter(v => isFinite(v));
+    if (vals.length < 2) vals = [0, 0];
+    const w = 120, h = 34, mn = Math.min(...vals), mx = Math.max(...vals), rng = (mx - mn) || 1;
+    const pts = vals.map((v, i) => (i / (vals.length - 1) * w).toFixed(1) + "," + (h - 3 - ((v - mn) / rng) * (h - 8)).toFixed(1)).join(" ");
+    return '<svg viewBox="0 0 ' + w + " " + h + '" preserveAspectRatio="none" aria-hidden="true"><polyline fill="none" stroke="' + color + '" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" points="' + pts + '"/></svg>';
+  }
+
+  function mkChart(key, canvasId, cfg) {
+    if (!window.Chart) return;
+    const cv = $(canvasId); if (!cv) return;
+    if (D[key]) { D[key].destroy(); D[key] = null; }
+    cfg.options = Object.assign({ animation: false, responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } }, cfg.options || {});
+    D[key] = new Chart(cv, cfg);
+  }
+
+  /* ---------- navigation ---------- */
+  function navigate(v) {
+    if (S.user && S.user.needs_2fa_setup) v = "settings";
+    view = v;
+    const app = $("app");
+    app.setAttribute("data-view", v);
+    document.querySelectorAll("#app [data-views]").forEach(e => {
+      const on = e.getAttribute("data-views").split(/\s+/).includes(v);
+      e.classList.toggle("view-off", !on);
+    });
+    document.querySelectorAll("#v2Sidebar .sb-item").forEach(b => b.classList.toggle("active", b.dataset.nav === v));
+    if ($("opsTitle")) $("opsTitle").textContent = TITLES[v] || "🧰 Company operations";
+    document.body.classList.remove("sb-open");
+    window.scrollTo(0, 0);
+    if (!S.user || S.user.needs_2fa_setup) return;
+    if (v === "dashboard") dashRefresh();
+    if (v === "reports") renderReports();
+    if (["team", "plan", "settings"].includes(v) && S.user.role === "admin" && $("adminCard").classList.contains("hidden")) $("adminBtn").click();
+    if (OPS_VIEWS.includes(v) && $("company").value && typeof refreshOperations === "function") refreshOperations();
+  }
+  window.navigate = navigate;
+
+  document.addEventListener("click", e => {
+    const t = e.target.closest ? e.target.closest("[data-nav]") : null;
+    if (t && $("app").contains(t)) { e.preventDefault(); navigate(t.dataset.nav); }
+  });
+  $("sbToggle").addEventListener("click", () => document.body.classList.toggle("sb-open"));
+  $("sbScrim").addEventListener("click", () => document.body.classList.remove("sb-open"));
+  $("twofaBtn").addEventListener("click", () => { if (view !== "settings") navigate("settings"); });
+  $("dSearch").addEventListener("input", () => {
+    query = $("dSearch").value.trim().toLowerCase();
+    if (query && view !== "reports") navigate("reports"); else if (view === "reports") renderReports();
+  });
+
+  /* ---------- My Reports table ---------- */
+  function renderReports() {
+    const all = S.reports || [];
+    const rows = all.filter(r => !query || (r.filename || "").toLowerCase().includes(query)).slice().reverse();
+    const t = $("reportsTable"); if (!t) return;
+    const head = el("tr"); ["#", "Report", "Type", "Rows", "Uploaded", ""].forEach(c => head.appendChild(el("th", c)));
+    const body = rows.map(r => {
+      const tr = el("tr");
+      tr.appendChild(el("td", String(r.id)));
+      tr.appendChild(el("td", r.filename || ""));
+      tr.appendChild(el("td", typeOf(r.filename)));
+      const rowsTd = el("td", fmt(r.rows)); rowsTd.className = "num"; tr.appendChild(rowsTd);
+      tr.appendChild(el("td", (r.uploaded_at || "").slice(0, 16)));
+      const td = el("td"); const b = el("button", "Analyze", "ghost");
+      b.onclick = () => { $("report").value = String(r.id); $("report").dispatchEvent(new Event("change")); navigate("analytics"); };
+      td.appendChild(b); tr.appendChild(td); return tr;
+    });
+    t.replaceChildren(head, ...body);
+    $("rptCount").textContent = all.length + (all.length === 1 ? " report" : " reports") + (query ? " · showing " + rows.length + ' match(es) for "' + query + '"' : "");
+    $("reportsEmpty").textContent = all.length ? (rows.length ? "" : "No reports match your search.") : "No reports yet. Upload your first report to get started.";
+  }
+
+  /* ---------- Dashboard ---------- */
+  function renderTypes(reports) {
+    const counts = {}; reports.forEach(r => { const k = typeOf(r.filename); counts[k] = (counts[k] || 0) + 1; });
+    const keys = Object.keys(counts).sort((a, b) => counts[b] - counts[a]);
+    $("dDonutN").textContent = reports.length;
+    const total = reports.length || 1;
+    $("dTypeList").replaceChildren(...keys.map((k, i) => {
+      const row = el("div"); const dot = el("i"); dot.style.background = COLORS[i % COLORS.length];
+      row.append(dot, el("span", k), el("b", Math.round(counts[k] / total * 100) + "% · " + counts[k])); return row;
+    }));
+    if (keys.length) mkChart("type", "typeChart", { type: "doughnut", data: { labels: keys, datasets: [{ data: keys.map(k => counts[k]), backgroundColor: keys.map((k, i) => COLORS[i % COLORS.length]), borderWidth: 2, borderColor: "#fff" }] }, options: { cutout: "64%" } });
+    else if (D.type) { D.type.destroy(); D.type = null; }
+  }
+
+  function renderRecent(reports) {
+    const t = $("recentTable");
+    const head = el("tr"); ["Report", "Type", "Rows", "Uploaded", "Status"].forEach(c => head.appendChild(el("th", c)));
+    const rows = reports.slice(-5).reverse().map(r => {
+      const tr = el("tr");
+      tr.appendChild(el("td", r.filename || "")); tr.appendChild(el("td", typeOf(r.filename)));
+      const n = el("td", fmt(r.rows)); n.className = "num"; tr.appendChild(n);
+      tr.appendChild(el("td", (r.uploaded_at || "").slice(0, 16)));
+      const s = el("td"); s.appendChild(el("span", "Ready", "pill ok")); tr.appendChild(s); return tr;
+    });
+    if (!rows.length) { const tr = el("tr"); const td = el("td", "No reports yet. Upload one to get started."); td.colSpan = 5; tr.appendChild(td); rows.push(tr); }
+    t.replaceChildren(head, ...rows);
+  }
+
+  async function dashRefresh() {
+    const my = ++tok, u = S.user; if (!u) return;
+    const nm = u.username || "there", hr = new Date().getHours();
+    $("dGreet").textContent = (hr < 12 ? "Good morning" : hr < 18 ? "Good afternoon" : "Good evening") + ", " + nm.charAt(0).toUpperCase() + nm.slice(1) + " 👋";
+    $("avatar").textContent = nm.charAt(0).toUpperCase();
+    $("dUpgrade").classList.toggle("hidden", u.role === "admin");
+    const reports = S.reports || [];
+    const co = (S.companies || []).find(c => String(c.id) === String($("company").value));
+    $("dCompany").textContent = co ? co.name : "";
+    renderTypes(reports); renderRecent(reports);
+    $("kv1").textContent = fmt(reports.length); $("ks1").textContent = "uploaded for this company";
+    const byDay = {}; reports.forEach(r => { const d = (r.uploaded_at || "").slice(0, 10); if (d) byDay[d] = (byDay[d] || 0) + 1; });
+    let cum = 0; const upSeries = Object.keys(byDay).sort().map(d => (cum += byDay[d]));
+    $("sp1").innerHTML = spark(upSeries, "#bcd4ff");
+
+    const cid = Number($("company").value);
+    if (!cid) { $("kv2").textContent = $("kv3").textContent = $("kv4").textContent = "-"; return; }
+    const [trends, cases] = await Promise.all([
+      api("/api/companies/" + cid + "/trends?days=90").catch(() => null),
+      api("/api/companies/" + cid + "/cases?status=all&limit=500").catch(() => null)
+    ]);
+    if (my !== tok) return;
+
+    const series = (trends && trends.series) || [], totals = (trends && trends.totals) || {};
+    const matched = Number(totals.matched || 0), disc = Number(totals.discrepancies || 0), tot = matched + disc;
+    const rate = tot ? matched / tot * 100 : null;
+    $("kv2").textContent = rate === null ? "-" : rate.toFixed(1) + "%";
+    $("ks2").textContent = rate === null ? "no reconciliation runs yet" : fmt(totals.runs) + " runs · last 90 days";
+    const rates = series.map(x => { const t = Number(x.matched || 0) + Number(x.discrepancies || 0); return t ? Number(x.matched || 0) / t * 100 : null; }).filter(v => v !== null);
+    $("sp2").innerHTML = spark(rates, "#c8ffe9");
+
+    const list = cases || [];
+    const openCount = list.filter(c => c.status === "open" || c.status === "in_review").length;
+    $("kv3").textContent = fmt(openCount);
+    $("ks3").textContent = list.length ? fmt(list.length) + " cases in total" : "no cases yet";
+    $("sp3").innerHTML = spark(series.map(x => Number(x.discrepancies || 0)), "#ffd0d3");
+
+    const net = series.reduce((a, x) => a + Number(x.net_difference || 0), 0);
+    $("kv4").textContent = fmt(Math.abs(net));
+    $("ks4").textContent = "difference across runs · 90 days";
+    $("sp4").innerHTML = spark(series.map(x => Number(x.net_difference || 0)), "#e3d4ff");
+
+    // Performance chart
+    const perf = series.map(x => { const t = Number(x.matched || 0) + Number(x.discrepancies || 0); return t ? { d: String(x.day).slice(5), v: Math.round(Number(x.matched || 0) / t * 1000) / 10 } : null; }).filter(Boolean);
+    $("perfEmpty").classList.toggle("hidden", perf.length > 0);
+    if (perf.length) mkChart("perf", "perfChart", { type: "line", data: { labels: perf.map(p => p.d), datasets: [{ data: perf.map(p => p.v), borderColor: "#1769ff", backgroundColor: "rgba(23,105,255,.12)", fill: true, tension: .3, pointRadius: 3, pointBackgroundColor: "#1769ff" }] }, options: { scales: { y: { min: 0, max: 100, ticks: { callback: v => v + "%" } }, x: { ticks: { maxTicksLimit: 7 } } } } });
+    else if (D.perf) { D.perf.destroy(); D.perf = null; }
+
+    // Activity chart
+    $("actEmpty").classList.toggle("hidden", series.length > 0);
+    if (series.length) mkChart("act", "actChart", { type: "bar", data: { labels: series.map(x => String(x.day).slice(5)), datasets: [{ data: series.map(x => Number(x.runs || 0)), backgroundColor: "rgba(124,58,237,.78)", borderRadius: 6 }] }, options: { scales: { y: { beginAtZero: true, ticks: { precision: 0 } }, x: { ticks: { maxTicksLimit: 7 } } } } });
+    else if (D.act) { D.act.destroy(); D.act = null; }
+
+    // Category chart
+    const cat = {}; list.forEach(c => { const k = String(c.discrepancy_type || "other").replace(/_/g, " "); cat[k] = (cat[k] || 0) + 1; });
+    const ck = Object.keys(cat).sort((a, b) => cat[b] - cat[a]).slice(0, 6);
+    $("catEmpty").classList.toggle("hidden", ck.length > 0);
+    if (ck.length) mkChart("cat", "catChart", { type: "bar", data: { labels: ck.map(k => k.charAt(0).toUpperCase() + k.slice(1)), datasets: [{ data: ck.map(k => cat[k]), backgroundColor: ["#0b5bd8", "#1f7bff", "#4f7dff", "#6c8dff", "#8aa4ff", "#a9bbff"], borderRadius: 8 }] }, options: { scales: { y: { beginAtZero: true, ticks: { precision: 0 } } } } });
+    else if (D.cat) { D.cat.destroy(); D.cat = null; }
+
+    // Company insights minis
+    const minis = [
+      ["Reports uploaded", fmt(reports.length), upSeries, "#1769ff"],
+      ["Match rate", rate === null ? "-" : rate.toFixed(1) + "%", rates, "#10b981"],
+      ["Discrepancy rows", fmt(disc), series.map(x => Number(x.discrepancies || 0)), "#ef4444"],
+      ["Reconciliation runs", fmt(totals.runs), series.map(x => Number(x.runs || 0)), "#7c3aed"]
+    ];
+    $("dMinis").innerHTML = "";
+    minis.forEach(m => {
+      const box = el("div", "", "d-mini"); const b = el("b", m[1]); b.style.color = m[3]; const sm = el("small", m[0]); const sp = el("div", "", "sp"); sp.innerHTML = spark(m[2], m[3]);
+      box.append(b, sm, sp); $("dMinis").appendChild(box);
+    });
+
+    // Sidebar plan card
+    if (u.role === "admin") { $("sbPlanName").textContent = "Administrator"; $("sbPlanUse").textContent = "Full access"; $("sbPlanBar").style.width = "100%"; }
+    else {
+      api("/api/billing/status?company_id=" + cid).then(b => {
+        if (my !== tok) return;
+        $("sbPlanName").textContent = b.name || (b.plan || "").toUpperCase();
+        const used = Number(b.used || 0), lim = Number(b.monthly_limit || 0);
+        $("sbPlanUse").textContent = lim ? used + " / " + lim + " analyses used" : "";
+        $("sbPlanBar").style.width = lim ? Math.min(100, used / lim * 100) + "%" : "0%";
+      }).catch(() => {});
+    }
+  }
+
+  /* ---------- hooks into existing flow ---------- */
+  const _showApp = showApp;
+  showApp = function () { _showApp(); const nm = (S.user && S.user.username) || "U"; $("avatar").textContent = nm.charAt(0).toUpperCase(); navigate("dashboard"); };
+  const _loadReports = loadReports;
+  loadReports = async function () {
+    const r = await _loadReports.apply(this, arguments);
+    try { if (view === "dashboard") dashRefresh(); if (view === "reports") renderReports(); } catch (e) {}
+    return r;
+  };
 })();
 
 </script>
