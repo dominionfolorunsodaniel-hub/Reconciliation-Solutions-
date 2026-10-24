@@ -350,6 +350,36 @@
     .support-contact > span:not(.wa-icon) { display:none; }
     .support-contact .wa-icon { background:transparent; }
   }
+
+  /* ===== payments, bell, checklist, legal ===== */
+  .bank-card { border:1px solid #cfe0ff; background:#f5f9ff; border-radius:14px; padding:12px 14px; display:grid; gap:4px; }
+  .bank-top { display:flex; justify-content:space-between; align-items:center; gap:8px; }
+  .bank-num { font-size:24px; font-weight:800; letter-spacing:1.5px; color:#0b3aa6; font-variant-numeric:tabular-nums; }
+  .bank-or { text-align:center; color:#68758e; font-weight:700; font-size:13px; }
+  .pay-notice { border-color:#f59e0b; background:#fffbeb; color:#78350f; }
+  .pay-notice p { margin:6px 0 0; line-height:1.55; }
+  .bell-wrap { position:relative; flex:0 0 auto; }
+  #app header.app .bell { position:relative; padding:8px 11px; font-size:16px; line-height:1; }
+  .bell-badge { position:absolute; top:-5px; right:-5px; min-width:18px; height:18px; padding:0 4px; border-radius:99px; background:#ef4444; color:#fff; font-size:11px; font-weight:800; display:grid; place-items:center; }
+  .bell-panel { position:absolute; right:0; top:46px; width:min(340px,90vw); background:#fff; color:#142747; border:1px solid #dfe8f7; border-radius:16px; box-shadow:0 18px 44px rgba(10,30,80,.28); padding:12px; display:grid; gap:6px; z-index:80; }
+  .bell-item { all:unset; box-sizing:border-box; display:flex; gap:10px; align-items:center; padding:10px; border-radius:11px; cursor:pointer; font-size:13.5px; background:#f4f8ff; color:#142747; }
+  .bell-item:hover { background:#e6efff; }
+  .d-check h3 { margin:0; }
+  .chk-bar { height:8px; border-radius:99px; background:#e6edf9; overflow:hidden; margin:2px 0 10px; }
+  .chk-bar i { display:block; height:100%; background:linear-gradient(90deg,#1769ff,#22d3ee); border-radius:99px; }
+  .chk-row { display:flex; align-items:center; gap:10px; padding:7px 0; border-bottom:1px dashed #e3eaf6; }
+  .chk-row .chk-tx { flex:1; font-weight:600; color:#142747; }
+  .chk-row.done .chk-tx { color:#8795b0; text-decoration:line-through; font-weight:500; }
+  .legal { position:fixed; inset:0; z-index:2000; background:rgba(2,6,23,.72); display:flex; align-items:center; justify-content:center; padding:14px; }
+  .legal .box { background:#fff; color:#1b2540; width:100%; max-width:760px; max-height:88vh; overflow:auto; border-radius:18px; padding:20px 22px; line-height:1.6; font-size:14.5px; }
+  .legal .tabs { display:flex; gap:8px; margin-bottom:10px; position:sticky; top:-20px; background:#fff; padding:8px 0; }
+  .legal .tabs button { background:#edf3ff !important; color:#194baf !important; box-shadow:none !important; }
+  .legal .tabs button.on { background:linear-gradient(120deg,#1769ff,#2aa0f4) !important; color:#fff !important; }
+  .legal h3 { margin:16px 0 4px; font-size:16px; color:#142747; }
+  .legal p, .legal ul { margin:4px 0; }
+  .legal .close { margin-left:auto; }
+  .legal-links a, .foot a, .sb-ver a { color:inherit; text-decoration:underline; cursor:pointer; }
+  .fp-box input, .fp-box button { width:100%; }
 </style>
 </head>
 <body>
@@ -396,6 +426,19 @@
         <div id="codeRow" class="hidden"><input type="text" id="lCode" placeholder="6-digit code from your authenticator app" inputmode="numeric" autocomplete="one-time-code" style="width:100%"></div>
         <button id="lBtn">Open my dashboard →</button>
         <div class="err" id="lErr"></div>
+        <details class="fp-box" style="text-align:left;margin-top:4px">
+          <summary style="cursor:pointer;color:#c9d4ff">Forgot your password?</summary>
+          <div style="display:grid;gap:9px;margin-top:12px">
+            <input type="text" id="fpUser" placeholder="Your username" maxlength="40" autocomplete="off">
+            <button id="fpSend" type="button">Send me a code on Telegram</button>
+            <div id="fpStep2" class="hidden" style="display:grid;gap:9px">
+              <input type="text" id="fpCode" placeholder="6-digit code from Telegram" inputmode="numeric" maxlength="6" autocomplete="off">
+              <input type="password" id="fpNew" placeholder="New password (at least 10 characters)" autocomplete="new-password">
+              <button id="fpConfirm" type="button">Set new password</button>
+            </div>
+            <div class="mute" id="fpMsg" style="color:#c9d4ff"></div>
+          </div>
+        </details>
         <details style="text-align:left;margin-top:4px">
           <summary style="cursor:pointer;color:#c9d4ff">New customer? Request an account</summary>
           <div style="display:grid;gap:9px;margin-top:12px">
@@ -404,6 +447,7 @@
             <input type="password" id="regPassword" placeholder="Password (at least 10 characters)" autocomplete="new-password">
             <input type="number" id="regTelegram" placeholder="Telegram ID (optional)">
             <button id="regBtn" type="button">Request access</button>
+            <div class="mute" style="font-size:12px;color:#aebbe0">By requesting access you agree to our <a href="#" data-legal="terms" style="color:#dbe6ff">Terms</a> and <a href="#" data-legal="privacy" style="color:#dbe6ff">Privacy Policy</a>.</div>
             <div class="err" id="regMsg" aria-live="polite"></div>
             <div class="secure">Requests are reviewed by an administrator. You cannot sign in until approved.</div>
           </div>
@@ -446,7 +490,7 @@
       <p>Join teams who reconcile faster and sleep better.</p>
       <button type="button" onclick="document.querySelector('.login').scrollIntoView({behavior:'smooth',block:'center'})">Get started →</button>
     </section>
-    <div class="foot">Built for teams that handle sensitive financial data.</div>
+    <div class="foot">Built for teams that handle sensitive financial data. · <a href="#" data-legal="terms">Terms</a> · <a href="#" data-legal="privacy">Privacy</a></div>
   </div>
 </div>
 
@@ -482,7 +526,7 @@
     <div class="sb-bar"><i id="sbPlanBar"></i></div><small id="sbPlanUse"></small>
     <button type="button" class="sb-btn" data-nav="plan">View Plans</button>
   </div>
-  <div class="sb-ver">Report Analyzer · V2</div>
+  <div class="sb-ver">Report Analyzer · V2<br><a data-legal="terms">Terms</a> · <a data-legal="privacy">Privacy</a></div>
 </aside>
 <div class="sb-scrim" id="sbScrim"></div>
 <div class="shell">
@@ -494,6 +538,7 @@
   <button class="ghost admin-only hidden" id="adminBtn">Admin</button>
   <button class="ghost v2-help-link v2-tour-launch" id="v2TourLaunch" type="button">❔ Help</button>
   <button class="ghost" id="twofaBtn">🔐 2FA</button>
+  <div class="bell-wrap"><button type="button" class="ghost bell" id="bellBtn" aria-label="Notifications">🔔<span id="bellBadge" class="bell-badge hidden">0</span></button><div id="bellPanel" class="bell-panel hidden"></div></div>
   <div class="who-chip"><span class="avatar" id="avatar">U</span><span id="who" class="who"></span></div>
   <button class="ghost" id="logout">Log out</button>
 </header>
@@ -514,6 +559,8 @@
       <svg viewBox="0 0 150 90" aria-hidden="true"><defs><linearGradient id="hg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#34d399"/><stop offset="1" stop-color="#2563eb"/></linearGradient></defs><rect x="8" y="58" width="20" height="26" rx="4" fill="url(#hg)"/><rect x="38" y="44" width="20" height="40" rx="4" fill="url(#hg)"/><rect x="68" y="50" width="20" height="34" rx="4" fill="url(#hg)"/><rect x="98" y="26" width="20" height="58" rx="4" fill="url(#hg)"/><rect x="126" y="10" width="20" height="74" rx="4" fill="url(#hg)"/><polyline points="12,50 44,36 76,42 108,18 138,4" fill="none" stroke="#fbbf24" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
     </div>
   </section>
+
+  <section class="d-panel d-check hidden" id="dCheck" data-views="dashboard"></section>
 
   <section class="d-kpis" data-views="dashboard">
     <div class="d-kpi k1"><div class="ico">📄</div><div class="body"><small>Total Reports Processed</small><b id="kv1">-</b><em id="ks1"></em></div><div class="sp" id="sp1"></div></div>
@@ -599,10 +646,11 @@
   <section class="card hidden" id="billingCard" data-views="plan">
     <h2>💳 Plan &amp; usage</h2>
     <div id="billingStatus" class="mute">Loading plan…</div>
-    <div class="urow" style="border-color:#f59e0b;background:#fffbeb;color:#78350f">
-      <strong>Temporary payment notice</strong>
-      <div>We currently use Moniepoint and OPay while online checkout is being prepared. These accounts have limited transaction capacity. Sorry for the inconvenience.</div>
-      <div><strong>For payments above ₦150,000, contact the admin before paying.</strong> Do not split payments to get around account limits.</div>
+    <div class="urow pay-notice">
+      <strong>🙏 Please bear with us: a humble request</strong>
+      <p>We are truly sorry for the inconvenience, and we kindly beg you not to be angry with us. Our online card payment (Paystack) is still being set up, so for now we can only receive payments by bank transfer to the two accounts below.</p>
+      <p>These are temporary accounts with limited transaction capacity, so a transfer may sometimes fail or take a little longer. Please be patient with us. We are working hard to make paying easier, and we promise it will be worth the wait. Thank you so much for your understanding and for trusting us ❤️</p>
+      <p><strong>For payments above ₦150,000, please message us before paying</strong> so we can arrange it smoothly. Kindly do not split one payment into smaller transfers to get around account limits.</p>
     </div>
     <div id="bankDetails" class="urow"></div>
     <div class="row" style="margin-top:8px">
@@ -616,6 +664,12 @@
       </select>
       <input id="transferReference" placeholder="Bank transfer reference" maxlength="120">
       <button id="submitPayment">Submit transfer for review</button>
+    </div>
+    <div class="urow" style="margin-top:8px">
+      <b>📸 Payment screenshot</b>
+      <div class="mute">After paying, attach a screenshot of your transfer receipt. It goes straight to our team so we can confirm your payment faster.</div>
+      <div class="row"><input type="file" id="payProof" accept="image/png,image/jpeg,image/webp"><button class="ghost" id="attachProof" type="button">Send screenshot for my pending request</button></div>
+      <div class="mute" id="proofMsg"></div>
     </div>
     <div id="billingMsg" class="mute"></div>
     <div class="mute" style="margin-top:6px">Transfer must be verified by an administrator before paid access is activated. Enterprise Plus is temporarily unavailable while high-value payment limits are confirmed. Never submit your bank password or PIN.</div>
@@ -820,6 +874,73 @@
   </section>
 </main>
 </div>
+</div>
+
+<div id="legalModal" class="legal hidden" role="dialog" aria-modal="true" aria-label="Terms and Privacy">
+  <div class="box" id="legalBox">
+    <div class="tabs">
+      <button type="button" id="legalTabTerms" data-legal="terms">Terms of Service</button>
+      <button type="button" id="legalTabPrivacy" data-legal="privacy">Privacy Policy</button>
+      <button type="button" class="close ghost" id="legalClose">Close ✕</button>
+    </div>
+
+    <div id="legalTerms">
+      <h2 style="margin:0">Terms of Service</h2>
+      <p class="mute">Last updated: October 2026</p>
+      <h3>1. About Report Analyzer</h3>
+      <p>Report Analyzer helps you read, analyze and reconcile financial reports (CSV, Excel and PDF). It is an analysis aid. It is not accounting, tax, audit or legal advice. Results, including AI-generated answers, can be wrong, so please check important figures against your original records before acting on them.</p>
+      <h3>2. Your account</h3>
+      <p>Accounts are approved by an administrator. Keep your password private, use two-factor login where possible, and tell us quickly if you think someone else has accessed your account. You are responsible for what happens under your account. Each company's data is kept separate from other companies.</p>
+      <h3>3. Acceptable use</h3>
+      <ul>
+        <li>Use the service only for lawful purposes and only upload data you have the right to use.</li>
+        <li>Do not try to break, overload or bypass the security of the service, or to see another company's data.</li>
+        <li>Do not resell or share your access with people outside your company without our permission.</li>
+      </ul>
+      <h3>4. Plans and payments</h3>
+      <p>Paid plans run for a fixed period and are priced in Naira. For now we receive payment by bank transfer to the accounts shown on the Plan &amp; Billing page. Only pay into those accounts. A plan is activated after an administrator confirms your payment, and your access period starts on activation. Card payment through Paystack is coming soon. If you pay twice by mistake or something goes wrong, contact us and we will sort it out fairly, case by case.</p>
+      <h3>5. Your data</h3>
+      <p>You keep ownership of the reports and data you upload. You allow us to process them only to provide the service to you, as explained in the Privacy Policy.</p>
+      <h3>6. Availability and responsibility</h3>
+      <p>We work hard to keep the service running, but we cannot promise it will always be available or error-free. To the extent the law allows, we are not responsible for losses that come from relying on the results without checking them, or from events outside our control.</p>
+      <h3>7. Suspension</h3>
+      <p>We may suspend or close an account that misuses the service, puts other customers at risk, or has an unresolved payment problem. We will try to tell you why.</p>
+      <h3>8. Changes</h3>
+      <p>We may update these terms as the service grows. If you keep using the service after an update, it means you accept the new terms.</p>
+      <h3>9. Contact</h3>
+      <p>Questions? Message us on WhatsApp using the support button on the site.</p>
+    </div>
+
+    <div id="legalPrivacy" class="hidden">
+      <h2 style="margin:0">Privacy Policy</h2>
+      <p class="mute">Last updated: October 2026</p>
+      <h3>1. What we collect</h3>
+      <ul>
+        <li><b>Account details:</b> your username, company name, an optional Telegram ID, and a securely scrambled (hashed) password. We never store your password in plain text.</li>
+        <li><b>Your reports and questions:</b> the files you upload and the questions you ask about them.</li>
+        <li><b>Payment details you send us:</b> the transfer reference and the payment screenshot you attach.</li>
+        <li><b>Security and usage records:</b> a log of important actions (such as sign-ins and uploads), and your network address so we can block repeated failed sign-ins.</li>
+      </ul>
+      <h3>2. How we use it</h3>
+      <p>To run the service for you: analyzing and reconciling your reports, sending alerts and PDF reports, confirming payments, keeping the service secure, and giving support. We do not sell your data.</p>
+      <h3>3. AI processing</h3>
+      <p>To answer your questions, relevant parts of your report data are sent to an AI service provider (Google Gemini). Before a report is stored or analyzed, we mask card numbers (keeping only the last four digits) and remove columns such as CVV and PIN. Please avoid uploading data you are not allowed to share.</p>
+      <h3>4. How we protect it</h3>
+      <p>Reports are stored encrypted, passwords are hashed, each company can only see its own data, two-factor login is available, and actions are logged. No system is perfectly secure, but we take these protections seriously.</p>
+      <h3>5. Telegram</h3>
+      <p>If you link your Telegram ID, we may send you alerts and files there. When a customer attaches a payment screenshot, our Telegram bot forwards it to our administrators so they can confirm the payment.</p>
+      <h3>6. Who else sees it</h3>
+      <p>Only the service providers we need to run Report Analyzer (such as hosting, database, AI, Telegram and email services), and authorities if the law requires it.</p>
+      <h3>7. Keeping and deleting data</h3>
+      <p>We keep your data while your account is active. You can ask us to delete your reports or your whole account at any time, and we will do so, including from backups in due course.</p>
+      <h3>8. Your choices</h3>
+      <p>You can ask to see, correct or delete your information. Message us on WhatsApp using the support button on the site.</p>
+      <h3>9. Children</h3>
+      <p>Report Analyzer is for businesses and is not meant for anyone under 18.</p>
+      <h3>10. Changes</h3>
+      <p>If we change this policy we will update the date above.</p>
+    </div>
+  </div>
 </div>
 
 <script>
@@ -1505,7 +1626,7 @@ api("/api/me").then(start).catch(showLanding);
     const reports = S.reports || [];
     const co = (S.companies || []).find(c => String(c.id) === String($("company").value));
     $("dCompany").textContent = co ? co.name : "";
-    renderTypes(reports); renderRecent(reports);
+    renderTypes(reports); renderRecent(reports); if (window.renderChecklist) window.renderChecklist();
     $("kv1").textContent = fmt(reports.length); $("ks1").textContent = "uploaded for this company";
     const byDay = {}; reports.forEach(r => { const d = (r.uploaded_at || "").slice(0, 10); if (d) byDay[d] = (byDay[d] || 0) + 1; });
     let cum = 0; const upSeries = Object.keys(byDay).sort().map(d => (cum += byDay[d]));
@@ -1521,6 +1642,7 @@ api("/api/me").then(start).catch(showLanding);
 
     const series = (trends && trends.series) || [], totals = (trends && trends.totals) || {};
     const matched = Number(totals.matched || 0), disc = Number(totals.discrepancies || 0), tot = matched + disc;
+    S.runs = Number(totals.runs || 0); if (window.renderChecklist) window.renderChecklist();
     const rate = tot ? matched / tot * 100 : null;
     $("kv2").textContent = rate === null ? "-" : rate.toFixed(1) + "%";
     $("ks2").textContent = rate === null ? "no reconciliation runs yet" : fmt(totals.runs) + " runs · last 90 days";
@@ -1590,6 +1712,233 @@ api("/api/me").then(start).catch(showLanding);
     const r = await _loadReports.apply(this, arguments);
     try { if (view === "dashboard") dashRefresh(); if (view === "reports") renderReports(); } catch (e) {}
     return r;
+  };
+})();
+
+</script>
+
+<script>
+/* ===== Payments (screenshot), forgot password, legal pages, notification bell, first-time checklist ===== */
+(function () {
+  const esc = t => String(t == null ? "" : t);
+
+  /* ---------- bank details cards ---------- */
+  function renderBanks(banks) {
+    const host = $("bankDetails"); host.replaceChildren();
+    host.append(el("b", "🏦 Temporary bank transfer details"), el("div", "Please pay into ONE of the accounts below:", "mute"));
+    banks.filter(b => b.account_number).forEach((bank, i) => {
+      if (i > 0) host.append(el("div", "— or —", "bank-or"));
+      const card = el("div", "", "bank-card");
+      const top = el("div", "", "bank-top");
+      const copy = el("button", "Copy number", "ghost");
+      copy.type = "button";
+      copy.onclick = async () => {
+        try { await navigator.clipboard.writeText(String(bank.account_number)); copy.textContent = "Copied ✓"; }
+        catch (e) { copy.textContent = "Select and copy"; }
+        setTimeout(() => { copy.textContent = "Copy number"; }, 2000);
+      };
+      top.append(el("b", bank.name), copy);
+      card.append(top, el("div", bank.account_number, "bank-num"), el("div", "Account name: " + bank.account_name, "mute"));
+      host.append(card);
+    });
+  }
+
+  /* loadBilling replaced so it shows the new bank cards and keeps the success message visible */
+  loadBilling = async function () {
+    const cid = $("company").value; if (!cid || S.user.role === "admin") return;
+    try {
+      const b = await api("/api/billing/status?company_id=" + encodeURIComponent(cid));
+      const term = b.term_label || (b.plan === "expired" ? "access expired" : b.duration_days + " day term");
+      $("billingStatus").textContent = `${b.name} plan: ${b.plan.toUpperCase()} · ${b.used}/${b.monthly_limit} analyses used this month · ${b.remaining} remaining · ${term}` + (b.expires_at ? ` · expires ${b.expires_at} UTC` : "");
+      const banks = Array.isArray(b.banks) ? b.banks : (b.bank && b.bank.name ? [b.bank] : []);
+      renderBanks(banks);
+      const ready = banks.some(bank => bank.name && bank.account_number && bank.account_name);
+      $("submitPayment").disabled = !ready;
+      if (!ready) $("billingMsg").textContent = "Temporary payment details have not been configured by the administrator yet.";
+      else if (b.pending_payment_requests && !$("billingMsg").textContent) $("billingMsg").textContent = "You already have a payment request awaiting review. You can still attach your screenshot below.";
+    } catch (e) { $("billingStatus").textContent = "Could not load plan: " + e.message; }
+  };
+
+  /* ---------- payment screenshot ---------- */
+  async function shrinkImage(file) {
+    try {
+      if (!/^image\/(png|jpeg|webp)$/.test(file.type)) return file;
+      const bmp = await createImageBitmap(file);
+      const scale = Math.min(1, 1600 / Math.max(bmp.width, bmp.height));
+      if (scale === 1 && file.size < 1.5 * 1024 * 1024) return file;
+      const c = document.createElement("canvas"); c.width = Math.round(bmp.width * scale); c.height = Math.round(bmp.height * scale);
+      c.getContext("2d").drawImage(bmp, 0, 0, c.width, c.height);
+      const blob = await new Promise(r => c.toBlob(r, "image/jpeg", 0.85));
+      return blob && blob.size < file.size ? new File([blob], "payment.jpg", { type: "image/jpeg" }) : file;
+    } catch (e) { return file; }
+  }
+  async function sendProof(cid) {
+    const f = $("payProof").files[0]; if (!f) return "";
+    const small = await shrinkImage(f);
+    const fd = new FormData(); fd.append("company_id", String(cid)); fd.append("file", small, small.name || "payment.jpg");
+    const r = await api("/api/billing/payment-proof", { method: "POST", body: fd });
+    $("payProof").value = "";
+    return r.telegram_sent ? "Your screenshot was sent to our team ✓" : "Your screenshot was saved ✓ and our team will see it when they review your request.";
+  }
+  $("attachProof").onclick = async () => {
+    const cid = Number($("company").value);
+    if (!$("payProof").files[0]) { $("proofMsg").textContent = "Choose your screenshot first."; return; }
+    $("attachProof").disabled = true; $("proofMsg").textContent = "Sending…";
+    try { $("proofMsg").textContent = "✅ " + await sendProof(cid); } catch (e) { $("proofMsg").textContent = "❌ " + e.message; }
+    $("attachProof").disabled = false;
+  };
+  $("submitPayment").onclick = async () => {
+    const cid = Number($("company").value), plan = $("billingPlan").value, reference = $("transferReference").value.trim();
+    $("billingMsg").textContent = "";
+    if (!cid || !reference) { $("billingMsg").textContent = "Choose a company and enter the bank transfer reference."; return; }
+    if (!$("payProof").files[0]) { $("billingMsg").textContent = "Please attach a screenshot of your payment first (the box just below). Thank you 🙏"; return; }
+    const planPrices = { starter: 25000, growth: 100000, professional: 350000, business: 1000000, corporate: 2500000, enterprise: 5000000 };
+    if ((planPrices[plan] || 0) > 150000) {
+      $("billingMsg").textContent = "This plan costs more than ₦150,000. Please message the admin before making any payment. No payment request has been submitted.";
+      return;
+    }
+    const btn = $("submitPayment"); btn.disabled = true;
+    try {
+      const r = await jpost("/api/billing/payment-requests", { company_id: cid, plan, transfer_reference: reference });
+      let extra = "";
+      try { extra = " " + await sendProof(cid); }
+      catch (e) { extra = " ⚠️ Your request is saved, but the screenshot could not be sent (" + e.message + "). Please use the “Send screenshot” button below to try again."; }
+      $("billingMsg").textContent = `Request #${r.id} submitted for ₦${Number(r.amount_ngn).toLocaleString()}. Access stays on your current plan until we verify your payment.` + extra;
+      $("transferReference").value = ""; await loadBilling();
+    } catch (e) { $("billingMsg").textContent = "❌ " + e.message; }
+    finally { btn.disabled = false; }
+  };
+
+  /* ---------- admin: show screenshot link on pending payments ---------- */
+  const _renderPayments = renderBillingPayments;
+  renderBillingPayments = function (items) {
+    _renderPayments(items);
+    const cards = $("billingPayments").querySelectorAll(".urow");
+    items.forEach((p, i) => {
+      const card = cards[i]; if (!card) return;
+      const line = p.has_proof
+        ? (() => { const a = el("a", "📸 View payment screenshot"); a.href = `/api/admin/billing/payments/${p.id}/proof`; a.target = "_blank"; a.rel = "noopener"; return a; })()
+        : el("div", "No screenshot attached yet.", "mute");
+      card.insertBefore(line, card.children[2] || null);
+    });
+  };
+
+  /* ---------- forgot password ---------- */
+  $("fpSend").onclick = async () => {
+    const u = $("fpUser").value.trim(); if (!u) { $("fpMsg").textContent = "Enter your username first."; return; }
+    $("fpSend").disabled = true; $("fpMsg").textContent = "Sending…";
+    try { const r = await jpost("/api/password-reset/request", { username: u }); $("fpMsg").textContent = r.message; $("fpStep2").classList.remove("hidden"); }
+    catch (e) { $("fpMsg").textContent = "❌ " + e.message; }
+    $("fpSend").disabled = false;
+  };
+  $("fpConfirm").onclick = async () => {
+    $("fpConfirm").disabled = true;
+    try {
+      const r = await jpost("/api/password-reset/confirm", { username: $("fpUser").value.trim(), code: $("fpCode").value.trim(), new_password: $("fpNew").value });
+      $("fpMsg").textContent = "✅ " + r.message; $("fpCode").value = ""; $("fpNew").value = ""; $("fpStep2").classList.add("hidden");
+    } catch (e) { $("fpMsg").textContent = "❌ " + e.message; }
+    $("fpConfirm").disabled = false;
+  };
+
+  /* ---------- Terms / Privacy ---------- */
+  function openLegal(which) {
+    $("legalTerms").classList.toggle("hidden", which !== "terms");
+    $("legalPrivacy").classList.toggle("hidden", which !== "privacy");
+    $("legalTabTerms").classList.toggle("on", which === "terms");
+    $("legalTabPrivacy").classList.toggle("on", which === "privacy");
+    $("legalModal").classList.remove("hidden"); $("legalBox").scrollTop = 0;
+  }
+  document.addEventListener("click", e => {
+    const t = e.target.closest ? e.target.closest("[data-legal]") : null;
+    if (t) { e.preventDefault(); openLegal(t.dataset.legal); }
+    if (e.target === $("legalModal") || (e.target.closest && e.target.closest("#legalClose"))) $("legalModal").classList.add("hidden");
+  });
+  document.addEventListener("keydown", e => { if (e.key === "Escape") $("legalModal").classList.add("hidden"); });
+
+  /* ---------- notification bell ---------- */
+  let bellItems = [];
+  function renderBell() {
+    $("bellBadge").textContent = bellItems.length; $("bellBadge").classList.toggle("hidden", !bellItems.length);
+    const p = $("bellPanel"); p.replaceChildren(el("b", "Notifications"));
+    if (!bellItems.length) { p.append(el("div", "You're all caught up 🎉", "mute")); return; }
+    bellItems.forEach(it => {
+      const b = el("button", "", "bell-item"); b.type = "button";
+      b.append(el("span", it.icon), el("span", it.text));
+      b.onclick = () => { p.classList.add("hidden"); navigate(it.go); };
+      p.append(b);
+    });
+  }
+  async function refreshBell() {
+    if (!S.user || $("app").classList.contains("hidden")) return;
+    const items = [], cid = Number($("company").value), jobs = [];
+    const plural = (n, w) => n + " " + w + (n === 1 ? "" : "s");
+    if (cid) jobs.push(api("/api/companies/" + cid + "/cases?status=open&limit=200").then(c => { if (c.length) items.push({ icon: "⚠️", text: plural(c.length, "open discrepancy case") + " to review", go: "discrepancies" }); }).catch(() => {}));
+    if (S.user.role === "admin") {
+      jobs.push(api("/api/admin/billing/payments?status=pending").then(p => { if (p.length) items.push({ icon: "💳", text: plural(p.length, "payment") + " waiting for your approval", go: "plan" }); }).catch(() => {}));
+      jobs.push(api("/api/admin/registrations?status=pending").then(r => { if (r.length) items.push({ icon: "📝", text: plural(r.length, "new account request") + " to review", go: "team" }); }).catch(() => {}));
+    } else if (cid) {
+      jobs.push(api("/api/billing/status?company_id=" + cid).then(b => {
+        if (b.pending_payment_requests) items.push({ icon: "⏳", text: "Your payment is waiting for approval", go: "plan" });
+        const lim = Number(b.monthly_limit || 0), used = Number(b.used || 0);
+        if (lim && used / lim >= 0.8) items.push({ icon: "📉", text: `You have used ${used} of ${lim} analyses this month`, go: "plan" });
+        if (b.expires_at) { const ms = new Date(String(b.expires_at).replace(" ", "T") + "Z") - Date.now(); if (ms > 0 && ms < 3 * 864e5) items.push({ icon: "⏰", text: "Your plan expires soon", go: "plan" }); }
+      }).catch(() => {}));
+    }
+    await Promise.all(jobs); bellItems = items; renderBell();
+  }
+  $("bellBtn").addEventListener("click", e => { e.stopPropagation(); $("bellPanel").classList.toggle("hidden"); if (!$("bellPanel").classList.contains("hidden")) refreshBell(); });
+  document.addEventListener("click", e => { if (!e.target.closest || !e.target.closest(".bell-wrap")) $("bellPanel").classList.add("hidden"); });
+  setInterval(() => { if (!document.hidden) refreshBell(); }, 120000);
+  const _lr = loadReports;
+  loadReports = async function () { const r = await _lr.apply(this, arguments); refreshBell(); return r; };
+
+  /* ---------- first-time checklist + sample reports ---------- */
+  function sampleCsvs() {
+    const terms = ["ATM-001", "ATM-002", "ATM-003", "ATM-004"]; let seed = 7;
+    const rnd = () => (seed = (seed * 9301 + 49297) % 233280) / 233280;
+    const head = "Date,Terminal,Reference,Amount,Status", sw = [head], lg = [head];
+    for (let i = 1; i <= 40; i++) {
+      const ref = "TRX" + (100000 + i), t = terms[i % 4], amt = (Math.floor(rnd() * 90) + 10) * 500;
+      const date = "2026-09-" + String(1 + (i % 28)).padStart(2, "0"), failed = rnd() < 0.12;
+      sw.push([date, t, ref, amt, failed ? "Failed" : "Success"].join(","));
+      if (i % 13 === 0) continue;                       // missing from the ledger
+      lg.push([date, t, ref, i % 9 === 0 ? amt + 500 : amt, failed ? "Failed" : "Success"].join(","));
+    }
+    return [["sample_switch_log.csv", sw.join("\n")], ["sample_bank_ledger.csv", lg.join("\n")]];
+  }
+  async function addSamples(btn) {
+    const cid = $("company").value; if (!cid) return;
+    btn.disabled = true; btn.textContent = "Adding samples…";
+    try {
+      for (const [name, text] of sampleCsvs()) {
+        const fd = new FormData(); fd.append("file", new File([text], name, { type: "text/csv" }));
+        await api("/api/companies/" + cid + "/reports", { method: "POST", body: fd });
+      }
+      await loadCompanies(cid);
+    } catch (e) { btn.textContent = "❌ " + e.message; btn.disabled = false; }
+  }
+  window.renderChecklist = function () {
+    const box = $("dCheck"); if (!box || !S.user) return;
+    let hidden = false; try { hidden = localStorage.getItem("ra_check_hidden") === "1"; } catch (e) {}
+    const reports = (S.reports || []).length > 0;
+    const asked = !!($("history") && $("history").children.length > 0);
+    const compared = (S.runs || 0) > 0, twofa = !!S.user.totp_enabled;
+    const steps = [[reports, "Upload your first report", "upload", "Upload"], [asked, "Ask your first question", "analytics", "Ask"],
+                   [compared, "Compare two reports", "reconciliation", "Compare"], [twofa, "Turn on two-factor login", "settings", "Set up"]];
+    const done = steps.filter(s => s[0]).length;
+    box.classList.toggle("hidden", hidden || done === steps.length || S.user.role !== "analyst");
+    const list = steps.map(s => {
+      const row = el("div", "", "chk-row" + (s[0] ? " done" : ""));
+      row.append(el("span", s[0] ? "✅" : "⬜", "chk-ic"), el("span", s[1], "chk-tx"));
+      if (!s[0]) { const b = el("button", s[3], "ghost"); b.type = "button"; b.onclick = () => navigate(s[2]); row.append(b); }
+      return row;
+    });
+    const bar = el("div", "", "chk-bar"); const fill = el("i"); fill.style.width = (done / steps.length * 100) + "%"; bar.append(fill);
+    const foot = el("div", "", "row");
+    if ((S.reports || []).length < 2) { const sb = el("button", "🧪 Add two sample reports to try it out", "ghost"); sb.type = "button"; sb.onclick = () => addSamples(sb); foot.append(sb); }
+    const hide = el("button", "Hide this", "d-link"); hide.type = "button"; hide.onclick = () => { try { localStorage.setItem("ra_check_hidden", "1"); } catch (e) {} box.classList.add("hidden"); };
+    foot.append(hide);
+    box.replaceChildren(el("h3", "🚀 Get started"), el("p", done + " of " + steps.length + " done", "d-sub"), bar, ...list, foot);
   };
 })();
 
