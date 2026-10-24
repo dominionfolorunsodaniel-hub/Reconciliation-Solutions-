@@ -208,6 +208,11 @@ with _db() as _con:
     _ensure_column(_con, "users", "totp_secret", "TEXT")
     _ensure_column(_con, "users", "totp_enabled", "INTEGER NOT NULL DEFAULT 0")
     _ensure_column(_con, "users", "totp_last_step", "INTEGER NOT NULL DEFAULT 0")
+    _ensure_column(_con, "payment_requests", "proof_data", "TEXT")   # encrypted base64 payment screenshot
+    _ensure_column(_con, "payment_requests", "proof_mime", "TEXT")
+    _ensure_column(_con, "payment_requests", "proof_at", "TEXT")
+    _con.executescript("CREATE TABLE IF NOT EXISTS password_resets (user_id INTEGER PRIMARY KEY, code_hash TEXT NOT NULL, "
+                       "expires_at TEXT NOT NULL, attempts INTEGER NOT NULL DEFAULT 0, created_at TEXT NOT NULL);")
 
 
 # ---- encryption helpers ----------------------------------------------------- #
@@ -1020,11 +1025,84 @@ def create_payment_request(company_id: int, user_id: int, plan: str, reference: 
         raise ValueError("That transfer reference has already been submitted.") from e
 
 
+def attach_payment_proof(company_id: int, data: bytes, mime: str) -> dict | None:
+    """Store an (encrypted) payment screenshot on the company's pending payment request."""
+    import base64
+    blob = _enc_text(base64.b64encode(data).decode())
+    with _db() as con:
+        row = con.execute("SELECT id FROM payment_requests WHERE company_id=? AND status='pending' ORDER BY id DESC LIMIT 1",
+                          (company_id,)).fetchone()
+        if not row:
+            return None
+        con.execute("UPDATE payment_requests SET proof_data=?, proof_mime=?, proof_at=? WHERE id=?",
+                    (blob, mime, _now(), row["id"]))
+        out = con.execute("SELECT p.id, p.plan, p.amount_ngn, p.transfer_reference, c.name AS company_name "
+                          "FROM payment_requests p JOIN companies c ON c.id=p.company_id WHERE p.id=?", (row["id"],)).fetchone()
+        return dict(out)
+
+
+def get_payment_proof(request_id: int) -> tuple[bytes, str] | None:
+    import base64
+    with _db() as con:
+        row = con.execute("SELECT proof_data, proof_mime FROM payment_requests WHERE id=?", (request_id,)).fetchone()
+    if not row or not row["proof_data"]:
+        return None
+    return base64.b64decode(_dec_text(row["proof_data"])), row["proof_mime"] or "image/jpeg"
+
+
+# ---- password reset (one-time code sent to the user's linked Telegram) -------- #
+RESET_MINUTES = 15
+RESET_MAX_TRIES = 5
+
+
+def _reset_hash(user_id: int, code: str) -> str:
+    return hashlib.sha256(f"{user_id}:{code}".encode()).hexdigest()
+
+
+def create_password_reset(username: str) -> dict | None:
+    """Returns {user, code} when the account can be reset by Telegram, else None (callers must not reveal which)."""
+    with _db() as con:
+        row = con.execute("SELECT * FROM users WHERE username = ?", (username.strip(),)).fetchone()
+    if row is None or not row["active"] or row["role"] == "admin" or not row["telegram_id"]:
+        return None  # admins use the configured credentials; no Telegram link = ask the admin to reset
+    code = f"{secrets.randbelow(1_000_000):06d}"
+    expires = (dt.datetime.now(dt.timezone.utc) + dt.timedelta(minutes=RESET_MINUTES)).strftime(FMT)
+    with _db() as con:
+        con.execute("DELETE FROM password_resets WHERE user_id = ?", (row["id"],))
+        con.execute("INSERT INTO password_resets(user_id, code_hash, expires_at, attempts, created_at) VALUES (?,?,?,0,?)",
+                    (row["id"], _reset_hash(row["id"], code), expires, _now()))
+    return {"user": _user(row), "code": code}
+
+
+def confirm_password_reset(username: str, code: str, new_password: str) -> dict:
+    bad = ValueError("That code is wrong or has expired. Request a new one.")
+    _check_password(new_password)  # do not burn the code on a too-short password
+    ok, uid = False, None
+    with _db() as con:  # decide inside, raise after: an exception would roll back the attempt counter
+        user = con.execute("SELECT * FROM users WHERE username = ?", (username.strip(),)).fetchone()
+        if user is not None and user["role"] != "admin":
+            rec = con.execute("SELECT * FROM password_resets WHERE user_id = ?", (user["id"],)).fetchone()
+            if rec is not None:
+                if rec["expires_at"] < _now() or rec["attempts"] >= RESET_MAX_TRIES:
+                    con.execute("DELETE FROM password_resets WHERE user_id = ?", (user["id"],))
+                elif secrets.compare_digest(rec["code_hash"], _reset_hash(user["id"], (code or "").strip())):
+                    con.execute("DELETE FROM password_resets WHERE user_id = ?", (user["id"],))
+                    ok, uid = True, user["id"]
+                else:
+                    con.execute("UPDATE password_resets SET attempts = attempts + 1 WHERE user_id = ?", (user["id"],))
+    if not ok:
+        raise bad
+    return update_user(uid, password=new_password)
+
+
 def list_payment_requests(status: str = "pending") -> list[dict]:
     if status not in ("pending", "approved", "rejected", "all"):
         status = "pending"
     with _db() as con:
-        q = ("SELECT p.*, c.name AS company_name, u.username FROM payment_requests p "
+        q = ("SELECT p.id, p.company_id, p.user_id, p.plan, p.amount_ngn, p.transfer_reference, p.status, "
+             "p.created_at, p.reviewed_at, p.reviewed_by, p.review_note, p.proof_at, "
+             "(CASE WHEN p.proof_data IS NULL THEN 0 ELSE 1 END) AS has_proof, "
+             "c.name AS company_name, u.username FROM payment_requests p "
              "JOIN companies c ON c.id=p.company_id JOIN users u ON u.id=p.user_id")
         args = ()
         if status != "all":

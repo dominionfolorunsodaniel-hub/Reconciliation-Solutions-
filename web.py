@@ -260,6 +260,16 @@ class PasswordIn(BaseModel):
     password: str
 
 
+class ResetRequestIn(BaseModel):
+    username: str
+
+
+class ResetConfirmIn(BaseModel):
+    username: str
+    code: str
+    new_password: str
+
+
 # ------------------------------- login / session ----------------------------- #
 @app.post("/api/register")
 def register_customer(body: RegistrationIn, request: Request):
@@ -798,12 +808,12 @@ def billing_status(company_id: int, user: dict = Depends(current_user)):
                         if plan.get("available", True) or key == result.get("plan")}
     # Support two temporary receiving accounts; secrets/details stay in Render environment variables.
     result["banks"] = [
-        {"name": os.getenv("MONIEPOINT_BANK_NAME", "Moniepoint"),
-         "account_number": os.getenv("MONIEPOINT_ACCOUNT", ""),
-         "account_name": os.getenv("MONIEPOINT_OWNER", "")},
-        {"name": os.getenv("OPAY_BANK_NAME", "OPay"),
-         "account_number": os.getenv("OPAY_ACCOUNT", ""),
-         "account_name": os.getenv("OPAY_OWNER", "")},
+        {"name": os.getenv("MONIEPOINT_BANK_NAME") or "Moniepoint",
+         "account_number": os.getenv("MONIEPOINT_ACCOUNT") or "8100481004",
+         "account_name": os.getenv("MONIEPOINT_OWNER") or "Daniel Dominion Folorunso"},
+        {"name": os.getenv("OPAY_BANK_NAME") or "OPay",
+         "account_number": os.getenv("OPAY_ACCOUNT") or "8083878507",
+         "account_name": os.getenv("OPAY_OWNER") or "Mary Olubunmi Folorunso"},
     ]
     # Backward compatibility for any older frontend using the original single-account fields.
     result["bank"] = {"name": os.getenv("BANK_NAME", ""), "account_number": os.getenv("BANK_ACCOUNT", ""),
@@ -824,7 +834,102 @@ def billing_payment_request(body: PaymentRequestIn, user: dict = Depends(current
     except ValueError as e:
         raise HTTPException(400, str(e))
     db.audit(user, "payment_request", body.company_id, f"request={row['id']}; plan={body.plan}")
+    company = db.get_company(body.company_id)
+    notify.alert_payment_admins(
+        f"💳 New payment request #{row['id']}\nCompany: {company['name'] if company else body.company_id}\n"
+        f"User: {user['username']}\nPlan: {body.plan.upper()} · ₦{row['amount_ngn']:,}\nReference: {row['transfer_reference']}\n"
+        "Check your bank, then approve it under Plan & Billing.")
     return {"id": row["id"], "status": row["status"], "amount_ngn": row["amount_ngn"]}
+
+
+MAX_PROOF_BYTES = 5 * 1024 * 1024
+
+
+def _image_kind(data: bytes) -> tuple[str, str] | None:
+    if data[:3] == b"\xff\xd8\xff":
+        return "image/jpeg", "jpg"
+    if data[:8] == b"\x89PNG\r\n\x1a\n":
+        return "image/png", "png"
+    if data[:4] == b"RIFF" and data[8:12] == b"WEBP":
+        return "image/webp", "webp"
+    return None
+
+
+@app.post("/api/billing/payment-proof")
+def billing_payment_proof(company_id: int = Form(...), file: UploadFile = File(...), user: dict = Depends(current_user)):
+    """Customer attaches a screenshot of the transfer; the bot forwards it to the admin(s) on Telegram."""
+    need_company(user, company_id)
+    if user.get("role") == "admin":
+        raise HTTPException(400, "Admin accounts do not need customer subscriptions.")
+    data = file.file.read(MAX_PROOF_BYTES + 1)
+    if not data:
+        raise HTTPException(400, "The screenshot is empty.")
+    if len(data) > MAX_PROOF_BYTES:
+        raise HTTPException(400, "The screenshot is too large (5 MB maximum).")
+    kind = _image_kind(data)
+    if not kind:
+        raise HTTPException(400, "Please upload a screenshot as a JPG, PNG or WEBP image.")
+    row = db.attach_payment_proof(company_id, data, kind[0])
+    if not row:
+        raise HTTPException(400, "Submit your payment request first, then attach the screenshot.")
+    db.audit(user, "payment_proof", company_id, f"request={row['id']}")
+    caption = (f"📸 Payment screenshot for request #{row['id']}\nCompany: {row['company_name']}\nUser: {user['username']}\n"
+               f"Plan: {row['plan'].upper()} · ₦{int(row['amount_ngn']):,}\nReference: {row['transfer_reference']}\n"
+               "Verify it in your bank, then approve under Plan & Billing.")
+    sent = notify.alert_admins_photo(data, f"payment_{row['id']}.{kind[1]}", caption)
+    return {"request_id": row["id"], "telegram_sent": sent}
+
+
+@app.get("/api/admin/billing/payments/{request_id}/proof")
+def admin_payment_proof(request_id: int, user: dict = Depends(current_user)):
+    need(user, "admin")
+    found = db.get_payment_proof(request_id)
+    if not found:
+        raise HTTPException(404, "No screenshot was attached to this request.")
+    return Response(content=found[0], media_type=found[1],
+                    headers={"X-Content-Type-Options": "nosniff", "Cache-Control": "private, no-store"})
+
+
+# ----------------------- forgot password (Telegram one-time code) ----------------------- #
+RESET_REQUESTS: dict = {}
+RESET_FAILS: dict = {}
+
+
+@app.post("/api/password-reset/request")
+def password_reset_request(body: ResetRequestIn, request: Request):
+    ip = request.client.host if request.client else "?"
+    key = (body.username.strip().lower(), ip)
+    now = time.time()
+    RESET_REQUESTS[key] = [t for t in RESET_REQUESTS.get(key, []) if now - t < 3600]
+    if len(RESET_REQUESTS[key]) >= 3:
+        raise HTTPException(429, "Too many reset requests. Try again in one hour.")
+    RESET_REQUESTS[key].append(now)
+    result = db.create_password_reset(body.username)
+    if result:
+        notify.send_telegram(result["user"]["telegram_id"],
+                             f"🔑 Report Analyzer password reset code: {result['code']}\n"
+                             f"It expires in {db.RESET_MINUTES} minutes. If you did not ask for this, ignore it.")
+        db.audit(result["user"], "password_reset_requested")
+    # Same answer either way, so nobody can discover which usernames exist.
+    return {"message": "If that account has Telegram linked, a 6-digit code has been sent there. "
+                       "No Telegram? Ask your administrator to reset your password."}
+
+
+@app.post("/api/password-reset/confirm")
+def password_reset_confirm(body: ResetConfirmIn, request: Request):
+    ip = request.client.host if request.client else "?"
+    now = time.time()
+    RESET_FAILS[ip] = [t for t in RESET_FAILS.get(ip, []) if now - t < 3600]
+    if len(RESET_FAILS[ip]) >= 10:
+        raise HTTPException(429, "Too many attempts. Try again in one hour.")
+    try:
+        u = db.confirm_password_reset(body.username, body.code, body.new_password)
+    except ValueError as e:
+        if "code" in str(e):
+            RESET_FAILS[ip].append(now)
+        raise HTTPException(400, str(e))
+    db.audit(u, "password_reset_done")
+    return {"message": "Password changed. You can sign in now."}
 
 
 @app.get("/api/admin/billing/payments")

@@ -61,7 +61,11 @@ async def _ask(**kwargs):
     if LIMIT_CHECK:
         LIMIT_CHECK(uid)
 
-    api_key = os.getenv("GEMINI_API_KEY", "").strip()
+    api_key = os.getenv("GEMINI_API_KEY", "")
+    # Forgive common copy/paste slips: surrounding quotes, spaces, line breaks, or a pasted "GEMINI_API_KEY=" prefix.
+    api_key = "".join(api_key.split()).strip("\"'")
+    if api_key.upper().startswith("GEMINI_API_KEY="):
+        api_key = api_key.split("=", 1)[1].strip("\"'")
     if not api_key:
         raise RuntimeError(
             "AI analysis is not configured. Add a Gemini API key as GEMINI_API_KEY in Render. "
@@ -110,6 +114,11 @@ async def _ask(**kwargs):
                 raise RuntimeError("Gemini rejected the API key. Check GEMINI_API_KEY in Render.")
             if response.status_code == 429:
                 raise RuntimeError("Gemini free-tier rate limit reached. Wait and try again later.")
+            if response.status_code == 400 and "api key" in detail.lower():
+                # Safe fingerprint for the Render logs only (never shown to customers).
+                print(f"[gemini] key rejected. Render is sending a key that starts '{api_key[:4]}', ends '{api_key[-4:]}', length {len(api_key)}.", flush=True)
+                raise RuntimeError("Gemini says the API key is not valid. The administrator must check GEMINI_API_KEY in Render "
+                                   "(paste only the key, then save and wait for the redeploy).")
             raise RuntimeError(f"Gemini API returned HTTP {response.status_code}: {detail[:300]}")
         data = response.json()
     except httpx.TimeoutException as exc:
