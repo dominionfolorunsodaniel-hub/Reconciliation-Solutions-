@@ -71,8 +71,7 @@ def stamp(value: dt.datetime | None = None) -> str:
 
 
 def init() -> None:
-    with db._db() as con:
-        con.executescript(SCHEMA)
+    db.run_startup_migration(lambda con: con.executescript(SCHEMA))
 
 init()
 

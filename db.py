@@ -10,6 +10,7 @@ import os
 import re
 import secrets
 import sqlite3
+import time
 import uuid
 from contextlib import contextmanager
 from functools import lru_cache
@@ -196,9 +197,31 @@ def _ensure_column(con, table: str, column: str, decl: str) -> None:
         con.execute(f"ALTER TABLE {table} ADD COLUMN {column} {decl}")
 
 
-if USE_PG:
-    dbcompat.ensure_citext()  # case-insensitive usernames / company names, like SQLite's NOCASE
-with _db() as _con:
+PG_INIT_LOCK = 918273645  # any fixed number; every startup migration uses the same one
+
+
+def run_startup_migration(fn) -> None:
+    """Run fn(connection) as a startup migration. The website and the Telegram bot start at the same
+    moment, and on PostgreSQL two processes altering the same tables can deadlock (that crashed a deploy).
+    So on PostgreSQL they take turns using an advisory lock, and a transient deadlock is simply retried."""
+    for attempt in range(6):
+        try:
+            with _db() as con:
+                if USE_PG:
+                    con.execute(f"SELECT pg_advisory_xact_lock({PG_INIT_LOCK})")
+                fn(con)
+            return
+        except Exception as e:  # noqa: BLE001
+            transient = USE_PG and any(w in str(e).lower() for w in ("deadlock", "concurrently"))
+            if not transient or attempt == 5:
+                raise
+            log.warning("Startup migration hit a database lock conflict (%s); retrying", type(e).__name__)
+            time.sleep(1.5 * (attempt + 1))
+
+
+def _init_schema(_con) -> None:
+    if USE_PG:
+        dbcompat.ensure_citext()  # case-insensitive usernames / company names, like SQLite's NOCASE
     _con.executescript(SCHEMA)
     if USE_PG:  # Render's disk is wiped on redeploy, so keep encrypted files in the database
         _con.executescript("CREATE TABLE IF NOT EXISTS file_blobs (path TEXT PRIMARY KEY, data BLOB NOT NULL);")
@@ -213,6 +236,9 @@ with _db() as _con:
     _ensure_column(_con, "payment_requests", "proof_at", "TEXT")
     _con.executescript("CREATE TABLE IF NOT EXISTS password_resets (user_id INTEGER PRIMARY KEY, code_hash TEXT NOT NULL, "
                        "expires_at TEXT NOT NULL, attempts INTEGER NOT NULL DEFAULT 0, created_at TEXT NOT NULL);")
+
+
+run_startup_migration(_init_schema)
 
 
 # ---- encryption helpers ----------------------------------------------------- #
