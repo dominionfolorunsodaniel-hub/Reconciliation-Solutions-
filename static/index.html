@@ -414,6 +414,7 @@
   @media (max-width:1000px) { .plans { grid-template-columns:repeat(2,minmax(0,1fr)); } }
   @media (max-width:560px) { .plans { grid-template-columns:1fr; } }
   @media (max-width:900px) { .bell-label { display:none; } }
+  @media (max-width:760px) { .bell-panel { position:fixed; left:10px; right:10px; top:66px; width:auto; max-height:calc(100vh - 86px); z-index:2000; } }
 </style>
 </head>
 <body>
@@ -712,7 +713,7 @@
       <span class="row admin-only hidden" id="newCoRow"><input type="text" id="newCompany" placeholder="New company name" style="max-width:220px"><button class="ghost" id="addCompany">Add company</button></span>
     </div>
     <div class="row analyst-up hidden" id="uploadRow" style="margin-top:10px">
-      <input type="file" id="file" accept=".csv,.txt,.xlsx,.xlsm,.xls,.pdf">
+      <input type="file" id="file" accept=".csv,.tsv,.txt,.xlsx,.xlsm,.xls,.ods,.pdf,.json,.xml,.html,.htm,.docx,image/*">
       <button id="upload">Upload report</button>
       <span class="mute" id="uploadMsg"></span>
     </div>
