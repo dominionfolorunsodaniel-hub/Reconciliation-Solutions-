@@ -843,8 +843,8 @@ def record_usage(user_id: int | None, tokens_in: int, tokens_out: int) -> None:
     with _db() as con:
         con.execute(
             "INSERT INTO usage(day, user_id, calls, tokens_in, tokens_out) VALUES (?, ?, 1, ?, ?) "
-            "ON CONFLICT(day, user_id) DO UPDATE SET calls = calls + 1, "
-            "tokens_in = tokens_in + excluded.tokens_in, tokens_out = tokens_out + excluded.tokens_out",
+            "ON CONFLICT(day, user_id) DO UPDATE SET calls = usage.calls + 1, "
+            "tokens_in = usage.tokens_in + excluded.tokens_in, tokens_out = usage.tokens_out + excluded.tokens_out",
             (_today(), user_id or 0, tokens_in, tokens_out))
 
 
