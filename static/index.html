@@ -380,6 +380,40 @@
   .legal .close { margin-left:auto; }
   .legal-links a, .foot a, .sb-ver a { color:inherit; text-decoration:underline; cursor:pointer; }
   .fp-box input, .fp-box button { width:100%; }
+
+  /* ===== notifications, broadcast, pricing ===== */
+  .sb-count { margin-left:auto; min-width:20px; height:20px; padding:0 6px; border-radius:99px; background:#ef4444; color:#fff; font-size:11px; font-weight:800; display:grid; place-items:center; }
+  .bell-label { margin-left:6px; font-size:13px; font-weight:700; }
+  .bell-panel { max-height:72vh; overflow-y:auto; }
+  .bell-head { display:flex; justify-content:space-between; align-items:center; gap:8px; }
+  .bell-section { font-size:11px; letter-spacing:.08em; text-transform:uppercase; color:#68758e; font-weight:700; margin-top:4px; }
+  .news-item { border:1px solid #dfe8f7; border-left:4px solid #1769ff; border-radius:12px; padding:10px 12px; background:#f7faff; color:#142747; text-align:left; display:grid; gap:4px; }
+  .news-item.success { border-left-color:#10b981; background:#f3fcf8; }
+  .news-item.warning { border-left-color:#f59e0b; background:#fffaf0; }
+  .news-item .nt { display:flex; justify-content:space-between; align-items:flex-start; gap:8px; font-weight:700; }
+  .news-item .nb { white-space:pre-wrap; font-size:13.5px; line-height:1.5; overflow-wrap:anywhere; }
+  .news-item small { color:#68758e; }
+  .news-new { background:#ef4444; color:#fff; border-radius:99px; padding:1px 8px; font-size:10.5px; font-weight:800; flex:0 0 auto; }
+  .news-banner { display:flex; align-items:center; gap:10px; flex-wrap:wrap; padding:12px 16px; border-radius:16px; color:#0b2a6b; background:#e8f0ff; border:1px solid #bcd3ff; }
+  .news-banner.success { color:#064e3b; background:#e7f9f1; border-color:#a7e8cd; }
+  .news-banner.warning { color:#6b3a06; background:#fff4de; border-color:#f6d28b; }
+  .news-banner .nbt { flex:1; min-width:200px; font-size:14px; line-height:1.45; overflow-wrap:anywhere; }
+  .news-banner button { padding:7px 12px; font-size:13px; }
+  .bc-box textarea { width:100%; padding:10px 12px; border:1px solid var(--line); border-radius:10px; font:inherit; resize:vertical; background:#fff; color:#142747; }
+  .bc-box input[type=text] { width:100%; }
+  .plans { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:14px; }
+  .plan { display:flex; flex-direction:column; padding:20px; position:relative; text-align:left; }
+  .plan h3 { margin:0 0 6px; font-size:17px; }
+  .plan .price { font-size:28px; font-weight:800; letter-spacing:-.5px; }
+  .plan .per { color:#b8c2e0; font-size:13px; }
+  .plan ul { flex:1; margin:12px 0 14px; padding-left:18px; color:#dbe3ff; font-size:14px; line-height:1.55; }
+  .plan button { width:100%; }
+  .plan.hot { border-color:#22d3ee; box-shadow:0 0 0 1px #22d3ee inset; }
+  .plan .ribbon { position:absolute; top:-11px; right:14px; background:linear-gradient(120deg,#1769ff,#22d3ee); color:#fff; font-size:11px; font-weight:800; padding:3px 10px; border-radius:99px; }
+  .plans-note { text-align:center; color:#b8c2e0; font-size:13px; margin-top:14px; }
+  @media (max-width:1000px) { .plans { grid-template-columns:repeat(2,minmax(0,1fr)); } }
+  @media (max-width:560px) { .plans { grid-template-columns:1fr; } }
+  @media (max-width:900px) { .bell-label { display:none; } }
 </style>
 </head>
 <body>
@@ -476,6 +510,26 @@
       </div>
     </section>
 
+    <section class="sec" id="pricing">
+      <h2>Simple, honest pricing</h2>
+      <p class="sub">Start free and upgrade when your team grows. For now you pay by bank transfer; card payments are coming soon.</p>
+      <div class="plans">
+        <div class="glass plan"><h3>Free Trial</h3><div class="price">₦0</div><div class="per">2 days to try everything</div>
+          <ul><li>5 analyses</li><li>1 team member</li><li>Reconciliation, charts, Excel and PDF exports</li></ul>
+          <button type="button" onclick="document.querySelector('.login').scrollIntoView({behavior:'smooth',block:'center'})">Start free</button></div>
+        <div class="glass plan"><h3>Starter</h3><div class="price">₦25,000</div><div class="per">3 days of access</div>
+          <ul><li>50 analyses per month</li><li>Up to 3 team members</li><li>Everything in the trial</li></ul>
+          <button type="button" onclick="document.querySelector('.login').scrollIntoView({behavior:'smooth',block:'center'})">Get Starter</button></div>
+        <div class="glass plan hot"><span class="ribbon">Recommended</span><h3>Growth</h3><div class="price">₦100,000</div><div class="per">5 days of access</div>
+          <ul><li>200 analyses per month</li><li>Up to 5 team members</li><li>Everything in Starter</li></ul>
+          <button type="button" onclick="document.querySelector('.login').scrollIntoView({behavior:'smooth',block:'center'})">Get Growth</button></div>
+        <div class="glass plan"><h3>Bigger teams</h3><div class="price">Let's talk</div><div class="per">Message us before you pay</div>
+          <ul><li>Professional · ₦350,000 · 750 analyses · 10 members</li><li>Business · ₦1,000,000 · 1,500 analyses · 15 members</li><li>Corporate · ₦2,500,000 · 4,000 analyses · 30 members</li><li>Enterprise · ₦5,000,000 · 10,000 analyses · 75 members</li></ul>
+          <button type="button" onclick="window.open('https://wa.me/2348100481004?text=Hello%2C%20I%20would%20like%20a%20bigger%20Report%20Analyzer%20plan','_blank','noopener')">Message us on WhatsApp</button></div>
+      </div>
+      <p class="plans-note">Access lasts for the period shown on each plan. Larger payments are arranged with us first so everything goes smoothly.</p>
+    </section>
+
     <section class="sec">
       <h2>Questions? Answered.</h2>
       <div class="faq">
@@ -506,7 +560,9 @@
     <button type="button" class="sb-item" data-nav="insights"><span class="ic">📊</span><span>Company Insights</span></button>
     <button type="button" class="sb-item" data-nav="reconciliation"><span class="ic">⚖️</span><span>Reconciliation</span></button>
     <button type="button" class="sb-item" data-nav="discrepancies"><span class="ic">🚨</span><span>Discrepancies</span></button>
+    <button type="button" class="sb-item" data-nav="notifications"><span class="ic">🔔</span><span>Notifications</span><span class="sb-count hidden" id="sbNotifCount">0</span></button>
     <button type="button" class="sb-item admin-only hidden" data-nav="team"><span class="ic">👥</span><span>Team &amp; Access</span></button>
+    <button type="button" class="sb-item admin-only hidden" data-nav="broadcast"><span class="ic">📣</span><span>Broadcast</span></button>
     <button type="button" class="sb-item" data-nav="plan"><span class="ic">💳</span><span>Plan &amp; Billing</span></button>
     <button type="button" class="sb-item" data-nav="donations"><span class="ic">❤️</span><span>Donations</span></button>
     <button type="button" class="sb-item" data-nav="settings"><span class="ic">⚙️</span><span>Settings</span></button>
@@ -538,11 +594,12 @@
   <button class="ghost admin-only hidden" id="adminBtn">Admin</button>
   <button class="ghost v2-help-link v2-tour-launch" id="v2TourLaunch" type="button">❔ Help</button>
   <button class="ghost" id="twofaBtn">🔐 2FA</button>
-  <div class="bell-wrap"><button type="button" class="ghost bell" id="bellBtn" aria-label="Notifications">🔔<span id="bellBadge" class="bell-badge hidden">0</span></button><div id="bellPanel" class="bell-panel hidden"></div></div>
+  <div class="bell-wrap"><button type="button" class="ghost bell" id="bellBtn" aria-label="Notifications" title="Notifications">🔔<span class="bell-label">Notifications</span><span id="bellBadge" class="bell-badge hidden">0</span></button><div id="bellPanel" class="bell-panel hidden"></div></div>
   <div class="who-chip"><span class="avatar" id="avatar">U</span><span id="who" class="who"></span></div>
   <button class="ghost" id="logout">Log out</button>
 </header>
 <main id="v2-home">
+  <div id="newsBanner" class="news-banner hidden"></div>
   <section class="d-hero" data-views="dashboard">
     <div>
       <div class="d-greet" id="dGreet">Welcome 👋</div>
@@ -599,6 +656,29 @@
     <div class="d-head"><div><h3>My Reports</h3><p class="d-sub" id="rptCount"></p></div><button type="button" class="analyst-up hidden" data-nav="upload">⬆️ Upload report</button></div>
     <div class="tablewrap"><table id="reportsTable"></table></div>
     <div class="mute" id="reportsEmpty"></div>
+  </section>
+
+  <section class="d-panel" data-views="notifications">
+    <div class="d-head"><div><h3>🔔 Notifications</h3><p class="d-sub">News and announcements from the Report Analyzer team.</p></div><button type="button" class="ghost" id="notifReadAll">Mark all as read</button></div>
+    <div id="notifList" style="display:grid;gap:10px"></div>
+  </section>
+
+  <section class="d-panel admin-only hidden bc-box" data-views="broadcast">
+    <h3>📣 Broadcast</h3>
+    <p class="d-sub">Send an announcement to every customer. They will see it under Notifications (the bell), and as a banner at the top until they read it.</p>
+    <div style="display:grid;gap:10px">
+      <input type="text" id="bcTitle" placeholder="Title, e.g. Scheduled maintenance tonight" maxlength="120">
+      <textarea id="bcBody" rows="5" maxlength="2000" placeholder="Write your message here…"></textarea>
+      <div class="mute" id="bcCount">0 / 2000</div>
+      <div class="row">
+        <select id="bcLevel"><option value="info">📢 Announcement</option><option value="success">✅ Good news</option><option value="warning">⚠️ Important</option></select>
+        <select id="bcDays"><option value="1">Show for 1 day</option><option value="3">Show for 3 days</option><option value="7">Show for 7 days</option><option value="14" selected>Show for 14 days</option><option value="30">Show for 30 days</option><option value="0">Until I withdraw it</option></select>
+      </div>
+      <div><div class="mute" style="margin-bottom:4px">Preview</div><div id="bcPreview"></div></div>
+      <div class="row"><button type="button" id="bcSend">📣 Send to all customers</button><span class="mute" id="bcMsg"></span></div>
+    </div>
+    <h3 style="margin-top:18px">Sent announcements</h3>
+    <div id="bcHistory" style="display:grid;gap:10px"></div>
   </section>
 
   <section class="d-panel" data-views="donations">
@@ -1547,6 +1627,7 @@ api("/api/me").then(start).catch(showLanding);
     if ($("opsTitle")) $("opsTitle").textContent = TITLES[v] || "🧰 Company operations";
     document.body.classList.remove("sb-open");
     window.scrollTo(0, 0);
+    if (window.onViewChange) { try { window.onViewChange(v); } catch (e) { /* never block navigation */ } }
     if (!S.user || S.user.needs_2fa_setup) return;
     if (v === "dashboard") dashRefresh();
     if (v === "reports") renderReports();
@@ -1718,7 +1799,7 @@ api("/api/me").then(start).catch(showLanding);
 </script>
 
 <script>
-/* ===== Payments (screenshot), forgot password, legal pages, notification bell, first-time checklist ===== */
+/* ===== Payments (screenshot), forgot password, legal pages, notifications, first-time checklist ===== */
 (function () {
   const esc = t => String(t == null ? "" : t);
 
@@ -1855,42 +1936,176 @@ api("/api/me").then(start).catch(showLanding);
   });
   document.addEventListener("keydown", e => { if (e.key === "Escape") $("legalModal").classList.add("hidden"); });
 
-  /* ---------- notification bell ---------- */
-  let bellItems = [];
+  /* ---------- notifications: announcements from the admin + things to do ---------- */
+  let todoItems = [], news = [], fresh = new Set(), curView = "dashboard", busy = false;
+  const plural = (n, w) => n + " " + w + (n === 1 ? "" : "s");
+  const isNew = n => !n.is_read || fresh.has(n.id);
+  const LEVEL_ICON = { info: "📢", success: "✅", warning: "⚠️" };
+  const utcNow = () => new Date().toISOString().slice(0, 19).replace("T", " ");
+  const shortDate = s => { const d = new Date(String(s || "").replace(" ", "T") + "Z"); return isNaN(d) ? "" : d.toLocaleString(undefined, { day: "numeric", month: "short", hour: "numeric", minute: "2-digit" }); };
+
+  function newsCard(n) {
+    const card = el("div", "", "news-item " + (n.level || "info"));
+    const top = el("div", "", "nt");
+    top.append(el("span", (LEVEL_ICON[n.level] || "📢") + " " + n.title));
+    if (isNew(n)) top.append(el("span", "NEW", "news-new"));
+    card.append(top, el("div", n.body, "nb"), el("small", shortDate(n.created_at)));
+    return card;
+  }
+  function renderBanner() {
+    const b = $("newsBanner"), unread = news.filter(x => !x.is_read), n = unread[0];
+    if (!n || !S.user || curView === "notifications") { b.classList.add("hidden"); return; }
+    b.className = "news-banner " + (n.level || "info");
+    const txt = el("div", "", "nbt");
+    txt.append(el("b", (LEVEL_ICON[n.level] || "📢") + " " + n.title + " "), document.createTextNode(n.body.length > 150 ? n.body.slice(0, 147) + "…" : n.body));
+    if (unread.length > 1) txt.append(el("small", "  (+" + (unread.length - 1) + " more)"));
+    const read = el("button", "Read", "ghost"); read.type = "button"; read.onclick = () => navigate("notifications");
+    const close = el("button", "Dismiss", "ghost"); close.type = "button"; close.onclick = () => markRead([n.id]);
+    b.replaceChildren(txt, read, close);
+  }
+  function updateBadges() {
+    const unread = news.filter(n => !n.is_read).length, total = unread + todoItems.length;
+    $("bellBadge").textContent = total > 99 ? "99+" : String(total); $("bellBadge").classList.toggle("hidden", !total);
+    $("sbNotifCount").textContent = String(unread); $("sbNotifCount").classList.toggle("hidden", !unread);
+    renderBanner();
+  }
   function renderBell() {
-    $("bellBadge").textContent = bellItems.length; $("bellBadge").classList.toggle("hidden", !bellItems.length);
-    const p = $("bellPanel"); p.replaceChildren(el("b", "Notifications"));
-    if (!bellItems.length) { p.append(el("div", "You're all caught up 🎉", "mute")); return; }
-    bellItems.forEach(it => {
-      const b = el("button", "", "bell-item"); b.type = "button";
-      b.append(el("span", it.icon), el("span", it.text));
-      b.onclick = () => { p.classList.add("hidden"); navigate(it.go); };
-      p.append(b);
-    });
+    const p = $("bellPanel"), head = el("div", "", "bell-head");
+    head.append(el("b", "🔔 Notifications"));
+    if (news.some(n => !n.is_read)) { const m = el("button", "Mark all read", "d-link"); m.type = "button"; m.onclick = e => { e.stopPropagation(); markRead(); }; head.append(m); }
+    p.replaceChildren(head);
+    if (news.length) { p.append(el("div", "Announcements", "bell-section")); news.slice(0, 4).forEach(n => p.append(newsCard(n))); }
+    if (todoItems.length) {
+      p.append(el("div", "To do", "bell-section"));
+      todoItems.forEach(it => {
+        const b = el("button", "", "bell-item"); b.type = "button";
+        b.append(el("span", it.icon), el("span", it.text));
+        b.onclick = () => { p.classList.add("hidden"); navigate(it.go); };
+        p.append(b);
+      });
+    }
+    if (!news.length && !todoItems.length) p.append(el("div", "You're all caught up 🎉", "mute"));
+    const all = el("button", "See all notifications →", "d-link"); all.type = "button";
+    all.onclick = () => { p.classList.add("hidden"); fresh.clear(); navigate("notifications"); };
+    p.append(all);
+  }
+  function renderNotifPage() {
+    const host = $("notifList"); if (!host) return;
+    host.replaceChildren();
+    if (!news.length) { host.append(el("div", "No announcements yet. When the Report Analyzer team shares news, you will see it here.", "mute")); return; }
+    news.forEach(n => host.append(newsCard(n)));
+  }
+  async function markRead(ids) {
+    ids = ids || news.filter(n => !n.is_read).map(n => n.id);
+    if (!ids.length) return;
+    news.forEach(n => { if (ids.includes(n.id)) n.is_read = true; });
+    updateBadges(); renderBell(); renderNotifPage();
+    try { await jpost("/api/notifications/read", { ids }); } catch (e) { /* will sync on the next refresh */ }
   }
   async function refreshBell() {
-    if (!S.user || $("app").classList.contains("hidden")) return;
-    const items = [], cid = Number($("company").value), jobs = [];
-    const plural = (n, w) => n + " " + w + (n === 1 ? "" : "s");
-    if (cid) jobs.push(api("/api/companies/" + cid + "/cases?status=open&limit=200").then(c => { if (c.length) items.push({ icon: "⚠️", text: plural(c.length, "open discrepancy case") + " to review", go: "discrepancies" }); }).catch(() => {}));
-    if (S.user.role === "admin") {
-      jobs.push(api("/api/admin/billing/payments?status=pending").then(p => { if (p.length) items.push({ icon: "💳", text: plural(p.length, "payment") + " waiting for your approval", go: "plan" }); }).catch(() => {}));
-      jobs.push(api("/api/admin/registrations?status=pending").then(r => { if (r.length) items.push({ icon: "📝", text: plural(r.length, "new account request") + " to review", go: "team" }); }).catch(() => {}));
-    } else if (cid) {
-      jobs.push(api("/api/billing/status?company_id=" + cid).then(b => {
-        if (b.pending_payment_requests) items.push({ icon: "⏳", text: "Your payment is waiting for approval", go: "plan" });
-        const lim = Number(b.monthly_limit || 0), used = Number(b.used || 0);
-        if (lim && used / lim >= 0.8) items.push({ icon: "📉", text: `You have used ${used} of ${lim} analyses this month`, go: "plan" });
-        if (b.expires_at) { const ms = new Date(String(b.expires_at).replace(" ", "T") + "Z") - Date.now(); if (ms > 0 && ms < 3 * 864e5) items.push({ icon: "⏰", text: "Your plan expires soon", go: "plan" }); }
-      }).catch(() => {}));
-    }
-    await Promise.all(jobs); bellItems = items; renderBell();
+    if (!S.user || $("app").classList.contains("hidden") || busy) return;
+    busy = true;
+    try {
+      const items = [], cid = Number($("company").value), jobs = [];
+      jobs.push(api("/api/notifications").then(r => { news = r; }).catch(() => {}));
+      if (cid) jobs.push(api("/api/companies/" + cid + "/cases?status=open&limit=200").then(c => { if (c.length) items.push({ icon: "⚠️", text: plural(c.length, "open discrepancy case") + " to review", go: "discrepancies" }); }).catch(() => {}));
+      if (S.user.role === "admin") {
+        jobs.push(api("/api/admin/billing/payments?status=pending").then(p => { if (p.length) items.push({ icon: "💳", text: plural(p.length, "payment") + " waiting for your approval", go: "plan" }); }).catch(() => {}));
+        jobs.push(api("/api/admin/registrations?status=pending").then(r => { if (r.length) items.push({ icon: "📝", text: plural(r.length, "new account request") + " to review", go: "team" }); }).catch(() => {}));
+      } else if (cid) {
+        jobs.push(api("/api/billing/status?company_id=" + cid).then(b => {
+          if (b.pending_payment_requests) items.push({ icon: "⏳", text: "Your payment is waiting for approval", go: "plan" });
+          const lim = Number(b.monthly_limit || 0), used = Number(b.used || 0);
+          if (lim && used / lim >= 0.8) items.push({ icon: "📉", text: `You have used ${used} of ${lim} analyses this month`, go: "plan" });
+          if (b.expires_at) { const ms = new Date(String(b.expires_at).replace(" ", "T") + "Z") - Date.now(); if (ms > 0 && ms < 3 * 864e5) items.push({ icon: "⏰", text: "Your plan expires soon", go: "plan" }); }
+        }).catch(() => {}));
+      }
+      await Promise.all(jobs); todoItems = items;
+    } finally { busy = false; }
+    updateBadges(); renderBell(); renderNotifPage();
   }
-  $("bellBtn").addEventListener("click", e => { e.stopPropagation(); $("bellPanel").classList.toggle("hidden"); if (!$("bellPanel").classList.contains("hidden")) refreshBell(); });
-  document.addEventListener("click", e => { if (!e.target.closest || !e.target.closest(".bell-wrap")) $("bellPanel").classList.add("hidden"); });
+  $("bellBtn").addEventListener("click", async e => {
+    e.stopPropagation();
+    const p = $("bellPanel"), opening = p.classList.contains("hidden");
+    p.classList.toggle("hidden");
+    if (!opening) { fresh.clear(); renderBell(); return; }
+    renderBell();
+    await refreshBell();
+    const ids = news.filter(n => !n.is_read).map(n => n.id);
+    ids.forEach(id => fresh.add(id));          // keep the NEW tag visible while the panel is open
+    if (ids.length) await markRead(ids);
+  });
+  document.addEventListener("click", e => {
+    if (e.target.closest && e.target.closest(".bell-wrap")) return;
+    if (!$("bellPanel").classList.contains("hidden")) { $("bellPanel").classList.add("hidden"); fresh.clear(); renderBell(); }
+  });
+  $("notifReadAll").onclick = () => markRead();
+  document.addEventListener("visibilitychange", () => { if (!document.hidden) refreshBell(); });
   setInterval(() => { if (!document.hidden) refreshBell(); }, 120000);
   const _lr = loadReports;
   loadReports = async function () { const r = await _lr.apply(this, arguments); refreshBell(); return r; };
+
+  /* ---------- admin: Broadcast composer + history ---------- */
+  function bcPreview() {
+    const n = { title: $("bcTitle").value.trim() || "Your title", body: $("bcBody").value.trim() || "Your message will look like this.",
+                level: $("bcLevel").value, created_at: utcNow(), is_read: true, id: -1 };
+    $("bcPreview").replaceChildren(newsCard(n));
+    $("bcCount").textContent = $("bcBody").value.length + " / 2000";
+  }
+  ["bcTitle", "bcBody", "bcLevel"].forEach(id => { $(id).addEventListener("input", bcPreview); $(id).addEventListener("change", bcPreview); });
+  bcPreview();
+  async function loadBroadcasts() {
+    const host = $("bcHistory");
+    try {
+      const r = await api("/api/admin/broadcasts"); host.replaceChildren();
+      if (!r.items.length) { host.append(el("div", "Nothing sent yet.", "mute")); return; }
+      const now = utcNow();
+      r.items.forEach(b => {
+        const live = !!b.active && !(b.expires_at && b.expires_at < now);
+        const status = !b.active ? "Withdrawn" : live ? "Live" : "Expired";
+        const card = el("div", "", "urow");
+        card.append(newsCard(Object.assign({}, b, { is_read: true })));
+        const meta = el("div", `${status} · sent ${shortDate(b.created_at)}${b.expires_at ? " · until " + shortDate(b.expires_at) : " · until you withdraw it"} · read by ${b.read_count} of ${r.customers} customers`, "mute");
+        card.append(meta);
+        if (live) {
+          const w = el("button", "Withdraw", "danger"); w.type = "button";
+          w.onclick = async () => {
+            if (!confirm("Remove this announcement from every customer's Notifications?")) return;
+            try { await api("/api/admin/broadcasts/" + b.id, { method: "DELETE" }); await loadBroadcasts(); refreshBell(); }
+            catch (e) { meta.textContent = "❌ " + e.message; }
+          };
+          card.append(w);
+        }
+        host.append(card);
+      });
+    } catch (e) { host.textContent = "❌ " + e.message; }
+  }
+  $("bcSend").onclick = async () => {
+    const title = $("bcTitle").value.trim(), message = $("bcBody").value.trim();
+    $("bcMsg").textContent = "";
+    if (!title || !message) { $("bcMsg").textContent = "Write a title and a message first."; return; }
+    if (!confirm("Send this announcement to ALL customers now?")) return;
+    $("bcSend").disabled = true;
+    try {
+      await jpost("/api/admin/broadcasts", { title, message, level: $("bcLevel").value, days: Number($("bcDays").value) || null });
+      $("bcTitle").value = ""; $("bcBody").value = ""; bcPreview();
+      $("bcMsg").textContent = "✅ Sent. Customers will see it under Notifications.";
+      await loadBroadcasts(); refreshBell();
+    } catch (e) { $("bcMsg").textContent = "❌ " + e.message; }
+    $("bcSend").disabled = false;
+  };
+
+  /* called by the side-menu navigation every time the view changes */
+  window.onViewChange = function (v) {
+    curView = v;
+    if (v !== "notifications") fresh.clear();
+    if (v === "notifications") {
+      renderNotifPage();
+      refreshBell().then(() => { const ids = news.filter(n => !n.is_read).map(n => n.id); ids.forEach(id => fresh.add(id)); renderNotifPage(); if (ids.length) markRead(ids); });
+    }
+    if (v === "broadcast") loadBroadcasts();
+    renderBanner();
+  };
 
   /* ---------- first-time checklist + sample reports ---------- */
   function sampleCsvs() {
