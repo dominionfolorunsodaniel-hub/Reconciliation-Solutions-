@@ -98,33 +98,45 @@ async def _ask(**kwargs):
     if "JSON object" in system or "JSON plan" in system:
         payload["generationConfig"]["responseMimeType"] = "application/json"
     payload = {key: value for key, value in payload.items() if value is not None}
-    url = f"https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent"
     headers = {"x-goog-api-key": api_key, "content-type": "application/json"}
-
-    try:
-        async with httpx.AsyncClient(timeout=httpx.Timeout(60.0, connect=15.0)) as client:
-            response = await client.post(url, headers=headers, json=payload)
-        if response.is_error:
-            try:
-                detail = response.json().get("error", {}).get("message", "")
-            except (ValueError, AttributeError):
-                detail = ""
-            # Do not include the key or full request in error messages/logs.
-            if response.status_code in (401, 403):
-                raise RuntimeError("Gemini rejected the API key. Check GEMINI_API_KEY in Render.")
+    # When Google is busy (503/500/timeouts) wait and retry, then fall back to backup models.
+    backups = [m.strip() for m in os.getenv("GEMINI_FALLBACK_MODELS", "gemini-2.5-flash,gemini-flash-lite-latest").split(",") if m.strip()]
+    plan = [model] * 2 + [m for m in backups if m != model]
+    data, last_busy = None, "Gemini is very busy right now. Please try again in a minute."
+    for attempt, current in enumerate(plan):
+        if attempt:
+            await asyncio.sleep(2 * min(attempt, 3))
+        url = f"https://generativelanguage.googleapis.com/v1beta/models/{current}:generateContent"
+        try:
+            async with httpx.AsyncClient(timeout=httpx.Timeout(25.0, connect=10.0)) as client:
+                response = await client.post(url, headers=headers, json=payload)
+        except httpx.TimeoutException:
+            print(f"[gemini] {current} timed out (attempt {attempt + 1}/{len(plan)})", flush=True)
+            continue
+        except httpx.RequestError as exc:
+            raise RuntimeError("Could not connect to Gemini. Check Render's network and try again.") from exc
+        if not response.is_error:
+            data = response.json()
+            break
+        try:
+            detail = response.json().get("error", {}).get("message", "")
+        except (ValueError, AttributeError):
+            detail = ""
+        # Do not include the key or full request in error messages/logs.
+        if response.status_code in (401, 403):
+            raise RuntimeError("Gemini rejected the API key. Check GEMINI_API_KEY in Render.")
+        if response.status_code == 400 and "api key" in detail.lower():
+            print(f"[gemini] key rejected. Render is sending a key that starts '{api_key[:4]}', ends '{api_key[-4:]}', length {len(api_key)}.", flush=True)
+            raise RuntimeError("Gemini says the API key is not valid. The administrator must check GEMINI_API_KEY in Render "
+                               "(paste only the key, then save and wait for the redeploy).")
+        if response.status_code in (429, 500, 502, 503, 504) or (response.status_code == 404 and attempt >= 2):
+            print(f"[gemini] {current} returned HTTP {response.status_code} (attempt {attempt + 1}/{len(plan)})", flush=True)
             if response.status_code == 429:
-                raise RuntimeError("Gemini free-tier rate limit reached. Wait and try again later.")
-            if response.status_code == 400 and "api key" in detail.lower():
-                # Safe fingerprint for the Render logs only (never shown to customers).
-                print(f"[gemini] key rejected. Render is sending a key that starts '{api_key[:4]}', ends '{api_key[-4:]}', length {len(api_key)}.", flush=True)
-                raise RuntimeError("Gemini says the API key is not valid. The administrator must check GEMINI_API_KEY in Render "
-                                   "(paste only the key, then save and wait for the redeploy).")
-            raise RuntimeError(f"Gemini API returned HTTP {response.status_code}: {detail[:300]}")
-        data = response.json()
-    except httpx.TimeoutException as exc:
-        raise RuntimeError("Gemini API timed out. Please try again.") from exc
-    except httpx.RequestError as exc:
-        raise RuntimeError("Could not connect to Gemini. Check Render's network and try again.") from exc
+                last_busy = "Gemini free-tier rate limit reached. Wait a minute and try again."
+            continue
+        raise RuntimeError(f"Gemini API returned HTTP {response.status_code}: {detail[:300]}")
+    if data is None:
+        raise RuntimeError(last_busy)
 
     candidates = data.get("candidates") or []
     if not candidates:
