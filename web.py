@@ -449,8 +449,8 @@ async def upload(company_id: int, file: UploadFile = File(...), user: dict = Dep
     need(user, "analyst")
     need_company(user, company_id)
     name = file.filename or "report.csv"
-    if name.lower().rsplit(".", 1)[-1] not in core.ALLOWED_EXT:
-        raise HTTPException(400, "Supported files: CSV, Excel (.xlsx/.xls), PDF")
+    if "." in name and name.lower().rsplit(".", 1)[-1] not in core.ALLOWED_EXT:
+        raise HTTPException(400, "Supported files: " + core.FILE_TYPES_TEXT)
     data = await file.read()
     if len(data) > core.MAX_FILE_MB * 1024 * 1024:
         raise HTTPException(400, f"File too large (limit {core.MAX_FILE_MB} MB)")
@@ -1235,8 +1235,8 @@ async def integration_upload(company_id: int, request: Request, file: UploadFile
     if not db.get_company(company_id): raise HTTPException(404, "Unknown company.")
     name = os.path.basename(file.filename or "external-report.csv")[:160]
     ext = os.path.splitext(name)[1].lower()
-    if ext not in {".csv", ".txt", ".xlsx", ".xlsm", ".xls", ".pdf"}:
-        raise HTTPException(400, "Supported formats: CSV, TXT, XLSX, XLSM, XLS, PDF.")
+    if ext and ext.lstrip(".") not in core.ALLOWED_EXT:
+        raise HTTPException(400, "Supported files: " + core.FILE_TYPES_TEXT)
     raw = await file.read(20 * 1024 * 1024 + 1)
     if len(raw) > 20 * 1024 * 1024: raise HTTPException(413, "Maximum integration upload size is 20 MB.")
     try:

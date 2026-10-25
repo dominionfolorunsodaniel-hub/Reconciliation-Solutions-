@@ -28,11 +28,14 @@ except ImportError:
 
 import pandas as pd
 
+import loaders
 import privacy
 
 MODEL = os.getenv("GEMINI_MODEL", "gemini-flash-latest")
 MAX_FILE_MB = 20
-ALLOWED_EXT = {"csv", "txt", "xlsx", "xlsm", "xls", "pdf"}
+ALLOWED_EXT = {"csv", "tsv", "txt", "text", "dat", "xlsx", "xlsm", "xls", "ods", "pdf", "json", "jsonl", "ndjson",
+               "xml", "html", "htm", "docx", "png", "jpg", "jpeg", "webp", "bmp", "tif", "tiff", "gif"}
+FILE_TYPES_TEXT = "CSV, Excel (.xlsx/.xls), PDF, Word (.docx), JSON, XML, HTML, text, OpenDocument (.ods) or a photo/screenshot (PNG, JPG)"
 ALLOWED_AGGS = {"sum", "mean", "count", "min", "max", "median", "nunique"}
 FREQ_NAMES = {"D": "Day", "W": "Week", "M": "Month", "Q": "Quarter", "Y": "Year"}
 TOTAL_WORDS = {"total", "grand total", "subtotal", "sub total", "sub-total"}
@@ -183,12 +186,33 @@ def _rows_to_raw(rows) -> pd.DataFrame:
 
 
 def _csv_to_raw(data: bytes) -> pd.DataFrame:
-    text = data.decode("utf-8-sig", errors="replace")
+    return _rows_to_raw(loaders.text_rows(loaders.decode_text(data)))
+
+
+def _ocr_image(data: bytes) -> list[list[str]]:
+    """Photos / screenshots of a statement or report: read the text with OCR and rebuild the table."""
+    if os.getenv("OCR_ENABLED", "1") == "0":
+        raise ValueError("Reading pictures is switched off. Please upload the report as Excel, CSV or PDF.")
     try:
-        dialect = csv.Sniffer().sniff(text[:20000], delimiters=",;\t|")
-    except csv.Error:
-        dialect = csv.excel
-    return _rows_to_raw(list(csv.reader(io.StringIO(text), dialect)))
+        import pytesseract
+        from PIL import Image, ImageOps
+    except ImportError as e:
+        raise ValueError("Reading pictures needs OCR support (pytesseract + Tesseract). "
+                         "Please upload the report as Excel, CSV or PDF.") from e
+    try:
+        img = ImageOps.exif_transpose(Image.open(io.BytesIO(data))).convert("L")
+        if img.width < 1400:  # small screenshots read much better when enlarged
+            scale = 1400 / img.width
+            img = img.resize((int(img.width * scale), int(img.height * scale)))
+        d = pytesseract.image_to_data(img, output_type=pytesseract.Output.DICT)
+    except Exception as e:  # noqa: BLE001
+        raise ValueError(f"I couldn't read that picture ({e}). Try a clearer, straight-on photo.") from e
+    rows = _ocr_words_to_rows([
+        {"left": d["left"][i], "top": d["top"][i], "width": d["width"][i], "height": d["height"][i], "text": d["text"][i]}
+        for i in range(len(d["text"])) if float(d["conf"][i]) >= 30])
+    if not rows:
+        raise ValueError("I couldn't find a table in that picture. Try a clearer photo, or upload Excel/CSV/PDF.")
+    return rows
 
 
 def _ocr_words_to_rows(words: list[dict]) -> list[list[str]]:
@@ -269,23 +293,42 @@ def _pdf_to_raw(data: bytes):
 
 
 def load_report(data: bytes, filename: str, sheet: str | None = None):
-    """Return (clean_df, notes, sheet_names)."""
+    """Return (clean_df, notes, sheet_names). The real file type is detected from the content, not the name."""
     ext = filename.lower().rsplit(".", 1)[-1] if "." in filename else "csv"
+    kind = loaders.sniff(data, ext)
     notes, sheets = [], []
 
-    if ext in ("csv", "txt"):
-        raw = _csv_to_raw(data)
-    elif ext == "pdf":
+    if kind == "pdf":
         raw, ocr = _pdf_to_raw(data)
         notes.append("🔎 Scanned PDF read with OCR - double-check the numbers against the original."
                      if ocr else "PDF tables are extracted on a best-effort basis - check the preview.")
-    else:
-        xl = pd.ExcelFile(io.BytesIO(data))
+    elif kind == "image":
+        raw = _rows_to_raw(_ocr_image(data))
+        notes.append("🔎 Picture read with OCR - please double-check the numbers against the original.")
+    elif kind in ("xlsx", "xls", "ods"):
+        try:
+            xl = pd.ExcelFile(io.BytesIO(data), engine="odf" if kind == "ods" else None)
+        except ImportError as e:
+            raise ValueError("OpenDocument (.ods) support is not installed on this server. Save it as Excel and re-upload.") from e
         sheets = xl.sheet_names
         chosen = sheet if sheet in sheets else sheets[0]
         raw = _rows_to_raw(xl.parse(chosen, header=None, dtype=object).values.tolist())
         if len(sheets) > 1:
             notes.append(f'Read sheet "{chosen}". Others: {", ".join(sheets)}')
+    elif kind == "docx":
+        raw = _rows_to_raw(loaders.docx_rows(data))
+    elif kind == "json":
+        raw = _rows_to_raw(loaders.json_rows(data))
+    elif kind == "xml":
+        raw = _rows_to_raw(loaders.xml_rows(data))
+    elif kind == "html":
+        raw = _rows_to_raw(loaders.html_rows(data))
+        if ext in ("xls", "xlsx"):
+            notes.append("This \"Excel\" file was really a web page; I read the table inside it.")
+    elif kind == "zip":
+        raise ValueError("That is a zip/archive file. Please unzip it and upload the report inside.")
+    else:
+        raw = _csv_to_raw(data)
 
     raw = raw.dropna(how="all").dropna(axis=1, how="all").reset_index(drop=True)
     if raw.empty:
@@ -379,12 +422,135 @@ def describe_schema(df: pd.DataFrame) -> str:
 
 
 # --------------------------------------------------------------------------- #
+# Understanding money: credits / debits in any layout
+# --------------------------------------------------------------------------- #
+CREDIT_WORDS = {"credit", "credits", "cr", "c", "deposit", "deposits", "lodgement", "lodgements", "lodgment",
+                "inflow", "inflows", "money in", "received", "receipt", "income"}
+DEBIT_WORDS = {"debit", "debits", "dr", "d", "withdrawal", "withdrawals", "withdraw", "outflow", "outflows",
+               "money out", "paid", "payment", "expense"}
+_CR_NAME = re.compile(r"\b(credit|credits|cr|deposit|deposits|lodgement|lodgements|lodgment|money in|inflow|received)\b", re.I)
+_DR_NAME = re.compile(r"\b(debit|debits|dr|withdrawal|withdrawals|money out|outflow|paid)\b", re.I)
+_NOT_AMOUNT = re.compile(r"balance|\bbal\b|\bid\b|ref|\bno\b|number|fee|charge|vat|rate|account|acct|terminal|stan|rrn|pan\b", re.I)
+CRED_COL, AMT_COL = "Credit/Debit", "Amount (always positive)"
+_ALIAS_GROUPS = [CREDIT_WORDS, DEBIT_WORDS]
+
+
+def _norm_word(v) -> str:
+    return re.sub(r"[^a-z ]", "", str(v).lower()).strip()
+
+
+def add_money_columns(df: pd.DataFrame):
+    """Add two helper columns, "Credit/Debit" and "Amount (always positive)", whenever the table shows money
+    moving in or out - however it is laid out. Returns (new_df, plain-English note or None). Never raises."""
+    try:
+        if CRED_COL in df.columns or AMT_COL in df.columns or df.empty:
+            return df, None
+        nums = [c for c in df.columns if pd.api.types.is_numeric_dtype(df[c]) and not pd.api.types.is_bool_dtype(df[c])]
+
+        def amount_col():
+            cands = [c for c in nums if not _NOT_AMOUNT.search(str(c))]
+            named = [c for c in cands if re.search(r"amount|value|sum|naira|ngn|total|sales|txn", str(c), re.I)]
+            return (named or cands or [None])[0]
+
+        d = df.copy()
+        # 1) two separate columns, one for credit and one for debit
+        cr = [c for c in nums if _CR_NAME.search(str(c))]
+        dr = [c for c in nums if _DR_NAME.search(str(c))]
+        if cr and dr:
+            c_, d_ = pd.to_numeric(df[cr[0]], errors="coerce").fillna(0), pd.to_numeric(df[dr[0]], errors="coerce").fillna(0)
+            d[CRED_COL] = pd.Series(pd.NA, index=d.index, dtype=object)
+            d.loc[c_.abs() > 0, CRED_COL] = "Credit"
+            d.loc[d_.abs() > 0, CRED_COL] = "Debit"
+            d[AMT_COL] = c_.abs().where(c_.abs() > 0, d_.abs())
+            return d, (f'Your table has separate "{cr[0]}" (money coming in) and "{dr[0]}" (money going out) columns. '
+                       f'I combined them into "{CRED_COL}" and "{AMT_COL}".')
+        # 2) a text column that says credit/debit (or CR/DR) for each row
+        amt = amount_col()
+        for c in df.columns:
+            if c == amt or pd.api.types.is_numeric_dtype(df[c]) or pd.api.types.is_datetime64_any_dtype(df[c]):
+                continue
+            vals = df[c].dropna().map(_norm_word)
+            if vals.empty or vals.nunique() > 8:
+                continue
+            known = vals.isin(CREDIT_WORDS | DEBIT_WORDS)
+            if known.mean() >= 0.8 and vals[known].isin(CREDIT_WORDS).any() and vals[known].isin(DEBIT_WORDS).any() and amt:
+                norm = df[c].map(lambda v: "Credit" if _norm_word(v) in CREDIT_WORDS else "Debit" if _norm_word(v) in DEBIT_WORDS else None)
+                d[CRED_COL] = norm
+                d[AMT_COL] = pd.to_numeric(df[amt], errors="coerce").abs()
+                return d, (f'The column "{c}" says whether each row is a credit (money in) or a debit (money out), and "{amt}" holds '
+                           f'the amount. I added "{CRED_COL}" and "{AMT_COL}" so questions about credits and debits are exact.')
+        # 3) one signed amount column: positive = credit, negative = debit
+        if amt is not None:
+            s = pd.to_numeric(df[amt], errors="coerce")
+            if (s < 0).any() and (s > 0).any():
+                d[CRED_COL] = s.map(lambda v: None if pd.isna(v) or v == 0 else "Credit" if v > 0 else "Debit")
+                d[AMT_COL] = s.abs()
+                return d, (f'"{amt}" has both positive and negative numbers, so I treated positive as a credit (money in) and negative as a '
+                           f'debit (money out), and added "{CRED_COL}" and "{AMT_COL}".')
+    except Exception:  # noqa: BLE001  (a helper must never break an analysis)
+        pass
+    return df, None
+
+
+# --------------------------------------------------------------------------- #
+# Forgiving column names (the AI sometimes changes case / spacing)
+# --------------------------------------------------------------------------- #
+def _key(name) -> str:
+    return re.sub(r"[^a-z0-9]", "", str(name).lower())
+
+
+def resolve_column(name, columns):
+    if name in columns or name == "*":
+        return name
+    by_key = {_key(c): c for c in columns}
+    if _key(name) in by_key:
+        return by_key[_key(name)]
+    import difflib
+
+    close = difflib.get_close_matches(_key(name), list(by_key), n=1, cutoff=0.82)
+    return by_key[close[0]] if close else name
+
+
+def fix_plan_columns(plan: dict, columns) -> dict:
+    cols = list(columns)
+    for f in plan.get("filters") or []:
+        if f.get("column"):
+            f["column"] = resolve_column(f["column"], cols)
+    for g in plan.get("group_by") or []:
+        if g.get("column"):
+            g["column"] = resolve_column(g["column"], cols)
+    for m in plan.get("metrics") or []:
+        if m.get("column"):
+            m["column"] = resolve_column(m["column"], cols)
+    if isinstance(plan.get("sort"), dict) and plan["sort"].get("by"):
+        plan["sort"]["by"] = resolve_column(plan["sort"]["by"], cols + [m.get("alias") for m in plan.get("metrics") or [] if m.get("alias")])
+    return plan
+
+
+def _expand_aliases(v):
+    """"credit" also means CR, deposit, lodgement...  "debit" also means DR, withdrawal..."""
+    if isinstance(v, list):
+        out = []
+        for x in v:
+            e = _expand_aliases(x)
+            out.extend(e if isinstance(e, list) else [e])
+        return out
+    w = _norm_word(v)
+    for g in _ALIAS_GROUPS:
+        if w in g:
+            return sorted(g)
+    return v
+
+
+# --------------------------------------------------------------------------- #
 # Gemini: request -> JSON plan, and short written insights
 # --------------------------------------------------------------------------- #
-SYSTEM_PROMPT = """You convert a user's analysis request about a table into a JSON plan.
+SYSTEM_PROMPT = """You convert a user's request about a table into a JSON plan.
 Reply with ONE JSON object and nothing else. Schema:
 {
-  "clarify": null or "a short question if the request is impossible/ambiguous",
+  "mode": "table" or "explain",
+  "clarify": null,
+  "assumptions": ["plain-English note for every guess you had to make"],
   "title": "short chart/table title",
   "filters": [{"column": str, "op": "==|!=|>|>=|<|<=|contains|in|not_in|between", "value": any}],
   "group_by": [{"column": str, "freq": null or "D|W|M|Q|Y"}],
@@ -394,6 +560,22 @@ Reply with ONE JSON object and nothing else. Schema:
   "top_n": null or int,
   "chart": "bar|line|pie|none"
 }
+How to read the user:
+- People write fast, on phones, with bad grammar, spelling mistakes, slang, abbreviations, Nigerian Pidgin, mixed
+  languages or half-sentences. Work out what they MEAN and answer that. Never reply that you cannot understand.
+- NEVER refuse and never ask the user to rephrase. Always choose the most reasonable reading, and write every guess
+  into "assumptions" in plain words (e.g. "I took 'last month' to mean March 2026 because that is the latest month in the file").
+- Set "clarify" to null. (Only if the message has absolutely nothing to do with the data may it be a short question.)
+- Use "mode":"explain" when the user wants an explanation, a summary, "what is this", meanings of columns or terms,
+  "break it down", advice, or anything that is not a calculation. For explain mode leave filters/group_by/metrics empty.
+- Use "mode":"table" for anything that can be counted, summed, compared, ranked, trended or filtered.
+Money words (very important):
+- "credit", "CR", "deposit", "lodgement", "money in", "inflow", "received" = money coming IN.
+- "debit", "DR", "withdrawal", "money out", "outflow", "paid" = money going OUT.
+- If the columns "Credit/Debit" and "Amount (always positive)" exist they were built for exactly this: filter or group by
+  "Credit/Debit" (values "Credit" / "Debit") and sum "Amount (always positive)". Use them for any credit/debit question,
+  e.g. "total credits and debits" = group_by "Credit/Debit", metric sum of "Amount (always positive)".
+- If the table has no credit/debit information at all, still answer with the closest columns and say so in "assumptions".
 Rules:
 - Use ONLY column names that exist exactly as given. Use "freq" only on date columns.
 - To count rows use {"column": "*", "agg": "count"}.
@@ -406,44 +588,127 @@ Rules:
   compare reports (e.g. month over month, branch A in report X vs report Y).
 """
 
-INSIGHT_PROMPT = (
-    "You are a careful data analyst. Using ONLY the numbers in the table, write 2-4 short bullet "
-    "points answering the user's question: biggest/smallest, notable shares or changes, outliers. "
-    "Never invent numbers or causes. Plain text, each bullet starting with '- '."
-)
+INSIGHT_PROMPT = """You are a patient, careful finance and data teacher explaining results to a business owner who may not be technical.
+You are given: the user's question, the exact result table (computed by code), key figures (computed by code), how the result
+was worked out, and any assumptions. Write a complete plain-text breakdown (no markdown symbols like ** or #).
+Use exactly these sections, each on its own line followed by its content:
+ANSWER: one or two sentences that directly answer the question with the exact figures.
+BREAKDOWN: 4 to 10 lines starting with '- ' going through the result item by item (every row if there are 12 or fewer,
+otherwise the biggest, the smallest and any that stand out), with exact figures and shares.
+WHAT IT MEANS: 2 to 4 lines in everyday words about what the numbers say and anything worth checking.
+WORDS EXPLAINED: one line per finance or technical term you used (e.g. credit = money coming in; debit = money going out;
+reconciliation = matching two records to find differences). Skip this section if you used no such term.
+Rules for accuracy:
+- Use ONLY numbers that appear in the table, the key figures or the method. Copy them exactly as written (keep the commas and
+  decimals). Do not round, abbreviate (no "1.2M") and do not do your own arithmetic. Never invent reasons or causes.
+- If the data cannot fully answer the question, say exactly what is missing and what the closest answer is.
+- Reply in the same language the user wrote the question in (simple English if mixed). Short sentences. Friendly and clear.
+"""
+
+EXPLAIN_PROMPT = """You are a patient, careful finance and data teacher. The user asked something about their uploaded file that needs an
+explanation rather than a calculation. You are given the user's question, an exact profile of the file computed by code
+(columns, types, totals, date ranges, counts), a few sample rows and any helper notes. Write a plain-text answer (no markdown symbols
+like ** or #) with these sections, each on its own line followed by its content:
+ANSWER: a direct answer to what they asked, in one to three sentences.
+BREAKDOWN: 4 to 12 lines starting with '- ' explaining the file piece by piece: what it is, what each important column means, the
+period it covers, key totals, and anything unusual.
+WHAT IT MEANS: 2 to 4 lines in everyday words, including what the user can ask next.
+WORDS EXPLAINED: one line per finance or technical term used. Skip if none.
+Rules: use ONLY facts and numbers from the profile and samples, copied exactly; never guess causes; if something is not in the file, say so.
+Reply in the language the user wrote in. Short, friendly sentences.
+"""
 
 
 def _text_of(resp) -> str:
     return "".join(b.text for b in resp.content if getattr(b, "type", "") == "text")
 
 
-async def make_plan(question: str, df: pd.DataFrame, prev_plan: dict | None) -> dict:
-    sample = df.head(5).to_string(index=False, max_colwidth=25)
-    user_msg = (
-        f"Columns:\n{describe_schema(df)}\n\nSample rows:\n{sample}\n\n"
-        f"Previous plan: {json.dumps(prev_plan) if prev_plan else 'none'}\n\n"
-        f"Request: {question}"
-    )
-    resp = await _ask(
-        model=MODEL, max_tokens=1200, system=SYSTEM_PROMPT,
-        messages=[{"role": "user", "content": user_msg}],
-    )
-    text = _text_of(resp)
+def _parse_plan(text: str):
     start, end = text.find("{"), text.rfind("}")
     if start == -1 or end == -1:
-        raise ValueError("I couldn't understand that request. Try rephrasing.")
+        return None
     try:
-        return json.loads(text[start:end + 1])
-    except json.JSONDecodeError as e:
-        raise ValueError("I couldn't understand that request. Try rephrasing.") from e
+        plan = json.loads(text[start:end + 1])
+        return plan if isinstance(plan, dict) else None
+    except json.JSONDecodeError:
+        return None
 
 
-async def summarize(question: str, res: pd.DataFrame) -> str | None:
-    try:
-        table = res.head(40).to_string(index=False, max_colwidth=30)
+async def make_plan(question: str, df: pd.DataFrame, prev_plan: dict | None, hint: str | None = None) -> dict:
+    sample = df.head(8).to_string(index=False, max_colwidth=25)
+    user_msg = (
+        f"Columns:\n{describe_schema(df)}\n\nSample rows:\n{sample}\n\n"
+        + (f"Helper note: {hint}\n\n" if hint else "")
+        + f"Previous plan: {json.dumps(prev_plan) if prev_plan else 'none'}\n\n"
+        f"Request (may contain spelling or grammar mistakes - understand the intent): {question}"
+    )
+    plan = None
+    for attempt in range(2):
         resp = await _ask(
-            model=MODEL, max_tokens=400, system=INSIGHT_PROMPT,
-            messages=[{"role": "user", "content": f"Question: {question}\n\nTable:\n{table}"}],
+            model=MODEL, max_tokens=1800, system=SYSTEM_PROMPT,
+            messages=[{"role": "user", "content": user_msg + ("\n\nReply with the JSON object only." if attempt else "")}],
+        )
+        plan = _parse_plan(_text_of(resp))
+        if plan:
+            break
+    if not plan:  # never dead-end the user: fall back to a plain explanation of the file
+        plan = {"mode": "explain", "title": "Explanation", "assumptions": ["I explained the whole file because I could not turn the request into a calculation."]}
+    plan["clarify"] = None
+    return plan
+
+
+def key_figures(res: pd.DataFrame, keys: list, metric: str) -> list[str]:
+    """Exact headline numbers computed by code, so the written breakdown never has to do arithmetic."""
+    out = []
+    try:
+        if metric in res.columns and pd.api.types.is_numeric_dtype(res[metric]):
+            vals = res[metric]
+            out.append(f"Rows in the result table: {len(res):,}")
+            if keys and len(res) > 1:
+                out.append(f"Total of {metric} across all rows shown: {vals.sum():,.2f}")
+                hi, lo = res.loc[vals.idxmax()], res.loc[vals.idxmin()]
+                out.append(f"Highest: {' | '.join(str(hi[k]) for k in keys)} = {hi[metric]:,.2f}")
+                out.append(f"Lowest: {' | '.join(str(lo[k]) for k in keys)} = {lo[metric]:,.2f}")
+                out.append(f"Average of {metric} per row shown: {vals.mean():,.2f}")
+    except Exception:  # noqa: BLE001
+        pass
+    return out
+
+
+def _num_tokens(text: str) -> list[str]:
+    return [t.rstrip(".,") for t in re.findall(r"\d[\d,]*\.?\d*", text)]
+
+
+def _to_float(tok: str):
+    try:
+        return float(tok.replace(",", "").rstrip("."))
+    except ValueError:
+        return None
+
+
+def unverified_figures(text: str, allowed_text: str) -> list[str]:
+    """Numbers in the written breakdown that cannot be found in the code-computed material."""
+    allowed = set()
+    for tok in _num_tokens(allowed_text):
+        v = _to_float(tok)
+        if v is not None:
+            allowed.update({round(v, 2), round(v, 1), round(v)})
+    bad = []
+    for tok in _num_tokens(text):
+        v = _to_float(tok)
+        if v is None or (v < 100 and "," not in tok and "." not in tok.rstrip(".")):
+            continue  # small whole numbers (list numbers, "2 rows") are not figures
+        if not ({round(v, 2), round(v, 1), round(v)} & allowed) and tok not in bad:
+            bad.append(tok)
+    return bad[:6]
+
+
+async def summarize(question: str, res: pd.DataFrame, extra: str = "", system: str = None) -> str | None:
+    try:
+        table = res.head(60).to_string(index=False, max_colwidth=40)
+        resp = await _ask(
+            model=MODEL, max_tokens=2200, system=system or INSIGHT_PROMPT,
+            messages=[{"role": "user", "content": f"Question: {question}\n\nResult table (exact):\n{table}\n\n{extra}"}],
         )
         return _text_of(resp).strip() or None
     except Exception:  # insights are a bonus; never fail the analysis
@@ -468,6 +733,10 @@ def apply_filter(d: pd.DataFrame, f: dict) -> pd.DataFrame:
     else:
         s = s.astype(str).str.strip().str.lower()
         conv = lambda v: str(v).strip().lower()  # noqa: E731
+    if op in ("==", "!=", "in", "not_in") and not pd.api.types.is_numeric_dtype(d[col]) and not pd.api.types.is_datetime64_any_dtype(d[col]):
+        val = _expand_aliases(val)
+        if isinstance(val, list) and op in ("==", "!="):
+            op = "in" if op == "==" else "not_in"
     v = [conv(x) for x in val] if isinstance(val, list) else conv(val)
 
     ops = {
@@ -544,16 +813,102 @@ def run_plan(df: pd.DataFrame, plan: dict):
     return res, d, keys, first_metric
 
 
+def explain_table(df: pd.DataFrame) -> pd.DataFrame:
+    rows = []
+    for c in df.columns:
+        s = df[c]
+        if pd.api.types.is_datetime64_any_dtype(s) and s.notna().any():
+            kind, rng = "date", f"{s.min():%Y-%m-%d} to {s.max():%Y-%m-%d}"
+        elif pd.api.types.is_numeric_dtype(s) and s.notna().any():
+            kind, rng = "number", f"{s.min():,.2f} to {s.max():,.2f} (total {s.sum():,.2f})"
+        else:
+            kind, rng = "text", ", ".join(map(str, s.dropna().astype(str).value_counts().head(3).index))
+        rows.append({"Column": str(c), "Type": kind, "Filled": int(s.notna().sum()), "Unique": int(s.nunique()), "Examples / range": rng})
+    return pd.DataFrame(rows)
+
+
+def method_lines(df: pd.DataFrame, plan: dict, res: pd.DataFrame, filtered: pd.DataFrame, keys: list, metric: str) -> list[str]:
+    """A plain-English, code-generated account of exactly what was done to the data."""
+    lines = [f"Started with {len(df):,} rows from your file."]
+    cur = df
+    for f in plan.get("filters") or []:
+        try:
+            cur = apply_filter(cur, f)
+            lines.append(f'Kept only rows where "{f["column"]}" {f["op"]} {f.get("value")}: {len(cur):,} rows left.')
+        except Exception:  # noqa: BLE001
+            break
+    if keys:
+        lines.append("Grouped the rows by " + ", ".join(f'"{k}"' for k in keys) + f" - {len(res):,} group(s).")
+    for m in plan.get("metrics") or []:
+        what = {"sum": "added up", "mean": "averaged", "count": "counted", "min": "took the smallest of",
+                "max": "took the largest of", "median": "took the middle value of", "nunique": "counted the different values in"}.get(m.get("agg"), m.get("agg"))
+        lines.append(f'For each group I {what} {"the rows" if m.get("column") == "*" else chr(34) + str(m.get("column")) + chr(34)}.')
+        col = m.get("column")
+        if col in filtered.columns and filtered[col].isna().any():
+            lines.append(f'Note: {int(filtered[col].isna().sum()):,} row(s) had a blank "{col}" and were not included in that calculation.')
+    # Independent cross-check: the groups must add back up to the overall total.
+    try:
+        first = (plan.get("metrics") or [{}])[0]
+        if first.get("agg") == "sum" and first.get("column") in filtered.columns and not plan.get("top_n") and not plan.get("filters_after"):
+            direct = float(pd.to_numeric(filtered[first["column"]], errors="coerce").sum())
+            grouped = float(res[metric].sum())
+            if abs(direct - grouped) <= max(0.01, abs(direct) * 1e-9):
+                lines.append(f"Cross-check passed: the groups add up to {grouped:,.2f}, exactly the same as adding the whole column directly.")
+            else:
+                lines.append(f"WARNING: the groups add up to {grouped:,.2f} but adding the column directly gives {direct:,.2f}. Please check the file.")
+        elif first.get("agg") == "count" and not plan.get("top_n") and keys:
+            if int(res[metric].sum()) == len(filtered):
+                lines.append(f"Cross-check passed: the group counts add up to {len(filtered):,} rows.")
+    except Exception:  # noqa: BLE001
+        pass
+    return lines
+
+
 async def analyze(df: pd.DataFrame, question: str, prev_plan: dict | None = None, insights: bool = True):
-    """Full pipeline. Returns a dict; contains 'clarify' if the model needs more info."""
-    plan = await make_plan(question, df, prev_plan)
-    if plan.get("clarify"):
-        return {"plan": plan, "clarify": plan["clarify"]}
+    """Full pipeline. Always tries to answer; 'clarify' is only returned if the request cannot be read at all."""
+    df, money_note = add_money_columns(df)
+    plan = await make_plan(question, df, prev_plan, money_note)
+    plan = fix_plan_columns(plan, df.columns)
+    notes = list(plan.get("assumptions") or [])
+    if money_note:
+        notes.insert(0, money_note)
+
+    if plan.get("mode") == "explain":
+        res = explain_table(df)
+        facts = json.dumps(profile_facts(df), default=str)[:6000]
+        extra = (f"File profile (exact): {facts}\n\nSample rows:\n{df.head(6).to_string(index=False, max_colwidth=25)}\n\n"
+                 + "\n".join(f"Helper note: {n}" for n in notes))
+        text = await summarize(question, res, extra, EXPLAIN_PROMPT) if insights else None
+        if not text:
+            text = (f"ANSWER: This table has {len(df):,} rows and {len(df.columns)} columns. The list below explains each column.\n"
+                    "(The written explanation is not available right now; the exact column facts are in the table.)")
+        plan.update({"chart": "none", "title": plan.get("title") or "About this file"})
+        return {"plan": plan, "res": res, "filtered": df, "keys": [], "metric": "Filled",
+                "title": plan["title"], "insight": text}
+
     res, filtered, keys, metric = await asyncio.to_thread(run_plan, df, plan)
-    insight = await summarize(question, res) if insights else None
+    method = method_lines(df, plan, res, filtered, keys, metric)
+    figures = key_figures(res, keys, metric)
+    text = None
+    if insights:
+        extra = ("Key figures (exact, computed by code):\n" + "\n".join(figures) + "\n\nHow it was worked out:\n" + "\n".join(method)
+                 + ("\n\nAssumptions:\n" + "\n".join(notes) if notes else ""))
+        text = await summarize(question, res, extra)
+        if text:
+            allowed = res.head(60).to_string(index=False) + " " + extra + " " + question + " " + json.dumps(plan, default=str)
+            bad = unverified_figures(text, allowed)
+            if bad:
+                text += "\n\nPlease double-check these figures, I could not match them directly to the result table: " + ", ".join(bad) + "."
+    if not text:  # AI unavailable or off: still give the exact numbers
+        text = "ANSWER: " + (f"{len(res):,} result row(s). " if len(res) else "") + "The exact figures are in the table below.\n"
+        if figures:
+            text += "BREAKDOWN:\n" + "\n".join("- " + f for f in figures)
+    tail = "\n\nHOW THIS WAS WORKED OUT:\n" + "\n".join("- " + m for m in method)
+    if notes:
+        tail += "\n\nMY ASSUMPTIONS:\n" + "\n".join("- " + n for n in notes)
     return {
         "plan": plan, "res": res, "filtered": filtered, "keys": keys,
-        "metric": metric, "title": plan.get("title") or "Result", "insight": insight,
+        "metric": metric, "title": plan.get("title") or "Result", "insight": text + tail,
     }
 
 

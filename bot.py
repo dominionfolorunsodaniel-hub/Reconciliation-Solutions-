@@ -489,8 +489,8 @@ async def on_file(update: Update, context: ContextTypes.DEFAULT_TYPE):
     ud = state(context)
     user, message, doc = ud["user"], update.message, update.message.document
     name = doc.file_name or "report.csv"
-    if name.lower().rsplit(".", 1)[-1] not in core.ALLOWED_EXT:
-        await message.reply_text("I can read CSV, Excel (.xlsx/.xls) and PDF files.")
+    if "." in name and name.lower().rsplit(".", 1)[-1] not in core.ALLOWED_EXT:
+        await message.reply_text("I can read " + core.FILE_TYPES_TEXT + ".")
         return
     if doc.file_size and doc.file_size > core.MAX_FILE_MB * 1024 * 1024:
         await message.reply_text(f"File is too large (limit {core.MAX_FILE_MB} MB).")
