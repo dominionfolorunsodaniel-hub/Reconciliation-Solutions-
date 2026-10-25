@@ -260,6 +260,17 @@ class PasswordIn(BaseModel):
     password: str
 
 
+class BroadcastIn(BaseModel):
+    title: str
+    message: str
+    level: str = "info"
+    days: int | None = 14
+
+
+class ReadIn(BaseModel):
+    ids: list[int] | None = None
+
+
 class ResetRequestIn(BaseModel):
     username: str
 
@@ -888,6 +899,44 @@ def admin_payment_proof(request_id: int, user: dict = Depends(current_user)):
         raise HTTPException(404, "No screenshot was attached to this request.")
     return Response(content=found[0], media_type=found[1],
                     headers={"X-Content-Type-Options": "nosniff", "Cache-Control": "private, no-store"})
+
+
+# ----------------------- notifications + admin broadcast ----------------------- #
+@app.get("/api/notifications")
+def notifications(user: dict = Depends(current_user)):
+    return db.list_notifications(user["id"])
+
+
+@app.post("/api/notifications/read")
+def notifications_read(body: ReadIn, user: dict = Depends(current_user)):
+    db.mark_notifications_read(user["id"], body.ids)
+    return {"ok": True}
+
+
+@app.get("/api/admin/broadcasts")
+def admin_broadcasts(user: dict = Depends(current_user)):
+    need(user, "admin")
+    return db.list_broadcasts_admin()
+
+
+@app.post("/api/admin/broadcasts")
+def admin_broadcast_send(body: BroadcastIn, user: dict = Depends(current_user)):
+    need(user, "admin")
+    try:
+        row = db.create_broadcast(body.title, body.message, body.level, body.days, user["id"])
+    except ValueError as e:
+        raise HTTPException(400, str(e))
+    db.audit(user, "broadcast_sent", None, f"#{row['id']}: {row['title'][:80]}")
+    return row
+
+
+@app.delete("/api/admin/broadcasts/{broadcast_id}")
+def admin_broadcast_withdraw(broadcast_id: int, user: dict = Depends(current_user)):
+    need(user, "admin")
+    if not db.withdraw_broadcast(broadcast_id):
+        raise HTTPException(404, "Announcement not found.")
+    db.audit(user, "broadcast_withdrawn", None, f"#{broadcast_id}")
+    return {"ok": True}
 
 
 # ----------------------- forgot password (Telegram one-time code) ----------------------- #

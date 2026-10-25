@@ -236,6 +236,12 @@ def _init_schema(_con) -> None:
     _ensure_column(_con, "payment_requests", "proof_at", "TEXT")
     _con.executescript("CREATE TABLE IF NOT EXISTS password_resets (user_id INTEGER PRIMARY KEY, code_hash TEXT NOT NULL, "
                        "expires_at TEXT NOT NULL, attempts INTEGER NOT NULL DEFAULT 0, created_at TEXT NOT NULL);")
+    _con.executescript(
+        "CREATE TABLE IF NOT EXISTS broadcasts (id INTEGER PRIMARY KEY AUTOINCREMENT, title TEXT NOT NULL, body TEXT NOT NULL, "
+        "level TEXT NOT NULL DEFAULT 'info', created_by INTEGER, created_at TEXT NOT NULL, expires_at TEXT, "
+        "active INTEGER NOT NULL DEFAULT 1);"
+        "CREATE TABLE IF NOT EXISTS broadcast_reads (broadcast_id INTEGER NOT NULL, user_id INTEGER NOT NULL, "
+        "read_at TEXT NOT NULL, PRIMARY KEY (broadcast_id, user_id));")
 
 
 run_startup_migration(_init_schema)
@@ -1074,6 +1080,77 @@ def get_payment_proof(request_id: int) -> tuple[bytes, str] | None:
     if not row or not row["proof_data"]:
         return None
     return base64.b64decode(_dec_text(row["proof_data"])), row["proof_mime"] or "image/jpeg"
+
+
+# ---- broadcasts: admin announcements that every user sees under Notifications ----------- #
+BROADCAST_LEVELS = ("info", "success", "warning")
+
+
+def create_broadcast(title: str, body: str, level: str, days: int | None, admin_id: int) -> dict:
+    title, body = (title or "").strip(), (body or "").strip()
+    if not title or len(title) > 120:
+        raise ValueError("Write a title (up to 120 characters).")
+    if not body or len(body) > 2000:
+        raise ValueError("Write a message (up to 2000 characters).")
+    level = level if level in BROADCAST_LEVELS else "info"
+    expires = None
+    if days:
+        days = max(1, min(int(days), 365))
+        expires = (dt.datetime.now(dt.timezone.utc) + dt.timedelta(days=days)).strftime(FMT)
+    with _db() as con:
+        cur = con.execute("INSERT INTO broadcasts(title, body, level, created_by, created_at, expires_at, active) "
+                          "VALUES (?,?,?,?,?,?,1)", (title, body, level, admin_id, _now(), expires))
+        bid = cur.lastrowid
+        # the sender has obviously read it
+        con.execute("INSERT OR IGNORE INTO broadcast_reads(broadcast_id, user_id, read_at) VALUES (?,?,?)", (bid, admin_id, _now()))
+        return dict(con.execute("SELECT * FROM broadcasts WHERE id = ?", (bid,)).fetchone())
+
+
+def list_notifications(user_id: int, limit: int = 30) -> list[dict]:
+    """Live announcements for one user, newest first, with an is_read flag."""
+    with _db() as con:
+        rows = con.execute(
+            "SELECT b.id, b.title, b.body, b.level, b.created_at, "
+            "(CASE WHEN r.user_id IS NULL THEN 0 ELSE 1 END) AS is_read "
+            "FROM broadcasts b LEFT JOIN broadcast_reads r ON r.broadcast_id = b.id AND r.user_id = ? "
+            "WHERE b.active = 1 AND (b.expires_at IS NULL OR b.expires_at > ?) ORDER BY b.id DESC LIMIT ?",
+            (user_id, _now(), int(limit))).fetchall()
+    out = [dict(r) for r in rows]
+    for r in out:
+        r["is_read"] = bool(r["is_read"])
+    return out
+
+
+def mark_notifications_read(user_id: int, ids: list[int] | None = None) -> None:
+    """Mark the given announcements (or every live one) as read for this user."""
+    wanted = None if ids is None else {int(i) for i in ids[:200]}
+    with _db() as con:
+        rows = con.execute("SELECT id FROM broadcasts WHERE active = 1 ORDER BY id DESC LIMIT 200").fetchall()
+        now = _now()
+        for r in rows:
+            if wanted is None or r["id"] in wanted:
+                con.execute("INSERT OR IGNORE INTO broadcast_reads(broadcast_id, user_id, read_at) VALUES (?,?,?)",
+                            (r["id"], user_id, now))
+
+
+def list_broadcasts_admin(limit: int = 50) -> dict:
+    with _db() as con:
+        rows = con.execute(
+            "SELECT b.id, b.title, b.body, b.level, b.created_at, b.expires_at, b.active, u.username AS created_by_name, "
+            "(SELECT COUNT(*) FROM broadcast_reads r JOIN users ru ON ru.id = r.user_id "
+            " WHERE r.broadcast_id = b.id AND ru.role <> 'admin') AS read_count "
+            "FROM broadcasts b LEFT JOIN users u ON u.id = b.created_by ORDER BY b.id DESC LIMIT ?", (int(limit),)).fetchall()
+        customers = con.execute("SELECT COUNT(*) AS n FROM users WHERE role <> 'admin' AND active = 1").fetchone()["n"]
+    return {"customers": int(customers), "items": [dict(r) for r in rows]}
+
+
+def withdraw_broadcast(broadcast_id: int) -> bool:
+    with _db() as con:
+        row = con.execute("SELECT id FROM broadcasts WHERE id = ?", (broadcast_id,)).fetchone()
+        if not row:
+            return False
+        con.execute("UPDATE broadcasts SET active = 0 WHERE id = ?", (broadcast_id,))
+    return True
 
 
 # ---- password reset (one-time code sent to the user's linked Telegram) -------- #
