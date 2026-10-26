@@ -415,6 +415,41 @@
   @media (max-width:560px) { .plans { grid-template-columns:1fr; } }
   @media (max-width:900px) { .bell-label { display:none; } }
   @media (max-width:760px) { .bell-panel { position:fixed; left:10px; right:10px; top:66px; width:auto; max-height:calc(100vh - 86px); z-index:2000; } }
+
+  /* ===== extras: overview, coupons, feedback, saved questions, demo, dark mode ===== */
+  .ov-bar { display:grid; grid-template-columns:70px 1fr auto; gap:10px; align-items:center; margin:6px 0; font-size:13px; }
+  .ov-bar i { display:block; height:10px; border-radius:99px; background:linear-gradient(90deg,#1769ff,#22d3ee); }
+  .fb-row { display:flex; gap:8px; align-items:center; flex-wrap:wrap; margin-top:10px; padding-top:10px; border-top:1px dashed var(--line); }
+  .fb-row button { padding:6px 12px; }
+  #savedQs { display:flex; gap:8px; flex-wrap:wrap; align-items:center; margin-top:8px; }
+  #themeBtn { padding:8px 11px; font-size:16px; line-height:1; }
+  .demo { display:grid; grid-template-columns:1fr 1fr; gap:18px; align-items:center; }
+  .demo .bubble { padding:12px 14px; border-radius:16px; background:rgba(255,255,255,.1); border:1px solid rgba(255,255,255,.16); margin-bottom:10px; }
+  .demo .bubble.me { background:linear-gradient(120deg,#1769ff,#22d3ee); border:0; color:#fff; margin-left:auto; max-width:92%; }
+  .demo .ans b { color:#7ef0c5; }
+  .demo .ans ul { margin:8px 0 0; padding-left:18px; color:#dbe3ff; font-size:14px; line-height:1.55; }
+  .works-with { display:flex; flex-wrap:wrap; gap:8px; justify-content:center; margin-top:18px; }
+  .works-with span { padding:6px 12px; border-radius:99px; background:rgba(255,255,255,.1); border:1px solid rgba(255,255,255,.16); font-size:13px; }
+  @media (max-width:800px) { .demo { grid-template-columns:1fr; } }
+
+  /* dark mode (the sidebar, header and landing page are already dark) */
+  html[data-theme=dark] { color-scheme:dark; --bg:#0b1220; --card:#121b2e; --ink:#e7edfb; --mute:#9aa8c5; --line:#26354f; }
+  html[data-theme=dark] body { background:var(--bg); color:var(--ink); }
+  html[data-theme=dark] #app main .card, html[data-theme=dark] #app main .d-panel, html[data-theme=dark] #app .urow,
+  html[data-theme=dark] #app .metric-card, html[data-theme=dark] .bell-panel, html[data-theme=dark] .tablewrap { background:var(--card) !important; color:var(--ink); border-color:var(--line) !important; }
+  html[data-theme=dark] #app input, html[data-theme=dark] #app select, html[data-theme=dark] #app textarea { background:#0e1729 !important; color:var(--ink) !important; border-color:var(--line) !important; }
+  html[data-theme=dark] #app table, html[data-theme=dark] #app td, html[data-theme=dark] #app th { background:transparent !important; color:var(--ink) !important; border-color:var(--line) !important; }
+  html[data-theme=dark] #app th { color:#b9c6e4 !important; }
+  html[data-theme=dark] #app .insight { background:#14213a !important; color:var(--ink); }
+  html[data-theme=dark] #app .ghost { background:#16233b; color:#dbe6ff; border-color:var(--line); }
+  html[data-theme=dark] #app .mute, html[data-theme=dark] #app small, html[data-theme=dark] #app .d-sub { color:var(--mute) !important; }
+  html[data-theme=dark] #app h2, html[data-theme=dark] #app h3, html[data-theme=dark] #app b, html[data-theme=dark] #app strong { color:var(--ink); }
+  html[data-theme=dark] .news-item { background:#14213a; color:var(--ink); border-color:var(--line); }
+  html[data-theme=dark] .news-item.success { background:#0f2a22; } html[data-theme=dark] .news-item.warning { background:#2c2210; }
+  html[data-theme=dark] .news-banner { background:#14213a; color:#dbe6ff; border-color:#2a3d63; }
+  html[data-theme=dark] .bell-item, html[data-theme=dark] .d-chip { background:#16233b; color:#dbe6ff; }
+  html[data-theme=dark] .pay-notice { background:#2a2312 !important; }
+  html[data-theme=dark] #app .pill.ok { background:#0f2a22; color:#7ef0c5; }
 </style>
 </head>
 <body>
@@ -465,9 +500,9 @@
           <summary style="cursor:pointer;color:#c9d4ff">Forgot your password?</summary>
           <div style="display:grid;gap:9px;margin-top:12px">
             <input type="text" id="fpUser" placeholder="Your username" maxlength="40" autocomplete="off">
-            <button id="fpSend" type="button">Send me a code on Telegram</button>
+            <button id="fpSend" type="button">Send me a code</button>
             <div id="fpStep2" class="hidden" style="display:grid;gap:9px">
-              <input type="text" id="fpCode" placeholder="6-digit code from Telegram" inputmode="numeric" maxlength="6" autocomplete="off">
+              <input type="text" id="fpCode" placeholder="6-digit code we sent you" inputmode="numeric" maxlength="6" autocomplete="off">
               <input type="password" id="fpNew" placeholder="New password (at least 10 characters)" autocomplete="new-password">
               <button id="fpConfirm" type="button">Set new password</button>
             </div>
@@ -480,7 +515,9 @@
             <input type="text" id="regCompany" placeholder="Company / business name" maxlength="120">
             <input type="text" id="regUsername" placeholder="Choose a username" maxlength="40" autocomplete="username">
             <input type="password" id="regPassword" placeholder="Password (at least 10 characters)" autocomplete="new-password">
-            <input type="number" id="regTelegram" placeholder="Telegram ID (optional)">
+            <input type="email" id="regEmail" placeholder="Email address (for password reset and updates)" maxlength="160" autocomplete="email">
+            <input type="text" id="regReferral" placeholder="Referral code (optional)" maxlength="20" autocomplete="off">
+            <input type="number" id="regTelegram" placeholder="Telegram ID (optional)" class="hidden">
             <button id="regBtn" type="button">Request access</button>
             <div class="mute" style="font-size:12px;color:#aebbe0">By requesting access you agree to our <a href="#" data-legal="terms" style="color:#dbe6ff">Terms</a> and <a href="#" data-legal="privacy" style="color:#dbe6ff">Privacy Policy</a>.</div>
             <div class="err" id="regMsg" aria-live="polite"></div>
@@ -509,6 +546,22 @@
         <div class="glass step"><div class="n">2</div><b>⚡ Compare</b><span class="d">Every row is matched in seconds.</span></div>
         <div class="glass step"><div class="n">3</div><b>✅ Fix</b><span class="d">See exactly what is missing or different.</span></div>
       </div>
+    </section>
+
+    <section class="sec" id="demo">
+      <h2>Ask in your own words</h2>
+      <p class="sub">Spelling mistakes, slang and Pidgin are fine. You get the answer, the working and a plain explanation.</p>
+      <div class="demo">
+        <div>
+          <div class="bubble me">hw much be my credit and debit total abeg</div>
+          <div class="bubble">📎 GTBank_statement_Sep_Oct.xlsx · 40 transactions</div>
+        </div>
+        <div class="bubble ans">
+          <b>ANSWER:</b> You received <b>₦2,050,000</b> (credits) and spent <b>₦836,736</b> (debits).
+          <ul><li>17 credits (money in) and 23 debits (money out)</li><li>Biggest credit: salary, ₦350,000</li><li>✅ Cross-check passed: the groups add up exactly</li></ul>
+        </div>
+      </div>
+      <div class="works-with"><span>📊 Excel</span><span>📄 CSV</span><span>📕 PDF</span><span>📝 Word</span><span>🧾 JSON / XML</span><span>🌐 HTML</span><span>📷 Photos &amp; screenshots</span></div>
     </section>
 
     <section class="sec" id="pricing">
@@ -555,6 +608,7 @@
   <div class="sb-brand"><span class="sb-logo">📊</span><div><b>Report Analyzer</b><small>Smarter Reports. Better Decisions.</small></div></div>
   <nav class="sb-nav">
     <button type="button" class="sb-item" data-nav="dashboard"><span class="ic">🏠</span><span>Dashboard</span></button>
+    <button type="button" class="sb-item admin-only hidden" data-nav="overview"><span class="ic">📈</span><span>Owner Overview</span></button>
     <button type="button" class="sb-item analyst-up hidden" data-nav="upload"><span class="ic">⬆️</span><span>Upload Report</span></button>
     <button type="button" class="sb-item" data-nav="reports"><span class="ic">📄</span><span>My Reports</span></button>
     <button type="button" class="sb-item" data-nav="analytics"><span class="ic">💬</span><span>Ask &amp; Analytics</span></button>
@@ -595,6 +649,7 @@
   <button class="ghost admin-only hidden" id="adminBtn">Admin</button>
   <button class="ghost v2-help-link v2-tour-launch" id="v2TourLaunch" type="button">❔ Help</button>
   <button class="ghost" id="twofaBtn">🔐 2FA</button>
+  <button type="button" class="ghost" id="themeBtn" aria-label="Dark mode" title="Switch to dark mode">🌙</button>
   <div class="bell-wrap"><button type="button" class="ghost bell" id="bellBtn" aria-label="Notifications" title="Notifications">🔔<span class="bell-label">Notifications</span><span id="bellBadge" class="bell-badge hidden">0</span></button><div id="bellPanel" class="bell-panel hidden"></div></div>
   <div class="who-chip"><span class="avatar" id="avatar">U</span><span id="who" class="who"></span></div>
   <button class="ghost" id="logout">Log out</button>
@@ -659,6 +714,33 @@
     <div class="mute" id="reportsEmpty"></div>
   </section>
 
+  <section class="d-panel admin-only hidden" data-views="overview">
+    <h3>📈 Owner overview</h3>
+    <p class="d-sub">How your business is doing right now. Only you can see this page.</p>
+    <div id="ovBody">Loading…</div>
+  </section>
+
+  <section class="d-panel admin-only hidden" data-views="overview">
+    <h3>🎟️ Coupon codes</h3>
+    <p class="d-sub">Give a customer free days, or a percentage off one payment. Each code can be used once per company.</p>
+    <div class="row">
+      <select id="cpKind"><option value="percent">% off a payment</option><option value="days">Free days</option></select>
+      <input type="number" id="cpValue" placeholder="Value (e.g. 20 or 3)" min="0.5" step="0.5" style="max-width:170px">
+      <input type="number" id="cpUses" value="1" min="1" title="How many companies can use it" style="max-width:90px">
+      <input type="number" id="cpDays" value="30" min="1" title="Valid for how many days" style="max-width:90px">
+      <input type="text" id="cpCode" placeholder="Custom code (optional)" maxlength="32" style="max-width:200px">
+      <button id="cpCreate" type="button">Create coupon</button>
+    </div>
+    <div class="mute">Boxes: type, value, number of uses, valid days, optional custom code.</div>
+    <div class="mute" id="cpMsg"></div>
+    <div id="cpList" style="display:grid;gap:8px;margin-top:10px"></div>
+  </section>
+
+  <section class="d-panel admin-only hidden" data-views="overview">
+    <h3>👎 Answers customers marked wrong</h3>
+    <div id="fbList" style="display:grid;gap:6px"></div>
+  </section>
+
   <section class="d-panel" data-views="notifications">
     <div class="d-head"><div><h3>🔔 Notifications</h3><p class="d-sub">News and announcements from the Report Analyzer team.</p></div><button type="button" class="ghost" id="notifReadAll">Mark all as read</button></div>
     <div id="notifList" style="display:grid;gap:10px"></div>
@@ -675,6 +757,7 @@
         <select id="bcLevel"><option value="info">📢 Announcement</option><option value="success">✅ Good news</option><option value="warning">⚠️ Important</option></select>
         <select id="bcDays"><option value="1">Show for 1 day</option><option value="3">Show for 3 days</option><option value="7">Show for 7 days</option><option value="14" selected>Show for 14 days</option><option value="30">Show for 30 days</option><option value="0">Until I withdraw it</option></select>
       </div>
+      <label class="mute"><input type="checkbox" id="bcEmail"> Also send it by email to customers who added an email</label>
       <div><div class="mute" style="margin-bottom:4px">Preview</div><div id="bcPreview"></div></div>
       <div class="row"><button type="button" id="bcSend">📣 Send to all customers</button><span class="mute" id="bcMsg"></span></div>
     </div>
@@ -687,6 +770,22 @@
     <p>Report Analyzer exists to make financial reconciliation simple and affordable for teams like yours. Your support helps cover hosting, security and new features.</p>
     <p class="mute">Online donations are still being set up. If you would like to support the project today, message us on WhatsApp and we will share the details.</p>
     <a class="d-btn" href="https://wa.me/2348100481004?text=Hello%2C%20I%20would%20like%20to%20support%20Report%20Analyzer" target="_blank" rel="noopener noreferrer">Message us on WhatsApp</a>
+  </section>
+
+  <section class="card" id="accountCard" data-views="settings">
+    <h2>👤 My account</h2>
+    <div class="urow">
+      <b>📧 My email</b>
+      <div class="mute">We use it to send your password reset code, plan reminders and payment updates. Nobody else sees it.</div>
+      <div class="row"><input type="email" id="acctEmail" placeholder="you@example.com" maxlength="160"><button id="acctEmailSave" type="button">Save email</button></div>
+      <div class="mute" id="acctMsg"></div>
+    </div>
+    <div class="urow">
+      <b>🎁 Refer a friend</b>
+      <div class="mute" id="refStats">Loading…</div>
+      <div>Your code: <b id="refCode" style="letter-spacing:.06em"></b></div>
+      <div class="row"><input type="text" id="refLink" readonly><button class="ghost" id="refCopy" type="button">Copy link</button><a id="refShare" target="_blank" rel="noopener"><button type="button">Share on WhatsApp</button></a></div>
+    </div>
   </section>
 
   <section class="card hidden" id="twofaCard" data-views="settings">
@@ -733,6 +832,12 @@
       <p>These are temporary accounts with limited transaction capacity, so a transfer may sometimes fail or take a little longer. Please be patient with us. We are working hard to make paying easier, and we promise it will be worth the wait. Thank you so much for your understanding and for trusting us ❤️</p>
       <p><strong>For payments above ₦150,000, please message us before paying</strong> so we can arrange it smoothly. Kindly do not split one payment into smaller transfers to get around account limits.</p>
     </div>
+    <div class="urow" id="couponBox">
+      <b>🎟️ Have a coupon code?</b>
+      <div class="mute">A free-days code adds days to your plan right away. A discount code goes in the box next to your payment reference below.</div>
+      <div class="row"><input type="text" id="couponCode" placeholder="Free-days coupon code" maxlength="32" style="max-width:240px"><button id="couponRedeem" type="button" class="ghost">Redeem</button><span class="mute" id="couponMsg"></span></div>
+      <div class="row"><input type="text" id="payCoupon" placeholder="Discount coupon for this payment (optional)" maxlength="32" style="max-width:340px"></div>
+    </div>
     <div id="bankDetails" class="urow"></div>
     <div class="row" style="margin-top:8px">
       <select id="billingPlan">
@@ -776,7 +881,7 @@
     <div id="aboutFlags" style="color:#b9770e;margin-top:6px"></div>
     <div class="mute" style="margin-top:8px">Try asking:</div>
     <div class="row" id="aboutQs" style="margin-top:6px"></div>
-  </section>
+</section>
 
   <section class="card" id="v2-ask" data-views="analytics">
     <h2>Ask a question</h2>
@@ -785,6 +890,8 @@
       <button id="ask">Analyze</button>
     </div>
     <label class="mute"><input type="checkbox" id="followup"> Refine the previous result</label>
+    <div id="savedQs"></div>
+    <div class="mute" style="margin-top:6px">Tip: choose "All reports combined" above to compare months or files. You can type in your own words, spelling mistakes are fine.</div>
     <div class="row" style="margin-top:10px">
       <button class="ghost" id="fBtn">📈 ATM cash forecast</button>
       <input type="number" id="fDays" value="7" min="1" max="30" style="width:74px" title="days ahead"> <span class="mute">days</span>
@@ -802,6 +909,13 @@
     <canvas id="chart" class="hidden"></canvas>
     <div class="tablewrap" style="margin-top:10px"><table id="table"></table></div>
     <div class="mute" id="rowInfo"></div>
+    <div class="fb-row">
+      <span class="mute">Was this answer helpful?</span>
+      <button class="ghost" id="fbUp" type="button" aria-label="Helpful">👍</button>
+      <button class="ghost" id="fbDown" type="button" aria-label="Not helpful">👎</button>
+      <button class="ghost" id="saveQ" type="button">⭐ Save this question</button>
+      <span class="mute" id="fbMsg"></span>
+    </div>
   </section>
 
   <section class="card" id="v2-compare" data-views="reconciliation">
@@ -1091,7 +1205,9 @@ $("regBtn").onclick = async () => {
     company_name: $("regCompany").value.trim(),
     username: $("regUsername").value.trim(),
     password: $("regPassword").value,
-    telegram_id: $("regTelegram").value ? Number($("regTelegram").value) : null
+    telegram_id: $("regTelegram").value ? Number($("regTelegram").value) : null,
+    email: $("regEmail").value.trim() || null,
+    referral_code: $("regReferral").value.trim() || null
   };
   if (!payload.company_name || !payload.username || !payload.password) {
     msg.textContent = "Enter company name, username, and password."; btn.disabled = false; return;
@@ -1099,7 +1215,7 @@ $("regBtn").onclick = async () => {
   try {
     const result = await jpost("/api/register", payload);
     msg.textContent = result.message; $("regCompany").value = ""; $("regUsername").value = "";
-    $("regPassword").value = ""; $("regTelegram").value = "";
+    $("regPassword").value = ""; $("regTelegram").value = ""; $("regEmail").value = "";
   } catch (e) { msg.textContent = "❌ " + e.message; }
   finally { btn.disabled = false; }
 };
@@ -1363,7 +1479,7 @@ async function loadBilling() {
   try {
     const b = await api(`/api/billing/status?company_id=${encodeURIComponent(cid)}`);
     const term = b.term_label || (b.plan === "expired" ? "access expired" : `${b.duration_days} day term`);
-    $("billingStatus").textContent = `${b.name} plan: ${b.plan.toUpperCase()} · ${b.used}/${b.monthly_limit} analyses used this month · ${b.remaining} remaining · ${term}` + (b.expires_at ? ` · expires ${b.expires_at} UTC` : "");
+    $("billingStatus").textContent = `${b.name} plan: ${b.plan.toUpperCase()} · ${b.used}/${b.monthly_limit} analyses used this month · ${b.remaining} remaining · ${term}` + (b.expires_at ? ` · expires ${b.expires_at} UTC` : "") + (b.in_grace ? ` · ⏰ Grace period until ${b.grace_ends_at} UTC: please renew` : "");
     const banks = Array.isArray(b.banks) ? b.banks : (b.bank && b.bank.name ? [b.bank] : []);
     $("bankDetails").replaceChildren();
     $("bankDetails").append(el("b", "Temporary bank transfer details"));
@@ -1388,7 +1504,7 @@ $("submitPayment").onclick = async () => {
   }
   const btn = $("submitPayment"); btn.disabled = true;
   try {
-    const r = await jpost("/api/billing/payment-requests", { company_id: cid, plan, transfer_reference: reference });
+    const r = await jpost("/api/billing/payment-requests", { company_id: cid, plan, transfer_reference: reference, coupon_code: ($("payCoupon") && $("payCoupon").value.trim()) || null });
     $("billingMsg").textContent = `Request #${r.id} submitted for ₦${Number(r.amount_ngn).toLocaleString()}. Access remains on your current plan until an admin verifies payment.`;
     $("transferReference").value = ""; await loadBilling();
   } catch (e) { $("billingMsg").textContent = "❌ " + e.message; }
@@ -1592,9 +1708,13 @@ api("/api/me").then(start).catch(showLanding);
   const typeOf = name => {
     const e = extOf(name);
     if (e === "csv") return "CSV";
-    if (["xlsx", "xls", "xlsm"].includes(e)) return "Excel";
+    if (["xlsx", "xls", "xlsm", "ods"].includes(e)) return "Excel";
     if (e === "pdf") return "PDF";
-    if (e === "txt") return "Text";
+    if (["txt", "tsv", "text", "dat"].includes(e)) return "Text";
+    if (["docx"].includes(e)) return "Word";
+    if (["json", "jsonl", "ndjson", "xml"].includes(e)) return e === "xml" ? "XML" : "JSON";
+    if (["html", "htm"].includes(e)) return "Web page";
+    if (["png", "jpg", "jpeg", "webp", "bmp", "tif", "tiff", "gif"].includes(e)) return "Picture";
     return "Other";
   };
 
@@ -1831,7 +1951,7 @@ api("/api/me").then(start).catch(showLanding);
     try {
       const b = await api("/api/billing/status?company_id=" + encodeURIComponent(cid));
       const term = b.term_label || (b.plan === "expired" ? "access expired" : b.duration_days + " day term");
-      $("billingStatus").textContent = `${b.name} plan: ${b.plan.toUpperCase()} · ${b.used}/${b.monthly_limit} analyses used this month · ${b.remaining} remaining · ${term}` + (b.expires_at ? ` · expires ${b.expires_at} UTC` : "");
+      $("billingStatus").textContent = `${b.name} plan: ${b.plan.toUpperCase()} · ${b.used}/${b.monthly_limit} analyses used this month · ${b.remaining} remaining · ${term}` + (b.expires_at ? ` · expires ${b.expires_at} UTC` : "") + (b.in_grace ? ` · ⏰ Grace period until ${b.grace_ends_at} UTC: please renew` : "");
       const banks = Array.isArray(b.banks) ? b.banks : (b.bank && b.bank.name ? [b.bank] : []);
       renderBanks(banks);
       const ready = banks.some(bank => bank.name && bank.account_number && bank.account_name);
@@ -1881,7 +2001,7 @@ api("/api/me").then(start).catch(showLanding);
     }
     const btn = $("submitPayment"); btn.disabled = true;
     try {
-      const r = await jpost("/api/billing/payment-requests", { company_id: cid, plan, transfer_reference: reference });
+      const r = await jpost("/api/billing/payment-requests", { company_id: cid, plan, transfer_reference: reference, coupon_code: ($("payCoupon") && $("payCoupon").value.trim()) || null });
       let extra = "";
       try { extra = " " + await sendProof(cid); }
       catch (e) { extra = " ⚠️ Your request is saved, but the screenshot could not be sent (" + e.message + "). Please use the “Send screenshot” button below to try again."; }
@@ -2088,7 +2208,7 @@ api("/api/me").then(start).catch(showLanding);
     if (!confirm("Send this announcement to ALL customers now?")) return;
     $("bcSend").disabled = true;
     try {
-      await jpost("/api/admin/broadcasts", { title, message, level: $("bcLevel").value, days: Number($("bcDays").value) || null });
+      await jpost("/api/admin/broadcasts", { title, message, level: $("bcLevel").value, days: Number($("bcDays").value) || null, email: $("bcEmail").checked });
       $("bcTitle").value = ""; $("bcBody").value = ""; bcPreview();
       $("bcMsg").textContent = "✅ Sent. Customers will see it under Notifications.";
       await loadBroadcasts(); refreshBell();
@@ -2107,6 +2227,181 @@ api("/api/me").then(start).catch(showLanding);
     if (v === "broadcast") loadBroadcasts();
     renderBanner();
   };
+
+  /* ---------- dark mode ---------- */
+  function setTheme(t) {
+    document.documentElement.setAttribute("data-theme", t);
+    try { localStorage.setItem("ra_theme", t); } catch (e) { /* private mode: fine */ }
+    const b = $("themeBtn"); if (b) { b.textContent = t === "dark" ? "☀️" : "🌙"; b.title = t === "dark" ? "Switch to light mode" : "Switch to dark mode"; }
+  }
+  (function () { let t = "light"; try { t = localStorage.getItem("ra_theme") === "dark" ? "dark" : "light"; } catch (e) {} setTheme(t); })();
+  $("themeBtn").addEventListener("click", () => setTheme(document.documentElement.getAttribute("data-theme") === "dark" ? "light" : "dark"));
+
+  /* ---------- my account: email + referral ---------- */
+  async function loadAccount() {
+    if (!S.user) return;
+    $("acctEmail").value = S.user.email || "";
+    try {
+      const r = await api("/api/referral");
+      $("refCode").textContent = r.code;
+      $("refStats").textContent = `${r.joined} joined with your code · ${r.rewarded} subscribed. You and your friend each get ${r.bonus_days} bonus day(s) when they subscribe.`;
+      const link = location.origin + "/?ref=" + r.code;
+      $("refLink").value = link;
+      $("refShare").href = "https://wa.me/?text=" + encodeURIComponent("I use Report Analyzer to match ATM/POS reports and bank statements in seconds. Sign up here: " + link + " (referral code " + r.code + ")");
+    } catch (e) { $("refStats").textContent = ""; }
+  }
+  $("acctEmailSave").onclick = async () => {
+    $("acctMsg").textContent = "";
+    try {
+      const r = await jsend("PUT", "/api/me/email", { email: $("acctEmail").value.trim() });
+      S.user.email = r.email;
+      $("acctMsg").textContent = r.email ? "✅ Saved. We will use it for password resets and plan reminders." : "Email removed.";
+    } catch (e) { $("acctMsg").textContent = "❌ " + e.message; }
+  };
+  $("refCopy").onclick = async () => {
+    try { await navigator.clipboard.writeText($("refLink").value); $("refCopy").textContent = "Copied ✓"; }
+    catch (e) { $("refLink").select(); }
+    setTimeout(() => { $("refCopy").textContent = "Copy link"; }, 1800);
+  };
+
+  /* ---------- coupons (customer) ---------- */
+  $("couponRedeem").onclick = async () => {
+    const code = $("couponCode").value.trim(); $("couponMsg").textContent = "";
+    if (!code) { $("couponMsg").textContent = "Enter your coupon code."; return; }
+    try {
+      const r = await jpost("/api/billing/redeem", { company_id: Number($("company").value), code });
+      $("couponMsg").textContent = `✅ ${r.days} free day(s) added. Your plan now runs until ${r.expires_at} UTC.`;
+      $("couponCode").value = ""; if (typeof loadBilling === "function") loadBilling();
+    } catch (e) { $("couponMsg").textContent = "❌ " + e.message; }
+  };
+
+  /* ---------- saved questions ---------- */
+  async function loadSaved() {
+    const host = $("savedQs"); if (!host || !S.user) return;
+    const cid = Number($("company").value); if (!cid) { host.replaceChildren(); return; }
+    try {
+      const items = await api(`/api/companies/${cid}/saved-questions`);
+      host.replaceChildren();
+      if (!items.length) return;
+      host.append(el("span", "⭐ Saved:", "mute"));
+      items.forEach(q => {
+        const chip = el("span", "", "d-chip"); chip.style.cursor = "pointer";
+        const t = el("span", q.question.length > 46 ? q.question.slice(0, 44) + "…" : q.question); t.title = q.question;
+        t.onclick = () => { $("question").value = q.question; $("question").focus(); };
+        const x = el("b", " ✕"); x.title = "Remove"; x.style.marginLeft = "6px";
+        x.onclick = async e => { e.stopPropagation(); try { await api("/api/saved-questions/" + q.id, { method: "DELETE" }); } catch (er) {} loadSaved(); };
+        chip.append(t, x); host.append(chip);
+      });
+    } catch (e) { /* not critical */ }
+  }
+  let lastQ = "";
+  $("ask").addEventListener("click", () => { lastQ = $("question").value.trim(); });
+  $("question").addEventListener("keydown", e => { if (e.key === "Enter") lastQ = $("question").value.trim(); });
+  $("saveQ").onclick = async () => {
+    const q = lastQ || $("question").value.trim(); if (!q) return;
+    try { await jpost(`/api/companies/${Number($("company").value)}/saved-questions`, { question: q }); $("fbMsg").textContent = "⭐ Saved. Find it under your question box."; loadSaved(); }
+    catch (e) { $("fbMsg").textContent = "❌ " + e.message; }
+  };
+  async function sendFeedback(rating) {
+    let comment = "";
+    if (rating < 0) comment = prompt("Sorry about that. What was wrong? (optional)") || "";
+    try {
+      await jpost("/api/feedback", { company_id: Number($("company").value), rating, question: lastQ || $("question").value.trim(), comment });
+      $("fbMsg").textContent = rating > 0 ? "Thank you! 💙" : "Thanks, we will use this to improve.";
+      $("fbUp").disabled = $("fbDown").disabled = true;
+    } catch (e) { $("fbMsg").textContent = "❌ " + e.message; }
+  }
+  $("fbUp").onclick = () => sendFeedback(1);
+  $("fbDown").onclick = () => sendFeedback(-1);
+  const _rr = window.renderResult;
+  if (typeof renderResult === "function") {
+    const orig = renderResult;
+    renderResult = function (r) { orig.apply(this, arguments); $("fbUp").disabled = $("fbDown").disabled = false; $("fbMsg").textContent = ""; };
+  }
+
+  /* ---------- admin: overview, coupons, feedback ---------- */
+  const naira = n => "₦" + Number(n || 0).toLocaleString();
+  function kpi(label, value, sub) {
+    const d = el("div", "", "metric-card"); d.append(el("small", label), el("b", String(value))); if (sub) d.append(el("span", sub, "mute")); return d;
+  }
+  function listBox(title, rows, empty) {
+    const box = el("div", "", "urow"); box.append(el("b", title));
+    if (!rows.length) box.append(el("div", empty, "mute")); else rows.forEach(t => box.append(el("div", t)));
+    return box;
+  }
+  async function loadOverview() {
+    const host = $("ovBody"); host.textContent = "Loading…";
+    try {
+      const o = await api("/api/admin/overview"); host.replaceChildren();
+      const grid = el("div", "", "insight-grid");
+      grid.append(kpi("Customers", o.customers, `${o.new_customers_7d} new this week`), kpi("Income this month", naira(o.income_this_month_ngn), "all time " + naira(o.income_total_ngn)),
+                  kpi("Analyses this month", o.analyses_this_month), kpi("Waiting for you", o.pending_payments + o.pending_registrations, `${o.pending_payments} payment(s) · ${o.pending_registrations} account request(s)`));
+      host.append(grid);
+      const plans = Object.entries(o.companies_by_plan).map(([k, v]) => `${k}: ${v}`);
+      host.append(listBox("Companies by plan", plans, "No companies yet."));
+      const mx = Math.max(1, ...o.income_by_month.map(m => m.ngn));
+      const bars = el("div", "", "urow"); bars.append(el("b", "Income by month"));
+      if (!o.income_by_month.length) bars.append(el("div", "No approved payments yet.", "mute"));
+      o.income_by_month.forEach(m => {
+        const row = el("div", "", "ov-bar"); const fillb = el("i"); fillb.style.width = Math.max(2, m.ngn / mx * 100) + "%";
+        row.append(el("span", m.month), fillb, el("b", naira(m.ngn))); bars.append(row);
+      });
+      host.append(bars);
+      host.append(listBox("⚠️ Close to their monthly limit", o.near_limit.map(x => `${x.company}: ${x.used}/${x.limit} (${x.plan})`), "Nobody is near their limit."));
+      host.append(listBox("⏰ Plans ending within 3 days", o.expiring_soon.map(x => `${x.company}: ${x.plan} ends ${x.expires_at} UTC`), "No plans ending soon."));
+      host.append(listBox("🕒 In grace period (plan ended, still working)", o.in_grace.map(x => `${x.company}: ${x.plan}, grace ends ${x.grace_ends_at} UTC`), "Nobody."));
+      host.append(listBox("👍 / 👎 answer ratings (30 days)", [`👍 ${o.feedback_up_30d}   👎 ${o.feedback_down_30d}`], ""));
+    } catch (e) { host.textContent = "❌ " + e.message; }
+    loadFeedbackAdmin(); loadCoupons();
+  }
+  async function loadFeedbackAdmin() {
+    const host = $("fbList"); try {
+      const f = await api("/api/admin/feedback"); host.replaceChildren();
+      const bad = f.items.filter(i => i.rating < 0).slice(0, 8);
+      if (!bad.length) { host.append(el("div", "No 👎 ratings yet.", "mute")); return; }
+      bad.forEach(i => host.append(el("div", `👎 ${i.company || ""} · ${i.username || ""}: “${i.question || "?"}”` + (i.comment ? ` — ${i.comment}` : ""), "mute")));
+    } catch (e) { host.textContent = ""; }
+  }
+  async function loadCoupons() {
+    const host = $("cpList"); try {
+      const rows = await api("/api/admin/coupons"); host.replaceChildren();
+      if (!rows.length) { host.append(el("div", "No coupons yet.", "mute")); return; }
+      rows.forEach(c => {
+        const live = c.active && !(c.expires_at && c.expires_at < new Date().toISOString().slice(0, 19).replace("T", " ")) && c.used < c.max_uses;
+        const row = el("div", "", "urow");
+        row.append(el("b", c.code), el("span", `  ${c.kind === "percent" ? c.value + "% off a payment" : c.value + " free day(s)"} · used ${c.used}/${c.max_uses}` + (c.expires_at ? " · until " + c.expires_at.slice(0, 10) : "") + " · " + (live ? "Live" : "Not active")));
+        if (c.active) { const d = el("button", "Disable", "danger"); d.type = "button"; d.style.marginLeft = "10px"; d.onclick = async () => { try { await api("/api/admin/coupons/" + encodeURIComponent(c.code), { method: "DELETE" }); } catch (e) {} loadCoupons(); }; row.append(d); }
+        host.append(row);
+      });
+    } catch (e) { host.textContent = "❌ " + e.message; }
+  }
+  $("cpCreate").onclick = async () => {
+    $("cpMsg").textContent = "";
+    try {
+      const r = await jpost("/api/admin/coupons", { kind: $("cpKind").value, value: Number($("cpValue").value), max_uses: Number($("cpUses").value) || 1,
+                                                    days_valid: Number($("cpDays").value) || null, code: $("cpCode").value.trim() || null });
+      $("cpMsg").textContent = "✅ Created: " + r.code + "  (send this code to your customer)"; $("cpCode").value = ""; loadCoupons();
+    } catch (e) { $("cpMsg").textContent = "❌ " + e.message; }
+  };
+
+  /* extend the view hook from the Notifications code */
+  const _ovc = window.onViewChange;
+  window.onViewChange = function (v) {
+    if (_ovc) _ovc(v);
+    if (v === "overview") loadOverview();
+    if (v === "settings") loadAccount();
+    if (v === "analytics") loadSaved();
+  };
+  const _lr2 = loadReports;
+  loadReports = async function () { const r = await _lr2.apply(this, arguments); loadSaved(); return r; };
+
+  /* friendly referral link: ?ref=CODE opens the sign-up box filled in */
+  (function () {
+    try {
+      const ref = new URLSearchParams(location.search).get("ref");
+      if (ref) { $("regReferral").value = ref.toUpperCase().slice(0, 20); const d = $("regBtn").closest("details"); if (d) d.open = true; }
+    } catch (e) {}
+  })();
 
   /* ---------- first-time checklist + sample reports ---------- */
   function sampleCsvs() {
