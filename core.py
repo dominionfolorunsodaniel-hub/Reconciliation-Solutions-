@@ -457,7 +457,8 @@ def add_money_columns(df: pd.DataFrame):
         cr = [c for c in nums if _CR_NAME.search(str(c))]
         dr = [c for c in nums if _DR_NAME.search(str(c))]
         if cr and dr:
-            c_, d_ = pd.to_numeric(df[cr[0]], errors="coerce").fillna(0), pd.to_numeric(df[dr[0]], errors="coerce").fillna(0)
+            c_ = pd.to_numeric(df[cr[0]], errors="coerce").astype("float64").fillna(0)
+            d_ = pd.to_numeric(df[dr[0]], errors="coerce").astype("float64").fillna(0)
             d[CRED_COL] = pd.Series(pd.NA, index=d.index, dtype=object)
             d.loc[c_.abs() > 0, CRED_COL] = "Credit"
             d.loc[d_.abs() > 0, CRED_COL] = "Debit"
@@ -476,12 +477,12 @@ def add_money_columns(df: pd.DataFrame):
             if known.mean() >= 0.8 and vals[known].isin(CREDIT_WORDS).any() and vals[known].isin(DEBIT_WORDS).any() and amt:
                 norm = df[c].map(lambda v: "Credit" if _norm_word(v) in CREDIT_WORDS else "Debit" if _norm_word(v) in DEBIT_WORDS else None)
                 d[CRED_COL] = norm
-                d[AMT_COL] = pd.to_numeric(df[amt], errors="coerce").abs()
+                d[AMT_COL] = pd.to_numeric(df[amt], errors="coerce").astype("float64").abs()
                 return d, (f'The column "{c}" says whether each row is a credit (money in) or a debit (money out), and "{amt}" holds '
                            f'the amount. I added "{CRED_COL}" and "{AMT_COL}" so questions about credits and debits are exact.')
         # 3) one signed amount column: positive = credit, negative = debit
         if amt is not None:
-            s = pd.to_numeric(df[amt], errors="coerce")
+            s = pd.to_numeric(df[amt], errors="coerce").astype("float64")
             if (s < 0).any() and (s > 0).any():
                 d[CRED_COL] = s.map(lambda v: None if pd.isna(v) or v == 0 else "Credit" if v > 0 else "Debit")
                 d[AMT_COL] = s.abs()
