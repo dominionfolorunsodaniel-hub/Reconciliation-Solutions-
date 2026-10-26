@@ -158,6 +158,55 @@ def summary_text(result: dict, label_a: str, label_b: str) -> str:
     return head + "\n\n" + table
 
 
+def likely_causes(result: dict) -> list[str]:
+    """Plain-English guesses about WHY rows differ, found by comparing the numbers (never invented).
+    Each line is a possibility to check, not a proven cause."""
+    out = []
+    try:
+        d, plan = result["detail"], result["plan"]
+        amt = plan.get("amount")
+        mism = d[d["Status"] == "Amount mismatch"]
+        if len(mism) and "Difference (A-B)" in d.columns:
+            diffs = mism["Difference (A-B)"].round(2)
+            top = diffs.value_counts()
+            if len(top) and top.iloc[0] / len(diffs) >= 0.6 and len(diffs) >= 2:
+                out.append(f"{int(top.iloc[0])} of the {len(diffs)} amount differences are exactly {abs(float(top.index[0])):,.2f} "
+                           f"({'A is higher' if top.index[0] > 0 else 'B is higher'}). A repeated amount like this is usually a fee, "
+                           "charge or VAT added in only one of the systems.")
+            if amt:
+                base = pd.to_numeric(mism[f"A: {amt['a']}"], errors="coerce").abs().replace(0, float("nan"))
+                small = (diffs.abs() / base < 0.01).sum()
+                if small >= max(2, len(diffs) * 0.5):
+                    out.append(f"{int(small)} differences are smaller than 1% of the amount, which often means rounding.")
+            out.append(f"{len(mism)} transaction(s) were found in both reports but with different amounts. Check these first; "
+                       "they are the easiest to fix.")
+        oa, ob = d[d["Status"] == "Only in A"], d[d["Status"] == "Only in B"]
+        if amt and len(oa) and len(ob):
+            ca = pd.to_numeric(oa[f"A: {amt['a']}"], errors="coerce").round(2).dropna()
+            cb = pd.to_numeric(ob[f"B: {amt['b']}"], errors="coerce").round(2).dropna()
+            shared = set(ca) & set(cb)
+            pairs = int(min(ca.isin(shared).sum(), cb.isin(shared).sum()))
+            if pairs:
+                out.append(f"About {pairs} item(s) only in A have an item only in B with the same amount. They may be the SAME "
+                           "transaction recorded with a different reference, so look at the date and narration to confirm.")
+        if len(oa) and not len(ob):
+            out.append(f"{len(oa)} item(s) exist only in A and nothing is extra in B. A may include items B has not recorded yet "
+                       "(timing) or B may have missed them.")
+        if len(ob) and not len(oa):
+            out.append(f"{len(ob)} item(s) exist only in B and nothing is extra in A. B may include items A has not recorded yet "
+                       "(timing) or A may have missed them.")
+        for side, label in (("A", "A"), ("B", "B")):
+            col = [c for c in d.columns if c.startswith(f"{side}: ")]
+            if col and d["Match key"].duplicated(keep=False).any():
+                pass  # repeated keys are matched one-to-one already
+        dup_a = int(d[d["Status"] == "Only in A"]["Match key"].duplicated().sum())
+        if dup_a:
+            out.append(f"{dup_a} item(s) in A repeat the same reference. Check for double entries.")
+    except Exception:  # noqa: BLE001  (hints are a bonus)
+        return out
+    return out
+
+
 def to_excel(result: dict):
     d, s = result["detail"], result["summary"]
     cut = lambda st: d[d["Status"] == st].dropna(axis=1, how="all")  # noqa: E731

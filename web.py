@@ -27,6 +27,7 @@ import core
 import db
 import forecast
 import enterprise_features as ef
+import extras
 import notify
 import portal
 import recon
@@ -111,7 +112,7 @@ def report_for(user: dict, report_id: int) -> dict:
 
 def public(user: dict) -> dict:
     return {"id": user["id"], "username": user["username"], "role": user["role"],
-            "totp_enabled": user["totp_enabled"],
+            "totp_enabled": user["totp_enabled"], "email": user.get("email"),
             "needs_2fa_setup": REQUIRE_2FA_ADMINS and user["role"] == "admin" and not user["totp_enabled"]}
 
 
@@ -152,6 +153,8 @@ class RegistrationIn(BaseModel):
     username: str
     password: str
     telegram_id: int | None = None
+    email: str | None = None
+    referral_code: str | None = None
 
 
 class RegistrationDecisionIn(BaseModel):
@@ -213,6 +216,7 @@ class PaymentRequestIn(BaseModel):
     company_id: int
     plan: str
     transfer_reference: str
+    coupon_code: str | None = None
 
 
 class GrantPlanIn(BaseModel):
@@ -265,6 +269,36 @@ class BroadcastIn(BaseModel):
     message: str
     level: str = "info"
     days: int | None = 14
+    email: bool = False
+
+
+class EmailIn(BaseModel):
+    email: str | None = None
+
+
+class CouponIn(BaseModel):
+    kind: str = "percent"
+    value: float
+    max_uses: int = 1
+    days_valid: int | None = 30
+    code: str | None = None
+    note: str = ""
+
+
+class RedeemIn(BaseModel):
+    company_id: int
+    code: str
+
+
+class FeedbackIn(BaseModel):
+    company_id: int
+    rating: int
+    question: str = ""
+    comment: str = ""
+
+
+class SavedQuestionIn(BaseModel):
+    question: str
 
 
 class ReadIn(BaseModel):
@@ -291,7 +325,8 @@ def register_customer(body: RegistrationIn, request: Request):
     if len(attempts) >= 5:
         raise HTTPException(429, "Too many registration attempts. Try again in one hour.")
     try:
-        result = portal.submit_registration(body.company_name, body.username, body.password, body.telegram_id)
+        result = portal.submit_registration(body.company_name, body.username, body.password, body.telegram_id,
+                                            body.email, body.referral_code)
     except ValueError as e:
         attempts.append(now)
         REGISTRATION_FAILS[ip] = attempts
@@ -580,10 +615,13 @@ async def reconcile(body: ReconIn, user: dict = Depends(current_user)):
     run_id, cases_created = await asyncio.to_thread(ef.record_reconciliation, body.company_id, body.report_a, body.report_b, out, user["id"], "manual")
     db.audit(user, "reconcile", body.company_id, f"{la} vs {lb}; run={run_id}; cases={cases_created}")
     text = recon.summary_text(out, la, lb)
+    hints = recon.likely_causes(out)
+    if hints:
+        text += "\n\nPOSSIBLE REASONS (found by comparing the numbers; please confirm):\n" + "\n".join("- " + h for h in hints)
     pdf = {"title": "Reconciliation", "question": f"{la} vs {lb}", "insight": text.split("\n\n")[0],
            "table": out["summary"], "chart": None, "total_rows": len(out["summary"])}
     response = {
-        "text": text,
+        "text": text, "hints": hints,
         "summary": json.loads(out["summary"].to_json(orient="records")),
         "columns": list(problems.columns),
         "rows": json.loads(problems.head(200).to_json(orient="records", date_format="iso")),
@@ -751,6 +789,9 @@ def admin_registration_decision(request_id: int, body: RegistrationDecisionIn,
         raise HTTPException(400, str(e))
     db.audit(user, f"registration_{result['status']}", result.get("company_id"),
              f"request={request_id}; username={result.get('username')}")
+    if result.get("status") == "approved" and result.get("user_id"):
+        extras.tell_user(result["user_id"], "🎉 Welcome to Report Analyzer",
+                         "Your account is approved. Upload your first report to get started. Your free trial is already running.", "success")
     return result
 
 
@@ -840,17 +881,22 @@ def billing_payment_request(body: PaymentRequestIn, user: dict = Depends(current
     plan = db.PLANS.get(body.plan)
     if not plan or int(plan.get("price_ngn", 0)) > 150000:
         raise HTTPException(400, "Plans above ₦150,000 require contacting the admin before payment. No payment request was created.")
+    coupon, discount = None, 0
     try:
-        row = db.create_payment_request(body.company_id, user["id"], body.plan, body.transfer_reference)
+        if (body.coupon_code or "").strip():
+            coupon, discount = extras.percent_discount(body.coupon_code, body.company_id, int(plan["price_ngn"]))
+        row = db.create_payment_request(body.company_id, user["id"], body.plan, body.transfer_reference, coupon, discount)
+        if coupon:
+            extras.use_coupon(coupon, body.company_id, user["id"])
     except ValueError as e:
         raise HTTPException(400, str(e))
     db.audit(user, "payment_request", body.company_id, f"request={row['id']}; plan={body.plan}")
     company = db.get_company(body.company_id)
     notify.alert_payment_admins(
         f"💳 New payment request #{row['id']}\nCompany: {company['name'] if company else body.company_id}\n"
-        f"User: {user['username']}\nPlan: {body.plan.upper()} · ₦{row['amount_ngn']:,}\nReference: {row['transfer_reference']}\n"
+        f"User: {user['username']}\nPlan: {body.plan.upper()} · ₦{row['amount_ngn']:,}" + (f" (coupon {coupon}: -₦{discount:,})" if coupon else "") + f"\nReference: {row['transfer_reference']}\n"
         "Check your bank, then approve it under Plan & Billing.")
-    return {"id": row["id"], "status": row["status"], "amount_ngn": row["amount_ngn"]}
+    return {"id": row["id"], "status": row["status"], "amount_ngn": row["amount_ngn"], "discount_ngn": discount}
 
 
 MAX_PROOF_BYTES = 5 * 1024 * 1024
@@ -927,6 +973,15 @@ def admin_broadcast_send(body: BroadcastIn, user: dict = Depends(current_user)):
     except ValueError as e:
         raise HTTPException(400, str(e))
     db.audit(user, "broadcast_sent", None, f"#{row['id']}: {row['title'][:80]}")
+    emailed = 0
+    if body.email and notify.email_configured():
+        with db._db() as con:
+            rows = con.execute("SELECT email FROM users WHERE role <> 'admin' AND active = 1 AND email IS NOT NULL AND email <> ''").fetchall()
+        for r in rows:
+            extras._mail_async(r["email"], f"Report Analyzer: {row['title']}", f"{row['body']}\n\n- Report Analyzer")
+            emailed += 1
+    row = dict(row)
+    row["emailed"] = emailed
     return row
 
 
@@ -955,13 +1010,16 @@ def password_reset_request(body: ResetRequestIn, request: Request):
     RESET_REQUESTS[key].append(now)
     result = db.create_password_reset(body.username)
     if result:
-        notify.send_telegram(result["user"]["telegram_id"],
-                             f"🔑 Report Analyzer password reset code: {result['code']}\n"
-                             f"It expires in {db.RESET_MINUTES} minutes. If you did not ask for this, ignore it.")
+        text = (f"Your Report Analyzer password reset code is {result['code']}\n"
+                f"It expires in {db.RESET_MINUTES} minutes. If you did not ask for this, ignore this message.")
+        if result["user"].get("email"):
+            extras._mail_async(result["user"]["email"], "Your Report Analyzer reset code", text)
+        if result["user"].get("telegram_id"):
+            notify.send_telegram(result["user"]["telegram_id"], "🔑 " + text)
         db.audit(result["user"], "password_reset_requested")
     # Same answer either way, so nobody can discover which usernames exist.
-    return {"message": "If that account has Telegram linked, a 6-digit code has been sent there. "
-                       "No Telegram? Ask your administrator to reset your password."}
+    return {"message": "If that account has an email address (or Telegram) on file, a 6-digit code has been sent there. "
+                       "Nothing arrived? Ask your administrator to reset your password."}
 
 
 @app.post("/api/password-reset/confirm")
@@ -1006,6 +1064,12 @@ def admin_billing_payment_decision(request_id: int, body: PaymentDecisionIn,
         message = f"Payment verified for {company['name'] if company else 'company'}. Plan {row['plan'].upper()} is active. Invoice: {invoice['invoice_number']} for ₦{row['amount_ngn']:,}."
         notify.alert_company(row["company_id"], message)
         notify.email_company(row["company_id"], "Report Analyzer payment approved", message)
+        extras.tell_company(row["company_id"], "✅ Payment approved",
+                            f"Your {row['plan'].title()} plan is now active. Thank you! Your invoice is under Plan & Billing.", "success")
+        extras.reward_referral_on_payment(row["company_id"])
+    elif row["status"] == "rejected":
+        extras.tell_company(row["company_id"], "Payment not approved",
+                            "We could not confirm your payment. Please check the transfer reference and send a new request, or contact support.", "warning")
     return row
 
 
@@ -1246,6 +1310,103 @@ async def integration_upload(company_id: int, request: Request, file: UploadFile
     except Exception as e: raise HTTPException(400, f"Could not ingest external report: {str(e)[:250]}")
     db.audit(None, "integration_report_upload", company_id, f"token={token_row['id']}; report=#{rid}; {name}", "integration")
     return {"ok": True, "report_id": rid, "filename": name, "rows": int(len(df)), "notes": notes}
+
+
+# ----------------------- email on file, referrals, coupons, feedback, saved questions, owner overview ----------------------- #
+@app.put("/api/me/email")
+def set_my_email(body: EmailIn, user: dict = Depends(current_user)):
+    try:
+        email = extras.set_email(user["id"], body.email)
+    except ValueError as e:
+        raise HTTPException(400, str(e))
+    db.audit(user, "email_updated")
+    return {"email": email, "email_service_ready": notify.email_configured()}
+
+
+@app.get("/api/referral")
+def my_referral(user: dict = Depends(current_user)):
+    return extras.my_referral(user["id"])
+
+
+@app.post("/api/billing/redeem")
+def redeem_coupon(body: RedeemIn, user: dict = Depends(current_user)):
+    need_company(user, body.company_id)
+    try:
+        out = extras.redeem_days_coupon(body.code, body.company_id, user["id"])
+    except ValueError as e:
+        raise HTTPException(400, str(e))
+    db.audit(user, "coupon_redeemed", body.company_id, body.code[:40])
+    return out
+
+
+@app.get("/api/admin/coupons")
+def admin_coupons(user: dict = Depends(current_user)):
+    need(user, "admin")
+    return extras.list_coupons()
+
+
+@app.post("/api/admin/coupons")
+def admin_coupon_create(body: CouponIn, user: dict = Depends(current_user)):
+    need(user, "admin")
+    try:
+        row = extras.create_coupon(body.kind, body.value, body.max_uses, body.days_valid, body.code, body.note)
+    except ValueError as e:
+        raise HTTPException(400, str(e))
+    db.audit(user, "coupon_created", None, f"{row['code']} {row['kind']} {row['value']}")
+    return row
+
+
+@app.delete("/api/admin/coupons/{code}")
+def admin_coupon_disable(code: str, user: dict = Depends(current_user)):
+    need(user, "admin")
+    if not extras.disable_coupon(code):
+        raise HTTPException(404, "Coupon not found.")
+    return {"ok": True}
+
+
+@app.get("/api/admin/overview")
+def admin_overview(user: dict = Depends(current_user)):
+    need(user, "admin")
+    return extras.overview()
+
+
+@app.post("/api/feedback")
+def send_feedback(body: FeedbackIn, user: dict = Depends(current_user)):
+    need_company(user, body.company_id)
+    try:
+        extras.add_feedback(user["id"], body.company_id, body.rating, body.question, body.comment)
+    except ValueError as e:
+        raise HTTPException(400, str(e))
+    return {"ok": True}
+
+
+@app.get("/api/admin/feedback")
+def admin_feedback(user: dict = Depends(current_user)):
+    need(user, "admin")
+    return extras.list_feedback()
+
+
+@app.get("/api/companies/{company_id}/saved-questions")
+def saved_questions(company_id: int, user: dict = Depends(current_user)):
+    need_company(user, company_id)
+    return extras.list_saved(user["id"], company_id)
+
+
+@app.post("/api/companies/{company_id}/saved-questions")
+def save_question(company_id: int, body: SavedQuestionIn, user: dict = Depends(current_user)):
+    need_company(user, company_id)
+    try:
+        return extras.save_question(user["id"], company_id, body.question)
+    except ValueError as e:
+        raise HTTPException(400, str(e))
+
+
+@app.delete("/api/saved-questions/{saved_id}")
+def delete_saved_question(saved_id: int, user: dict = Depends(current_user)):
+    if not extras.delete_saved(user["id"], saved_id):
+        raise HTTPException(404, "Saved question not found.")
+    return {"ok": True}
+
 
 
 if __name__ == "__main__":

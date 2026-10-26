@@ -109,8 +109,35 @@ def alert_admins(text: str) -> int:
     return sum(1 for u in db.admins_to_alert() if send_telegram(u["telegram_id"], text))
 
 
+def email_configured() -> bool:
+    return bool(os.getenv("RESEND_API_KEY", "").strip() or (os.getenv("SMTP_HOST", "").strip()
+                and os.getenv("SMTP_FROM", os.getenv("SMTP_USER", "")).strip()))
+
+
+def _send_resend(to_email: str, subject: str, body: str) -> bool:
+    """Resend (resend.com) over HTTPS. Works on hosts that block SMTP ports, such as Render's free plan."""
+    key = os.getenv("RESEND_API_KEY", "").strip()
+    if not key or not to_email:
+        return False
+    try:
+        import httpx
+        r = httpx.post("https://api.resend.com/emails", timeout=15,
+                       headers={"Authorization": f"Bearer {key}", "Content-Type": "application/json"},
+                       json={"from": os.getenv("RESEND_FROM", "Report Analyzer <onboarding@resend.dev>"),
+                             "to": [to_email], "subject": (subject or "Report Analyzer notification")[:180],
+                             "text": (body or "")[:12000]})
+        if r.status_code < 300:
+            return True
+        log.warning("Resend refused email to %s: %s %s", to_email, r.status_code, r.text[:200])
+    except Exception as e:  # noqa: BLE001
+        log.warning("Resend email failed to %s: %s", to_email, e)
+    return False
+
+
 def send_email(to_email: str, subject: str, body: str) -> bool:
-    """Send email using optional SMTP configuration; returns False when unconfigured or delivery fails."""
+    """Send email via Resend (RESEND_API_KEY) or SMTP; returns False when unconfigured or delivery fails."""
+    if _send_resend(to_email, subject, body):
+        return True
     import smtplib
     from email.message import EmailMessage
     host = os.getenv("SMTP_HOST", "").strip()

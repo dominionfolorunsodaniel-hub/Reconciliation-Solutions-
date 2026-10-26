@@ -75,7 +75,7 @@ async def _ask(**kwargs):
             "Get one from https://aistudio.google.com/."
         )
 
-    model = os.getenv("GEMINI_MODEL", MODEL).strip() or "gemini-flash-latest"
+    model = (kwargs.get("model_override") or os.getenv("GEMINI_MODEL", MODEL)).strip() or "gemini-flash-latest"
     max_tokens = int(kwargs.get("max_tokens", 800))
     system = str(kwargs.get("system", ""))
     messages = kwargs.get("messages", [])
@@ -407,20 +407,6 @@ def to_clean_csv(df: pd.DataFrame) -> bytes:
     return df.to_csv(index=False).encode("utf-8")
 
 
-def describe_schema(df: pd.DataFrame) -> str:
-    lines = []
-    for c in df.columns:
-        s = df[c]
-        if pd.api.types.is_datetime64_any_dtype(s):
-            lines.append(f'- "{c}" (date): {s.min():%Y-%m-%d} to {s.max():%Y-%m-%d}')
-        elif pd.api.types.is_numeric_dtype(s):
-            lines.append(f'- "{c}" (number): min {s.min():g}, max {s.max():g}')
-        else:
-            top = s.dropna().astype(str).value_counts().head(8).index.tolist()
-            lines.append(f'- "{c}" (text): {s.nunique()} unique, e.g. {top}')
-    return "\n".join(lines)
-
-
 # --------------------------------------------------------------------------- #
 # Understanding money: credits / debits in any layout
 # --------------------------------------------------------------------------- #
@@ -514,6 +500,11 @@ def resolve_column(name, columns):
 
 def fix_plan_columns(plan: dict, columns) -> dict:
     cols = list(columns)
+    for sp in plan.get("derived") or []:
+        sp["columns"] = [resolve_column(c, cols) for c in (sp.get("columns") or ([sp["column"]] if sp.get("column") else []))]
+        sp.pop("column", None)
+        if sp.get("name"):
+            cols.append(sp["name"])
     for f in plan.get("filters") or []:
         if f.get("column"):
             f["column"] = resolve_column(f["column"], cols)
@@ -523,8 +514,13 @@ def fix_plan_columns(plan: dict, columns) -> dict:
     for m in plan.get("metrics") or []:
         if m.get("column"):
             m["column"] = resolve_column(m["column"], cols)
+    aliases = [m.get("alias") for m in plan.get("metrics") or [] if m.get("alias")]
+    if plan.get("select"):
+        plan["select"] = [resolve_column(c, cols) for c in plan["select"]]
+    for h in plan.get("having") or []:
+        h["metric"] = resolve_column(h.get("metric"), aliases + cols)
     if isinstance(plan.get("sort"), dict) and plan["sort"].get("by"):
-        plan["sort"]["by"] = resolve_column(plan["sort"]["by"], cols + [m.get("alias") for m in plan.get("metrics") or [] if m.get("alias")])
+        plan["sort"]["by"] = resolve_column(plan["sort"]["by"], cols + aliases + ["% of total", "% change vs previous", "Running total"])
     return plan
 
 
@@ -546,48 +542,75 @@ def _expand_aliases(v):
 # --------------------------------------------------------------------------- #
 # Gemini: request -> JSON plan, and short written insights
 # --------------------------------------------------------------------------- #
-SYSTEM_PROMPT = """You convert a user's request about a table into a JSON plan.
-Reply with ONE JSON object and nothing else. Schema:
+SYSTEM_PROMPT = """You are the analysis brain of a finance reporting tool. You turn ANY request about a table into a JSON plan that
+code then runs exactly. Reply with ONE JSON object and nothing else. Schema (keys in this order):
 {
-  "mode": "table" or "explain",
+  "reasoning": "1-2 short sentences: what the user really wants and which columns answer it",
+  "mode": "table" | "rows" | "explain" | "general",
   "clarify": null,
-  "assumptions": ["plain-English note for every guess you had to make"],
-  "title": "short chart/table title",
-  "filters": [{"column": str, "op": "==|!=|>|>=|<|<=|contains|in|not_in|between", "value": any}],
+  "assumptions": ["plain-English note for every guess you made"],
+  "title": "short title",
+  "derived": [{"name": str, "op": "year|month|month_name|weekday|hour|day|date|abs|ratio|diff|sum|product|pct", "columns": [col] or [colA, colB]}],
+  "filters": [{"column": str or "*", "op": "==|!=|>|>=|<|<=|contains|in|not_in|between", "value": any}],
   "group_by": [{"column": str, "freq": null or "D|W|M|Q|Y"}],
   "metrics": [{"column": str or "*", "agg": "sum|mean|count|min|max|median|nunique", "alias": str}],
-  "percent_of_total": bool,
+  "having": [{"metric": alias, "op": ">|>=|<|<=|==|!=", "value": number}],
+  "percent_of_total": bool, "pct_change": bool, "cumulative": bool,
+  "select": [columns to show, only for mode rows],
   "sort": null or {"by": str, "ascending": bool},
   "top_n": null or int,
   "chart": "bar|line|pie|none"
 }
+Modes: "table" = counts/totals/averages/rankings/trends/comparisons (grouped numbers). "rows" = the user wants to SEE the actual
+transactions/records ("show me", "list", "which transactions", "find all", "everything over 50k") - use filters, select, sort, top_n.
+"explain" = explain this file, its columns, a result, or finance words in the context of this file. "general" = a general finance /
+accounting / business question that the file cannot answer (e.g. "what is a chargeback?") - answer from knowledge.
 How to read the user:
-- People write fast, on phones, with bad grammar, spelling mistakes, slang, abbreviations, Nigerian Pidgin, mixed
-  languages or half-sentences. Work out what they MEAN and answer that. Never reply that you cannot understand.
-- NEVER refuse and never ask the user to rephrase. Always choose the most reasonable reading, and write every guess
-  into "assumptions" in plain words (e.g. "I took 'last month' to mean March 2026 because that is the latest month in the file").
-- Set "clarify" to null. (Only if the message has absolutely nothing to do with the data may it be a short question.)
-- Use "mode":"explain" when the user wants an explanation, a summary, "what is this", meanings of columns or terms,
-  "break it down", advice, or anything that is not a calculation. For explain mode leave filters/group_by/metrics empty.
-- Use "mode":"table" for anything that can be counted, summed, compared, ranked, trended or filtered.
+- People write fast on phones with bad grammar, typos, slang, Nigerian Pidgin, abbreviations, mixed languages and half-sentences.
+  Work out what they MEAN. Never say you cannot understand. Never refuse. Never ask them to rephrase. Set "clarify" to null.
+- Put every guess in "assumptions" in plain words. When a request is vague pick the most useful reading and say which.
+- Numbers: "50k" = 50000, "1.5m" = 1500000, "N5,000" or "₦5,000" = 5000. Percent and "half" etc: convert to numbers.
+- Dates: use the data's own dates. "last month", "this week", "recently" are relative to the LATEST date in the data (given below),
+  not to today, unless the user clearly means today. Use filter "between" with YYYY-MM-DD, or derived month/weekday/hour columns.
+  "morning/afternoon/night" = derived hour column with a between filter. "weekends" = derived weekday in ["Saturday","Sunday"].
+- Names: users misspell and abbreviate names. Use the REAL values listed in the column info; pick the closest real value.
+  Search with "contains" (or column "*" to search every text column) when they give only part of a name or a keyword.
+- "highest/biggest/top/most" = sort descending + top_n; "lowest/smallest/least" = ascending; "average/avg/mean"; "how many" = count;
+  "total/sum/altogether" = sum; "per/by/each" = group_by; "compare A and B" = group_by the thing that separates A and B;
+  "growth/increase/decrease/change" = group by month + pct_change; "running/cumulative" = cumulative;
+  "share/percentage/proportion" = percent_of_total; "more than N transactions" = group + having.
+- Ratios between two columns (e.g. fee as % of amount) = derived ratio or pct, then aggregate it.
+- Do not use a Balance column as an amount unless the user asks about balance. Prefer the column whose name matches their words.
 Money words (very important):
 - "credit", "CR", "deposit", "lodgement", "money in", "inflow", "received" = money coming IN.
-- "debit", "DR", "withdrawal", "money out", "outflow", "paid" = money going OUT.
-- If the columns "Credit/Debit" and "Amount (always positive)" exist they were built for exactly this: filter or group by
-  "Credit/Debit" (values "Credit" / "Debit") and sum "Amount (always positive)". Use them for any credit/debit question,
-  e.g. "total credits and debits" = group_by "Credit/Debit", metric sum of "Amount (always positive)".
-- If the table has no credit/debit information at all, still answer with the closest columns and say so in "assumptions".
+- "debit", "DR", "withdrawal", "money out", "outflow", "paid", "spent", "expenses" = money going OUT.
+- If the columns "Credit/Debit" and "Amount (always positive)" exist they were built for this: filter or group by "Credit/Debit"
+  (values "Credit"/"Debit") and sum "Amount (always positive)". Use them for any credit/debit question.
+- If the table has no credit/debit information, still answer with the closest columns and say so in "assumptions".
 Rules:
-- Use ONLY column names that exist exactly as given. Use "freq" only on date columns.
-- To count rows use {"column": "*", "agg": "count"}.
-- "between" takes value [low, high]; "in"/"not_in" take a list. Dates as YYYY-MM-DD.
-- Pick line for time trends, pie for share-of-total with few groups, else bar.
-- If the user says things like "now by month instead" or "same but only X", modify the previous plan.
-- If no grouping is requested, leave group_by empty (gives overall totals).
-- Metrics must be sensible: don't sum text columns.
-- Columns "_report" and "_uploaded" exist when several saved reports are combined: use them to
-  compare reports (e.g. month over month, branch A in report X vs report Y).
+- Use ONLY column names that exist exactly as given (or names you define in "derived"). "freq" only on date columns.
+- To count rows use {"column": "*", "agg": "count"}. Never sum a text column. "between" takes [low, high]; "in"/"not_in" a list.
+- If the user says "now by month instead" or "same but only X", modify the previous plan.
+- If no grouping is requested, leave group_by empty (overall totals).
+- Columns "_report" and "_uploaded" exist when several saved reports are combined: use them to compare reports.
+Examples (request -> key parts of the plan):
+- "wetin be my biggest 5 expenses" -> mode rows, filters Credit/Debit == Debit, sort Amount desc, top_n 5, select Date/Narration/Amount.
+- "how much POS dey enter per month" -> table, filters Narration contains POS and Credit/Debit == Credit, group_by Date freq M, sum Amount.
+- "transactions between 10k and 50k" -> rows, filter Amount between [10000, 50000].
+- "which day of week do i spend most" -> derived weekday from Date, filters Debit, group_by weekday, sum Amount, sort desc.
+- "customers that paid more than 3 times" -> group_by customer, count *, having count > 3.
+- "is my spending going up" -> table, Debit, group_by Date freq M, sum Amount, pct_change true, chart line.
 """
+
+GENERAL_PROMPT = """You are a patient, careful finance and business teacher. The user asked a general question that their file cannot answer
+by itself. You are given the question, a short profile of their file and any notes. Write a plain-text answer (no markdown symbols like
+** or #) with these sections, each on its own line followed by its content:
+ANSWER: a direct answer in one to three sentences.
+BREAKDOWN: 4 to 10 lines starting with '- ' explaining the idea step by step with a simple example.
+WHAT IT MEANS FOR YOU: 2 to 4 lines connecting it to their file where that is genuinely useful (use only numbers from the profile), plus what they can ask next.
+WORDS EXPLAINED: one line per technical term. Skip if none.
+Be honest about what is general knowledge versus what is in their file; say "From general knowledge:" before general facts, and say when rules differ by country or bank.
+Reply in the language the user wrote in. Short, friendly sentences. Never invent figures about their file."""
 
 INSIGHT_PROMPT = """You are a patient, careful finance and data teacher explaining results to a business owner who may not be technical.
 You are given: the user's question, the exact result table (computed by code), key figures (computed by code), how the result
@@ -635,18 +658,24 @@ def _parse_plan(text: str):
         return None
 
 
-async def make_plan(question: str, df: pd.DataFrame, prev_plan: dict | None, hint: str | None = None) -> dict:
+async def make_plan(question: str, df: pd.DataFrame, prev_plan: dict | None, hint: str | None = None,
+                    feedback: str | None = None) -> dict:
     sample = df.head(8).to_string(index=False, max_colwidth=25)
+    dates = [f'"{c}" runs {df[c].min():%Y-%m-%d} to {df[c].max():%Y-%m-%d}' for c in df.columns
+             if pd.api.types.is_datetime64_any_dtype(df[c]) and df[c].notna().any()]
     user_msg = (
-        f"Columns:\n{describe_schema(df)}\n\nSample rows:\n{sample}\n\n"
+        f"Today's date: {datetime.date.today():%Y-%m-%d}. Table has {len(df):,} rows.\n"
+        + (("Date info: " + "; ".join(dates) + ". 'Latest date in the data' = the end of the main date column.\n") if dates else "")
+        + f"\nColumns:\n{describe_schema(df)}\n\nSample rows:\n{sample}\n\n"
         + (f"Helper note: {hint}\n\n" if hint else "")
         + f"Previous plan: {json.dumps(prev_plan) if prev_plan else 'none'}\n\n"
         f"Request (may contain spelling or grammar mistakes - understand the intent): {question}"
+        + (f"\n\nIMPORTANT - your previous attempt did not work:\n{feedback}\nFix the plan." if feedback else "")
     )
     plan = None
     for attempt in range(2):
         resp = await _ask(
-            model=MODEL, max_tokens=1800, system=SYSTEM_PROMPT,
+            model=MODEL, model_override=os.getenv("GEMINI_PLAN_MODEL", "").strip() or None, max_tokens=2500, system=SYSTEM_PROMPT,
             messages=[{"role": "user", "content": user_msg + ("\n\nReply with the JSON object only." if attempt else "")}],
         )
         plan = _parse_plan(_text_of(resp))
@@ -655,6 +684,8 @@ async def make_plan(question: str, df: pd.DataFrame, prev_plan: dict | None, hin
     if not plan:  # never dead-end the user: fall back to a plain explanation of the file
         plan = {"mode": "explain", "title": "Explanation", "assumptions": ["I explained the whole file because I could not turn the request into a calculation."]}
     plan["clarify"] = None
+    if plan.get("mode") not in ("table", "rows", "explain", "general"):
+        plan["mode"] = "table"
     return plan
 
 
@@ -719,22 +750,111 @@ async def summarize(question: str, res: pd.DataFrame, extra: str = "", system: s
 # --------------------------------------------------------------------------- #
 # Executing a plan with pandas (fixed operations only - no eval)
 # --------------------------------------------------------------------------- #
-def apply_filter(d: pd.DataFrame, f: dict) -> pd.DataFrame:
+import re as _re
+
+DERIVED_DATE_OPS = {"year", "month", "month_name", "weekday", "hour", "day", "date"}
+DERIVED_MATH_OPS = {"abs", "ratio", "diff", "sum", "product", "pct"}
+
+
+def describe_schema(df: pd.DataFrame) -> str:
+    lines = []
+    for c in df.columns:
+        s = df[c]
+        if pd.api.types.is_datetime64_any_dtype(s):
+            lines.append(f'- "{c}" (date): {s.min():%Y-%m-%d} to {s.max():%Y-%m-%d}' if s.notna().any() else f'- "{c}" (date, empty)')
+        elif pd.api.types.is_numeric_dtype(s):
+            if s.notna().any():
+                lines.append(f'- "{c}" (number): min {s.min():g}, max {s.max():g}, {int(s.isna().sum())} blank')
+            else:
+                lines.append(f'- "{c}" (number, empty)')
+        else:
+            vc = s.dropna().astype(str).value_counts()
+            vals = vc.index.tolist() if len(vc) <= 30 else vc.head(15).index.tolist()
+            more = "" if len(vc) <= 30 else f" (+{len(vc) - 15} more)"
+            lines.append(f'- "{c}" (text): {s.nunique()} unique values: {[v[:40] for v in vals]}{more}')
+    return "\n".join(lines)
+
+
+def apply_derived(d: pd.DataFrame, specs) -> pd.DataFrame:
+    """Add computed columns (date parts, ratios, differences...) from a fixed list of safe operations."""
+    for sp in specs or []:
+        op = str(sp.get("op", "")).lower()
+        cols = sp.get("columns") or ([sp["column"]] if sp.get("column") else [])
+        name = sp.get("name") or f"{op} of {' and '.join(map(str, cols))}"
+        for c in cols:
+            if c not in d.columns:
+                raise ValueError(f'Unknown column "{c}" in derived column "{name}"')
+        if op in DERIVED_DATE_OPS:
+            s = d[cols[0]]
+            if not pd.api.types.is_datetime64_any_dtype(s):
+                s = pd.to_datetime(s, errors="coerce", format="mixed")
+                if s.notna().mean() < 0.8:
+                    raise ValueError(f'"{cols[0]}" is not a date column, so I cannot take its {op}.')
+            d[name] = {"year": lambda: s.dt.year, "month": lambda: s.dt.month, "month_name": lambda: s.dt.month_name(),
+                       "weekday": lambda: s.dt.day_name(), "hour": lambda: s.dt.hour, "day": lambda: s.dt.day,
+                       "date": lambda: s.dt.strftime("%Y-%m-%d")}[op]()
+        elif op in DERIVED_MATH_OPS:
+            nums = [pd.to_numeric(d[c], errors="coerce").astype("float64") for c in cols]
+            if op == "abs":
+                d[name] = nums[0].abs()
+            else:
+                if len(nums) < 2:
+                    raise ValueError(f'"{name}" needs two columns.')
+                a, b = nums[0], nums[1]
+                d[name] = {"ratio": lambda: a / b.replace(0, pd.NA).astype("float64"), "diff": lambda: a - b, "sum": lambda: a + b,
+                           "product": lambda: a * b, "pct": lambda: 100 * a / b.replace(0, pd.NA).astype("float64")}[op]()
+        else:
+            raise ValueError(f'Unsupported derived-column operation "{op}". Use one of: '
+                             + ", ".join(sorted(DERIVED_DATE_OPS | DERIVED_MATH_OPS)))
+    return d
+
+
+def _num(v):
+    return float(_re.sub(r"[^\d.\-]", "", str(v).replace(",", "")) or "nan")
+
+
+def _fuzzy_values(s: pd.Series, targets: list[str]):
+    """When an exact text match finds nothing: try 'contains', then the closest spelling. Returns (values, notes)."""
+    import difflib
+
+    uniq = s.dropna().astype(str).str.strip().unique().tolist()
+    low = {u.lower(): u for u in uniq}
+    found, notes = [], []
+    for t in targets:
+        tl = str(t).strip().lower()
+        hits = [u for k, u in low.items() if tl and (tl in k or k in tl)]
+        if not hits:
+            close = difflib.get_close_matches(tl, list(low), n=1, cutoff=0.75)
+            hits = [low[close[0]]] if close else []
+        if hits:
+            found += hits[:5]
+            notes.append(f'I matched "{t}" to "{", ".join(hits[:3])}" in your file.')
+    return found, notes
+
+
+def apply_filter(d: pd.DataFrame, f: dict, notes: list | None = None) -> pd.DataFrame:
     col, op, val = f["column"], f["op"], f.get("value")
+    if col == "*" and op == "contains":  # search every text column ("anything mentioning Shoprite")
+        text_cols = [c for c in d.columns if not pd.api.types.is_numeric_dtype(d[c]) and not pd.api.types.is_datetime64_any_dtype(d[c])]
+        mask = pd.Series(False, index=d.index)
+        for c in text_cols:
+            mask |= d[c].astype(str).str.contains(str(val), case=False, regex=False, na=False)
+        return d[mask]
     if col not in d.columns:
         raise ValueError(f'Unknown column "{col}"')
     if op == "contains":
         return d[d[col].astype(str).str.contains(str(val), case=False, regex=False, na=False)]
 
     s = d[col]
+    is_text = not pd.api.types.is_numeric_dtype(s) and not pd.api.types.is_datetime64_any_dtype(s)
     if pd.api.types.is_datetime64_any_dtype(s):
         conv = pd.to_datetime
     elif pd.api.types.is_numeric_dtype(s):
-        conv = lambda v: float(str(v).replace(",", ""))  # noqa: E731
+        conv = _num
     else:
         s = s.astype(str).str.strip().str.lower()
         conv = lambda v: str(v).strip().lower()  # noqa: E731
-    if op in ("==", "!=", "in", "not_in") and not pd.api.types.is_numeric_dtype(d[col]) and not pd.api.types.is_datetime64_any_dtype(d[col]):
+    if op in ("==", "!=", "in", "not_in") and is_text:
         val = _expand_aliases(val)
         if isinstance(val, list) and op in ("==", "!="):
             op = "in" if op == "==" else "not_in"
@@ -750,15 +870,48 @@ def apply_filter(d: pd.DataFrame, f: dict) -> pd.DataFrame:
     }
     if op not in ops:
         raise ValueError(f"Unsupported filter operator: {op}")
-    return d[ops[op]().fillna(False)]
+    out = d[ops[op]().fillna(False)]
+    if out.empty and is_text and op in ("==", "in"):  # forgive spelling / partial names
+        targets = v if isinstance(v, list) else [v]
+        vals, n = _fuzzy_values(d[col], targets)
+        if vals:
+            lowered = {x.lower() for x in vals}
+            out = d[s.isin(lowered)]
+            if notes is not None and not out.empty:
+                notes.extend(n)
+    return out
 
 
-def run_plan(df: pd.DataFrame, plan: dict):
-    d = df.copy()
+def filter_hints(df: pd.DataFrame, plan: dict) -> str:
+    """Real values of the columns a failed plan filtered on, so the AI can correct itself."""
+    out = []
     for f in plan.get("filters") or []:
-        d = apply_filter(d, f)
+        c = f.get("column")
+        if c in df.columns and not pd.api.types.is_numeric_dtype(df[c]) and not pd.api.types.is_datetime64_any_dtype(df[c]):
+            out.append(f'Values that really exist in "{c}": {df[c].dropna().astype(str).value_counts().head(40).index.tolist()}')
+        elif c in df.columns and pd.api.types.is_datetime64_any_dtype(df[c]):
+            out.append(f'"{c}" covers {df[c].min():%Y-%m-%d} to {df[c].max():%Y-%m-%d}')
+        elif c in df.columns and pd.api.types.is_numeric_dtype(df[c]):
+            out.append(f'"{c}" ranges from {df[c].min():g} to {df[c].max():g}')
+    return "\n".join(out)
+
+
+def run_plan(df: pd.DataFrame, plan: dict, notes: list | None = None):
+    d = apply_derived(df.copy(), plan.get("derived"))
+    for f in plan.get("filters") or []:
+        d = apply_filter(d, f, notes)
     if d.empty:
         raise ValueError("No rows match those filters.")
+
+    if plan.get("mode") == "rows":  # "show me the transactions over 50,000"
+        sel = [c for c in (plan.get("select") or []) if c in d.columns] or [c for c in d.columns if c != "_rows"]
+        sort = plan.get("sort")
+        if sort and sort.get("by") in d.columns:
+            d = d.sort_values(sort["by"], ascending=bool(sort.get("ascending", False)))
+        limit = min(int(plan.get("top_n") or 200), 500)
+        res = d[sel].head(limit).reset_index(drop=True)
+        num = [c for c in sel if pd.api.types.is_numeric_dtype(res[c])]
+        return res, d, [], (num[0] if num else sel[0])
 
     keys, is_time = [], False
     for g in plan.get("group_by") or []:
@@ -787,6 +940,9 @@ def run_plan(df: pd.DataFrame, plan: dict):
         else:
             if col not in d.columns:
                 raise ValueError(f'Unknown column "{col}"')
+            if agg in ("sum", "mean", "median") and not pd.api.types.is_numeric_dtype(d[col]):
+                raise ValueError(f'"{col}" is not a number column, so it cannot be used with "{agg}". '
+                                 'Pick a number column, or use count / nunique for text.')
             aggs[alias] = (col, agg)
 
     if keys:
@@ -795,10 +951,29 @@ def run_plan(df: pd.DataFrame, plan: dict):
         res = d.assign(_all=1).groupby("_all").agg(**aggs).reset_index(drop=True)
 
     first_metric = list(aggs)[0]
-    if plan.get("percent_of_total") and pd.api.types.is_numeric_dtype(res[first_metric]):
+    numeric_first = pd.api.types.is_numeric_dtype(res[first_metric])
+    if (plan.get("pct_change") or plan.get("cumulative")) and keys and numeric_first:
+        res = res.sort_values(keys).reset_index(drop=True)
+        if plan.get("pct_change"):
+            res["% change vs previous"] = (res[first_metric].pct_change() * 100).round(2)
+        if plan.get("cumulative"):
+            res["Running total"] = res[first_metric].cumsum()
+    if plan.get("percent_of_total") and numeric_first:
         total = res[first_metric].sum()
         if total:
             res["% of total"] = (100 * res[first_metric] / total).round(2)
+
+    for h in plan.get("having") or []:  # filter AFTER grouping: "customers with more than 5 transactions"
+        mcol = h.get("metric")
+        if mcol not in res.columns:
+            raise ValueError(f'"having" refers to "{mcol}" which is not a result column. Result columns: {list(res.columns)}')
+        hv, hop = _num(h.get("value")), h.get("op")
+        cond = {">": res[mcol] > hv, ">=": res[mcol] >= hv, "<": res[mcol] < hv, "<=": res[mcol] <= hv, "==": res[mcol] == hv, "!=": res[mcol] != hv}.get(hop)
+        if cond is None:
+            raise ValueError(f"Unsupported 'having' operator: {hop}")
+        res = res[cond]
+    if res.empty:
+        raise ValueError("No groups are left after applying the 'having' condition.")
 
     sort = plan.get("sort")
     if sort and sort.get("by") in res.columns:
@@ -828,16 +1003,24 @@ def explain_table(df: pd.DataFrame) -> pd.DataFrame:
     return pd.DataFrame(rows)
 
 
-def method_lines(df: pd.DataFrame, plan: dict, res: pd.DataFrame, filtered: pd.DataFrame, keys: list, metric: str) -> list[str]:
+def method_lines(df: pd.DataFrame, plan: dict, res: pd.DataFrame, filtered: pd.DataFrame, keys: list, metric: str,
+                 match_notes: list | None = None) -> list[str]:
     """A plain-English, code-generated account of exactly what was done to the data."""
     lines = [f"Started with {len(df):,} rows from your file."]
-    cur = df
+    for sp in plan.get("derived") or []:
+        lines.append(f'Worked out a new column "{sp.get("name")}" ({sp.get("op")} of {", ".join(map(str, sp.get("columns") or []))}).')
+    cur = apply_derived(df.copy(), plan.get("derived")) if plan.get("derived") else df
     for f in plan.get("filters") or []:
         try:
             cur = apply_filter(cur, f)
             lines.append(f'Kept only rows where "{f["column"]}" {f["op"]} {f.get("value")}: {len(cur):,} rows left.')
         except Exception:  # noqa: BLE001
             break
+    for n in match_notes or []:
+        lines.append(n)
+    if plan.get("mode") == "rows":
+        lines.append(f"Showing {len(res):,} of the {len(filtered):,} matching rows" + (f", sorted by {plan['sort']['by']}." if (plan.get("sort") or {}).get("by") else "."))
+        return lines
     if keys:
         lines.append("Grouped the rows by " + ", ".join(f'"{k}"' for k in keys) + f" - {len(res):,} group(s).")
     for m in plan.get("metrics") or []:
@@ -847,17 +1030,24 @@ def method_lines(df: pd.DataFrame, plan: dict, res: pd.DataFrame, filtered: pd.D
         col = m.get("column")
         if col in filtered.columns and filtered[col].isna().any():
             lines.append(f'Note: {int(filtered[col].isna().sum()):,} row(s) had a blank "{col}" and were not included in that calculation.')
+    for h in plan.get("having") or []:
+        lines.append(f'Kept only groups where "{h.get("metric")}" {h.get("op")} {h.get("value")}.')
+    if plan.get("pct_change"):
+        lines.append("Worked out the % change from each row to the next, in time order.")
+    if plan.get("cumulative"):
+        lines.append("Added a running total down the table.")
     # Independent cross-check: the groups must add back up to the overall total.
     try:
         first = (plan.get("metrics") or [{}])[0]
-        if first.get("agg") == "sum" and first.get("column") in filtered.columns and not plan.get("top_n") and not plan.get("filters_after"):
+        simple = not plan.get("top_n") and not plan.get("having")
+        if first.get("agg") == "sum" and first.get("column") in filtered.columns and simple:
             direct = float(pd.to_numeric(filtered[first["column"]], errors="coerce").sum())
             grouped = float(res[metric].sum())
             if abs(direct - grouped) <= max(0.01, abs(direct) * 1e-9):
                 lines.append(f"Cross-check passed: the groups add up to {grouped:,.2f}, exactly the same as adding the whole column directly.")
             else:
                 lines.append(f"WARNING: the groups add up to {grouped:,.2f} but adding the column directly gives {direct:,.2f}. Please check the file.")
-        elif first.get("agg") == "count" and not plan.get("top_n") and keys:
+        elif first.get("agg") == "count" and simple and keys:
             if int(res[metric].sum()) == len(filtered):
                 lines.append(f"Cross-check passed: the group counts add up to {len(filtered):,} rows.")
     except Exception:  # noqa: BLE001
@@ -865,31 +1055,68 @@ def method_lines(df: pd.DataFrame, plan: dict, res: pd.DataFrame, filtered: pd.D
     return lines
 
 
+def _result_problem(res: pd.DataFrame, plan: dict, metric: str) -> str | None:
+    """Deterministic sanity check: does the result look like a real answer?"""
+    if res.empty:
+        return "The result table is empty."
+    if plan.get("mode") != "rows" and metric in res.columns and res[metric].isna().all():
+        return f'Every value of "{metric}" is blank, so the calculation produced nothing. The column may be the wrong one.'
+    return None
+
+
 async def analyze(df: pd.DataFrame, question: str, prev_plan: dict | None = None, insights: bool = True):
-    """Full pipeline. Always tries to answer; 'clarify' is only returned if the request cannot be read at all."""
+    """Full pipeline. Always tries to answer. If the AI's plan fails or gives an empty/blank result, the real error and the
+    real column values are sent back to the AI so it can correct itself (up to 3 tries)."""
     df, money_note = add_money_columns(df)
-    plan = await make_plan(question, df, prev_plan, money_note)
-    plan = fix_plan_columns(plan, df.columns)
+    plan, feedback, ran = None, None, None
+    for attempt in range(3):
+        plan = await make_plan(question, df, prev_plan, money_note, feedback)
+        plan = fix_plan_columns(plan, df.columns)
+        if plan.get("mode") in ("explain", "general"):
+            break
+        match_notes: list = []
+        try:
+            res, filtered, keys, metric = await asyncio.to_thread(run_plan, df, plan, match_notes)
+            problem = _result_problem(res, plan, metric)
+        except (ValueError, KeyError, TypeError) as e:
+            res = None
+            problem = f"{type(e).__name__}: {e}"
+            if "No rows match" in problem or "No groups are left" in problem:
+                problem += "\n" + filter_hints(df, plan)
+        if problem is None:
+            ran = (res, filtered, keys, metric, match_notes)
+            break
+        feedback = f"{problem}\nThe plan was: {json.dumps(plan, default=str)[:1500]}\nAvailable columns: {list(df.columns)}"
     notes = list(plan.get("assumptions") or [])
     if money_note:
         notes.insert(0, money_note)
 
-    if plan.get("mode") == "explain":
+    if ran is None and plan.get("mode") not in ("explain", "general"):
+        notes.append("I could not turn this into an exact calculation, so I explained the file instead. Try asking it a slightly different way.")
+        plan = {"mode": "explain", "title": "About this file", "assumptions": notes}
+
+    if plan.get("mode") in ("explain", "general"):
         res = explain_table(df)
         facts = json.dumps(profile_facts(df), default=str)[:6000]
         extra = (f"File profile (exact): {facts}\n\nSample rows:\n{df.head(6).to_string(index=False, max_colwidth=25)}\n\n"
                  + "\n".join(f"Helper note: {n}" for n in notes))
-        text = await summarize(question, res, extra, EXPLAIN_PROMPT) if insights else None
+        text = await summarize(question, res, extra, GENERAL_PROMPT if plan.get("mode") == "general" else EXPLAIN_PROMPT) if insights else None
         if not text:
             text = (f"ANSWER: This table has {len(df):,} rows and {len(df.columns)} columns. The list below explains each column.\n"
                     "(The written explanation is not available right now; the exact column facts are in the table.)")
         plan.update({"chart": "none", "title": plan.get("title") or "About this file"})
+        tail = ("\n\nMY ASSUMPTIONS:\n" + "\n".join("- " + n for n in notes)) if notes else ""
         return {"plan": plan, "res": res, "filtered": df, "keys": [], "metric": "Filled",
-                "title": plan["title"], "insight": text}
+                "title": plan["title"], "insight": text + tail}
 
-    res, filtered, keys, metric = await asyncio.to_thread(run_plan, df, plan)
-    method = method_lines(df, plan, res, filtered, keys, metric)
+    res, filtered, keys, metric, match_notes = ran
+    if plan.get("mode") == "rows":
+        plan["chart"] = "none"
+    method = method_lines(df, plan, res, filtered, keys, metric, match_notes)
     figures = key_figures(res, keys, metric)
+    if plan.get("mode") == "rows":
+        figures = [f"Matching rows found: {len(filtered):,} (showing {len(res):,})"] + figures
+    notes += [n for n in match_notes if n not in notes]
     text = None
     if insights:
         extra = ("Key figures (exact, computed by code):\n" + "\n".join(figures) + "\n\nHow it was worked out:\n" + "\n".join(method)

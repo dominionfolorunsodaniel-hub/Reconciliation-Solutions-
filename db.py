@@ -234,6 +234,11 @@ def _init_schema(_con) -> None:
     _ensure_column(_con, "payment_requests", "proof_data", "TEXT")   # encrypted base64 payment screenshot
     _ensure_column(_con, "payment_requests", "proof_mime", "TEXT")
     _ensure_column(_con, "payment_requests", "proof_at", "TEXT")
+    _ensure_column(_con, "payment_requests", "coupon_code", "TEXT")
+    _ensure_column(_con, "payment_requests", "discount_ngn", "INTEGER NOT NULL DEFAULT 0")
+    _ensure_column(_con, "users", "email", "TEXT")
+    _ensure_column(_con, "users", "referral_code", "TEXT")
+    _ensure_column(_con, "users", "referred_by", "INTEGER")
     _con.executescript("CREATE TABLE IF NOT EXISTS password_resets (user_id INTEGER PRIMARY KEY, code_hash TEXT NOT NULL, "
                        "expires_at TEXT NOT NULL, attempts INTEGER NOT NULL DEFAULT 0, created_at TEXT NOT NULL);")
     _con.executescript(
@@ -242,6 +247,7 @@ def _init_schema(_con) -> None:
         "active INTEGER NOT NULL DEFAULT 1);"
         "CREATE TABLE IF NOT EXISTS broadcast_reads (broadcast_id INTEGER NOT NULL, user_id INTEGER NOT NULL, "
         "read_at TEXT NOT NULL, PRIMARY KEY (broadcast_id, user_id));")
+    _ensure_column(_con, "broadcasts", "target_user_id", "INTEGER")   # NULL = announcement for everyone
 
 
 run_startup_migration(_init_schema)
@@ -353,12 +359,20 @@ def can_access(user: dict, company_id: int) -> bool:
 
 
 # ---- users ---------------------------------------------------------------------- #
+def _col(row, name):
+    try:
+        return row[name]
+    except (KeyError, IndexError):
+        return None
+
+
 def _user(row) -> dict | None:
     if row is None:
         return None
     return {"id": row["id"], "username": row["username"], "role": row["role"],
             "telegram_id": row["telegram_id"], "active": bool(row["active"]),
             "alerts": bool(row["alerts"]), "totp_enabled": bool(row["totp_enabled"]),
+            "email": _col(row, "email"), "referral_code": _col(row, "referral_code"),
             "created_at": row["created_at"]}
 
 
@@ -950,12 +964,31 @@ def _active_subscription(con, company_id: int):
         "ORDER BY id DESC LIMIT 1", (company_id, now, now)).fetchone()
 
 
+GRACE_HOURS = float(os.getenv("GRACE_HOURS", "24"))
+
+
+def _grace_subscription(con, company_id: int):
+    """A PAID plan that ended less than GRACE_HOURS ago: customers keep working while they renew.
+    (The free trial gets no grace.)"""
+    if GRACE_HOURS <= 0:
+        return None
+    now = _now()
+    since = (dt.datetime.now(dt.timezone.utc) - dt.timedelta(hours=GRACE_HOURS)).strftime(FMT)
+    return con.execute(
+        "SELECT * FROM subscriptions WHERE company_id=? AND plan NOT IN ('free','expired') AND expires_at<=? AND expires_at>? "
+        "ORDER BY id DESC LIMIT 1", (company_id, now, since)).fetchone()
+
+
 def get_plan_status(company_id: int) -> dict:
     with _db() as con:
         now = _now()
         _ensure_trial(con, company_id)
         con.execute("UPDATE subscriptions SET status='expired' WHERE status='active' AND expires_at<=?", (now,))
         sub = _active_subscription(con, company_id)
+        grace = None
+        if sub is None:
+            grace = _grace_subscription(con, company_id)
+            sub = grace
         plan_key = sub["plan"] if sub and sub["plan"] in PLANS else "expired"
         plan = dict(PLANS[plan_key])
         count = con.execute(
@@ -970,6 +1003,8 @@ def get_plan_status(company_id: int) -> dict:
                 "expires_at": sub["expires_at"] if sub else (last_sub["expires_at"] if last_sub else None),
                 "term_label": duration_label(plan_key),
                 "subscription_source": sub["grant_source"] if sub else None,
+                "in_grace": grace is not None,
+                "grace_ends_at": (dt.datetime.strptime(grace["expires_at"], FMT) + dt.timedelta(hours=GRACE_HOURS)).strftime(FMT) if grace else None,
                 "pending_payment_requests": pending, "month": _month()}
 
 
@@ -978,7 +1013,7 @@ def reserve_monthly_usage(company_id: int, user_id: int, operation: str) -> int:
     with _db() as con:
         con.execute("BEGIN IMMEDIATE")
         _ensure_trial(con, company_id)
-        sub = _active_subscription(con, company_id)
+        sub = _active_subscription(con, company_id) or _grace_subscription(con, company_id)
         plan_key = sub["plan"] if sub and sub["plan"] in PLANS else "expired"
         limit = PLANS[plan_key]["monthly_limit"]
         month = _month()
@@ -1035,13 +1070,15 @@ def list_subscriptions() -> list[dict]:
         return [dict(r) for r in rows]
 
 
-def create_payment_request(company_id: int, user_id: int, plan: str, reference: str) -> dict:
+def create_payment_request(company_id: int, user_id: int, plan: str, reference: str,
+                           coupon_code: str | None = None, discount_ngn: int = 0) -> dict:
     if plan not in PAID_PLANS:
         raise ValueError("Choose one of the currently offered paid company plans.")
     reference = (reference or "").strip().upper()
     if not reference or len(reference) > 120:
         raise ValueError("Enter the bank transfer reference (1-120 characters).")
-    amount = PLANS[plan]["price_ngn"]
+    discount_ngn = max(0, min(int(discount_ngn or 0), PLANS[plan]["price_ngn"]))
+    amount = PLANS[plan]["price_ngn"] - discount_ngn
     try:
         with _db() as con:
             con.execute("BEGIN IMMEDIATE")
@@ -1049,8 +1086,8 @@ def create_payment_request(company_id: int, user_id: int, plan: str, reference: 
             if pending:
                 raise ValueError("You already have a payment request awaiting review.")
             cur = con.execute(
-                "INSERT INTO payment_requests(company_id,user_id,plan,amount_ngn,transfer_reference,status,created_at) "
-                "VALUES (?,?,?,?,?,'pending',?)", (company_id,user_id,plan,amount,reference,_now()))
+                "INSERT INTO payment_requests(company_id,user_id,plan,amount_ngn,transfer_reference,status,created_at,coupon_code,discount_ngn) "
+                "VALUES (?,?,?,?,?,'pending',?,?,?)", (company_id,user_id,plan,amount,reference,_now(),coupon_code,discount_ngn))
             row = con.execute("SELECT * FROM payment_requests WHERE id=?", (cur.lastrowid,)).fetchone()
             return dict(row)
     except IntegrityError as e:
@@ -1113,8 +1150,9 @@ def list_notifications(user_id: int, limit: int = 30) -> list[dict]:
             "SELECT b.id, b.title, b.body, b.level, b.created_at, "
             "(CASE WHEN r.user_id IS NULL THEN 0 ELSE 1 END) AS is_read "
             "FROM broadcasts b LEFT JOIN broadcast_reads r ON r.broadcast_id = b.id AND r.user_id = ? "
-            "WHERE b.active = 1 AND (b.expires_at IS NULL OR b.expires_at > ?) ORDER BY b.id DESC LIMIT ?",
-            (user_id, _now(), int(limit))).fetchall()
+            "WHERE b.active = 1 AND (b.expires_at IS NULL OR b.expires_at > ?) "
+            "AND (b.target_user_id IS NULL OR b.target_user_id = ?) ORDER BY b.id DESC LIMIT ?",
+            (user_id, _now(), user_id, int(limit))).fetchall()
     out = [dict(r) for r in rows]
     for r in out:
         r["is_read"] = bool(r["is_read"])
@@ -1125,7 +1163,8 @@ def mark_notifications_read(user_id: int, ids: list[int] | None = None) -> None:
     """Mark the given announcements (or every live one) as read for this user."""
     wanted = None if ids is None else {int(i) for i in ids[:200]}
     with _db() as con:
-        rows = con.execute("SELECT id FROM broadcasts WHERE active = 1 ORDER BY id DESC LIMIT 200").fetchall()
+        rows = con.execute("SELECT id FROM broadcasts WHERE active = 1 AND (target_user_id IS NULL OR target_user_id = ?) "
+                           "ORDER BY id DESC LIMIT 200", (user_id,)).fetchall()
         now = _now()
         for r in rows:
             if wanted is None or r["id"] in wanted:
@@ -1139,7 +1178,8 @@ def list_broadcasts_admin(limit: int = 50) -> dict:
             "SELECT b.id, b.title, b.body, b.level, b.created_at, b.expires_at, b.active, u.username AS created_by_name, "
             "(SELECT COUNT(*) FROM broadcast_reads r JOIN users ru ON ru.id = r.user_id "
             " WHERE r.broadcast_id = b.id AND ru.role <> 'admin') AS read_count "
-            "FROM broadcasts b LEFT JOIN users u ON u.id = b.created_by ORDER BY b.id DESC LIMIT ?", (int(limit),)).fetchall()
+            "FROM broadcasts b LEFT JOIN users u ON u.id = b.created_by WHERE b.target_user_id IS NULL "
+            "ORDER BY b.id DESC LIMIT ?", (int(limit),)).fetchall()
         customers = con.execute("SELECT COUNT(*) AS n FROM users WHERE role <> 'admin' AND active = 1").fetchone()["n"]
     return {"customers": int(customers), "items": [dict(r) for r in rows]}
 
@@ -1166,8 +1206,8 @@ def create_password_reset(username: str) -> dict | None:
     """Returns {user, code} when the account can be reset by Telegram, else None (callers must not reveal which)."""
     with _db() as con:
         row = con.execute("SELECT * FROM users WHERE username = ?", (username.strip(),)).fetchone()
-    if row is None or not row["active"] or row["role"] == "admin" or not row["telegram_id"]:
-        return None  # admins use the configured credentials; no Telegram link = ask the admin to reset
+    if row is None or not row["active"] or row["role"] == "admin" or not (row["telegram_id"] or _col(row, "email")):
+        return None  # admins use the configured credentials; no email/Telegram on file = ask the admin to reset
     code = f"{secrets.randbelow(1_000_000):06d}"
     expires = (dt.datetime.now(dt.timezone.utc) + dt.timedelta(minutes=RESET_MINUTES)).strftime(FMT)
     with _db() as con:

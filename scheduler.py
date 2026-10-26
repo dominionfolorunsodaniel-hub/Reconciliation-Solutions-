@@ -18,6 +18,7 @@ import core
 import db
 import intake
 import notify
+import recon
 import report_pdf
 
 log = logging.getLogger("scheduler")
@@ -146,7 +147,7 @@ async def watchdog_loop():
 
 def start() -> list[asyncio.Task]:
     return [asyncio.create_task(f()) for f in
-            (retention_loop, backup_loop, intake_loop, digest_loop, watchdog_loop, scheduled_reconciliation_loop, subscription_reminder_loop)]
+            (retention_loop, backup_loop, intake_loop, digest_loop, watchdog_loop, scheduled_reconciliation_loop, subscription_reminder_loop, expiry_reminder_loop)]
 
 
 async def scheduled_reconciliation_loop():
@@ -187,6 +188,20 @@ async def scheduled_reconciliation_loop():
                     await asyncio.to_thread(db.audit, None, "scheduled_reconcile_error", job["company_id"], f"job={job['id']}: {str(e)[:300]}", "scheduler")
         except Exception:  # noqa: BLE001
             log.exception("scheduled reconciliation loop error")
+
+
+async def expiry_reminder_loop():
+    """In-app + email reminders 72h / 24h before a plan ends, and when the grace period starts."""
+    import extras
+    await asyncio.sleep(60)
+    while True:
+        try:
+            n = await asyncio.to_thread(extras.run_expiry_reminders)
+            if n:
+                log.info("Sent %s expiry reminder(s)", n)
+        except Exception:  # noqa: BLE001
+            log.exception("expiry reminders failed")
+        await asyncio.sleep(3600)
 
 
 async def subscription_reminder_loop():

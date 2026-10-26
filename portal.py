@@ -7,6 +7,7 @@ import datetime as dt
 import sqlite3
 
 import db
+import extras
 import security
 
 FMT = "%Y-%m-%d %H:%M:%S"
@@ -33,8 +34,17 @@ with db._db() as con:
     """)
 
 
+def _add_columns(con) -> None:
+    db._ensure_column(con, "registration_requests", "email", "TEXT")
+    db._ensure_column(con, "registration_requests", "referral_code", "TEXT")
+
+
+db.run_startup_migration(_add_columns)
+
+
 def submit_registration(company_name: str, username: str, password: str,
-                        telegram_id: int | None = None) -> dict:
+                        telegram_id: int | None = None, email: str | None = None,
+                        referral_code: str | None = None) -> dict:
     company_name = (company_name or "").strip()
     username = (username or "").strip()
     if not company_name or len(company_name) > 120:
@@ -42,6 +52,10 @@ def submit_registration(company_name: str, username: str, password: str,
     if not db.USERNAME_RE.fullmatch(username):
         raise ValueError("Username must be 3–40 characters: letters, digits, . _ @ or -.")
     db._check_password(password or "")
+    email = extras.clean_email(email)
+    referral_code = (referral_code or "").strip().upper() or None
+    if referral_code and extras.referrer_for_code(referral_code) is None:
+        raise ValueError("That referral code isn't valid. Check it, or leave it empty.")
     if telegram_id is not None:
         try:
             telegram_id = int(telegram_id)
@@ -66,9 +80,9 @@ def submit_registration(company_name: str, username: str, password: str,
                 (telegram_id,)).fetchone():
             raise ValueError("A request with that Telegram ID is already pending.")
         cur = con.execute(
-            "INSERT INTO registration_requests(company_name, username, password_hash, telegram_id, status, created_at) "
-            "VALUES (?, ?, ?, ?, 'pending', ?)",
-            (company_name, username, security.hash_password(password), telegram_id, _now()))
+            "INSERT INTO registration_requests(company_name, username, password_hash, telegram_id, status, created_at, email, referral_code) "
+            "VALUES (?, ?, ?, ?, 'pending', ?, ?, ?)",
+            (company_name, username, security.hash_password(password), telegram_id, _now(), email, referral_code))
         return {"id": cur.lastrowid, "company_name": company_name, "username": username,
                 "status": "pending", "created_at": _now()}
 
@@ -79,11 +93,11 @@ def list_registration_requests(status: str = "pending") -> list[dict]:
             status = "pending"
         if status == "all":
             rows = con.execute(
-                "SELECT id, company_name, username, telegram_id, status, created_at, reviewed_at, review_note "
+                "SELECT id, company_name, username, telegram_id, email, status, created_at, reviewed_at, review_note "
                 "FROM registration_requests ORDER BY id DESC LIMIT 300").fetchall()
         else:
             rows = con.execute(
-                "SELECT id, company_name, username, telegram_id, status, created_at, reviewed_at, review_note "
+                "SELECT id, company_name, username, telegram_id, email, status, created_at, reviewed_at, review_note "
                 "FROM registration_requests WHERE status = ? ORDER BY id DESC LIMIT 300", (status,)).fetchall()
         return [dict(r) for r in rows]
 
@@ -113,9 +127,11 @@ def decide_registration(request_id: int, decision: str, admin: dict, note: str =
         cur = con.execute("INSERT INTO companies(name, created_at) VALUES (?, ?)", (req["company_name"], _now()))
         company_id = cur.lastrowid
         db._insert_trial_subscription(con, company_id)
+        referrer = extras.referrer_for_code(req["referral_code"]) if req["referral_code"] else None
         cur = con.execute(
-            "INSERT INTO users(username, password_hash, role, telegram_id, created_at) VALUES (?, ?, 'analyst', ?, ?)",
-            (req["username"], req["password_hash"], req["telegram_id"], _now()))
+            "INSERT INTO users(username, password_hash, role, telegram_id, created_at, email, referred_by) "
+            "VALUES (?, ?, 'analyst', ?, ?, ?, ?)",
+            (req["username"], req["password_hash"], req["telegram_id"], _now(), req["email"], referrer))
         user_id = cur.lastrowid
         con.execute("INSERT INTO user_companies(user_id, company_id) VALUES (?, ?)", (user_id, company_id))
         con.execute(
