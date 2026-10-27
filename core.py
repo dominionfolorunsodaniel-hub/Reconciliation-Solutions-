@@ -370,6 +370,26 @@ def load_report(data: bytes, filename: str, sheet: str | None = None):
     return df, notes, sheets
 
 
+_SLASH_DATE = re.compile(r"^\s*(\d{1,2})[-/.](\d{1,2})[-/.](\d{2,4})")
+
+
+def _dayfirst(values) -> bool:
+    """01/09/2026: day first or month first? Decide from the data (a part above 12 gives it away).
+    When every value is ambiguous, use day-first, which is the norm in Nigerian bank statements."""
+    first_big = second_big = False
+    iso = sum(bool(re.match(r"^\s*\d{4}[-/.]\d", str(v))) for v in values.head(200))
+    if iso > 0.5 * min(len(values), 200):  # 2026-09-02 is always year-month-day
+        return False
+    for v in values.head(2000).astype(str):
+        m = _SLASH_DATE.match(v)
+        if m:
+            first_big |= int(m.group(1)) > 12
+            second_big |= int(m.group(2)) > 12
+    if second_big and not first_big:
+        return False
+    return True
+
+
 def coerce_types(df: pd.DataFrame) -> pd.DataFrame:
     for c in df.columns:
         s = df[c]
@@ -394,11 +414,12 @@ def coerce_types(df: pd.DataFrame) -> pd.DataFrame:
         )
         if looks_like_date.mean() <= 0.9:
             continue
+        dayfirst = _dayfirst(nn)
         with warnings.catch_warnings():
             warnings.simplefilter("ignore")
-            probe = pd.to_datetime(sample, errors="coerce", format="mixed")
+            probe = pd.to_datetime(sample, errors="coerce", format="mixed", dayfirst=dayfirst)
             if probe.notna().mean() > 0.9:
-                df[c] = pd.to_datetime(s, errors="coerce", format="mixed")
+                df[c] = pd.to_datetime(s, errors="coerce", format="mixed", dayfirst=dayfirst)
     return df
 
 

@@ -16,6 +16,26 @@ from reportlab.lib.units import cm
 from reportlab.platypus import Image, Paragraph, SimpleDocTemplate, Spacer, Table, TableStyle
 
 MAX_ROWS, MAX_COLS = 40, 8
+_FONTS = None
+
+
+def _fonts() -> tuple[str, str]:
+    """(regular, bold) font names. The built-in PDF fonts cannot draw the naira sign, so use DejaVu Sans
+    (shipped inside matplotlib, which is already installed) and fall back to Helvetica if it is missing."""
+    global _FONTS
+    if _FONTS is None:
+        try:
+            import matplotlib
+            from reportlab.pdfbase import pdfmetrics
+            from reportlab.pdfbase.ttfonts import TTFont
+
+            d = os.path.join(os.path.dirname(matplotlib.__file__), "mpl-data", "fonts", "ttf")
+            pdfmetrics.registerFont(TTFont("DejaVuSans", os.path.join(d, "DejaVuSans.ttf")))
+            pdfmetrics.registerFont(TTFont("DejaVuSans-Bold", os.path.join(d, "DejaVuSans-Bold.ttf")))
+            _FONTS = ("DejaVuSans", "DejaVuSans-Bold")
+        except Exception:  # noqa: BLE001
+            _FONTS = ("Helvetica", "Helvetica-Bold")
+    return _FONTS
 
 
 def _cell(v) -> str:
@@ -46,10 +66,11 @@ def build_pdf(company_name: str, title: str, question: str, insight: str | None,
     today = dt.date.today().strftime("%d %b %Y")
 
     styles = getSampleStyleSheet()
-    s_name = ParagraphStyle("name", parent=styles["Normal"], textColor=brand, fontSize=11, spaceAfter=2)
-    s_title = ParagraphStyle("title", parent=styles["Title"], alignment=0, fontSize=20, textColor=colors.HexColor("#1c2230"))
-    s_sub = ParagraphStyle("sub", parent=styles["Normal"], textColor=colors.HexColor("#6b7385"), fontSize=9)
-    s_body = ParagraphStyle("body", parent=styles["Normal"], fontSize=10, leading=14)
+    f_reg, f_bold = _fonts()
+    s_name = ParagraphStyle("name", parent=styles["Normal"], fontName=f_bold, textColor=brand, fontSize=11, spaceAfter=2)
+    s_title = ParagraphStyle("title", parent=styles["Title"], fontName=f_bold, alignment=0, fontSize=20, leading=24, textColor=colors.HexColor("#1c2230"))
+    s_sub = ParagraphStyle("sub", parent=styles["Normal"], fontName=f_reg, textColor=colors.HexColor("#6b7385"), fontSize=9)
+    s_body = ParagraphStyle("body", parent=styles["Normal"], fontName=f_reg, fontSize=10, leading=14)
 
     story = []
     logo = branding.get("logo_path")
@@ -85,7 +106,7 @@ def build_pdf(company_name: str, title: str, question: str, insight: str | None,
         t = Table(data, colWidths=[width] * len(cols), repeatRows=1)
         t.setStyle(TableStyle([
             ("BACKGROUND", (0, 0), (-1, 0), brand), ("TEXTCOLOR", (0, 0), (-1, 0), colors.white),
-            ("FONTSIZE", (0, 0), (-1, -1), 7.5), ("GRID", (0, 0), (-1, -1), 0.25, colors.HexColor("#d5d9e4")),
+            ("FONTNAME", (0, 0), (-1, -1), f_reg), ("FONTNAME", (0, 0), (-1, 0), f_bold), ("FONTSIZE", (0, 0), (-1, -1), 7.5), ("GRID", (0, 0), (-1, -1), 0.25, colors.HexColor("#d5d9e4")),
             ("ROWBACKGROUNDS", (0, 1), (-1, -1), [colors.white, colors.HexColor("#f5f6fa")]),
             ("VALIGN", (0, 0), (-1, -1), "MIDDLE"),
         ]))
@@ -96,7 +117,7 @@ def build_pdf(company_name: str, title: str, question: str, insight: str | None,
 
     def footer(canvas, doc):
         canvas.saveState()
-        canvas.setFont("Helvetica", 8)
+        canvas.setFont(f_reg, 8)
         canvas.setFillColor(colors.HexColor("#6b7385"))
         canvas.drawString(1.6 * cm, 1.0 * cm, f"{name}  |  {today}  |  Figures computed from the uploaded report")
         canvas.drawRightString(A4[0] - 1.6 * cm, 1.0 * cm, f"Page {doc.page}")

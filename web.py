@@ -33,6 +33,7 @@ import portal
 import recon
 import report_pdf
 import scheduler
+import statement
 import totp
 
 log = logging.getLogger("web")
@@ -195,6 +196,13 @@ class AnalyzeIn(BaseModel):
     report_id: int | None = None  # None = all reports of the company combined
     question: str
     prev_plan: dict | None = None
+
+
+class StatementIn(BaseModel):
+    company_id: int
+    report_id: int | None = None
+    from_month: str | None = None   # "2026-02"
+    to_month: str | None = None
 
 
 class ReconIn(BaseModel):
@@ -587,6 +595,51 @@ async def analyze(body: AnalyzeIn, user: dict = Depends(current_user)):
         "result_id": _store_result(xlsx.getvalue(), user, body.company_id, pdf),
     }
     return response
+
+
+@app.post("/api/statement-score")
+async def statement_score(body: StatementIn, user: dict = Depends(current_user)):
+    """Monthly income / spending / what is left, plus an indicative loan-readiness score for a bank statement."""
+    need_company(user, body.company_id)
+    month_ok = re.compile(r"^\d{4}-(0[1-9]|1[0-2])$")
+    for m in (body.from_month, body.to_month):
+        if m and not month_ok.match(m):
+            raise HTTPException(400, "Months must look like 2026-02.")
+    reservation = reserve_plan_usage(user, body.company_id, "statement_score")
+    try:
+        df = await asyncio.to_thread(db.resolve_frame, body.company_id, body.report_id)
+        r = await asyncio.to_thread(statement.build, df, body.from_month or None, body.to_month or None)
+    except Exception as e:  # noqa: BLE001
+        finish_plan_usage(reservation, False)
+        raise HTTPException(400, str(e))
+    finish_plan_usage(reservation, True)
+
+    text = statement.summary_text(r)
+    simple = None
+    if INSIGHTS:
+        simple = await core.summarize("Explain this bank statement result and loan-readiness score in simple words", r["table"],
+                                      text, statement.STATEMENT_PROMPT)
+        if simple:
+            bad = core.unverified_figures(simple, text + " " + r["table"].to_string())
+            if bad:
+                simple += "\n\nPlease double-check these figures, I could not match them directly: " + ", ".join(bad) + "."
+    full = ((simple + "\n\n") if simple else "") + text
+    db.audit(user, "statement_score", body.company_id, f"report={body.report_id}; score={r['score']}; months={r['totals']['months']}")
+    xlsx = await asyncio.to_thread(statement.excel, r)
+    png = await asyncio.to_thread(statement.chart_png, r["table"])
+    pdf = {"title": f"Statement check: {r['verdict']} ({r['score']}/100)", "question": f"Period {r['period']}", "insight": full,
+           "table": r["table"], "chart": png, "total_rows": len(r["table"])}
+    t = r["table"]
+    return {
+        "score": r["score"], "verdict": r["verdict"], "eligibility": r["eligibility"], "factors": r["factors"],
+        "strengths": r["strengths"], "concerns": r["concerns"], "advice": r["advice"], "loan_guide": r["loan_guide"],
+        "totals": r["totals"], "disclaimer": r["disclaimer"], "period": r["period"], "months_available": r["months_available"],
+        "notes": r["notes"], "simple": simple, "text": full,
+        "columns": list(t.columns), "rows": json.loads(t.to_json(orient="records")),
+        "chart": {"labels": t["Month"].tolist(), "income": t["Income (credits)"].tolist(),
+                  "expenses": t["Expenses (debits)"].tolist(), "left": t["Left over (income - expenses)"].tolist()},
+        "result_id": _store_result(xlsx.getvalue(), user, body.company_id, pdf),
+    }
 
 
 @app.post("/api/reconcile")
