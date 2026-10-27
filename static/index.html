@@ -450,6 +450,31 @@
   html[data-theme=dark] .bell-item, html[data-theme=dark] .d-chip { background:#16233b; color:#dbe6ff; }
   html[data-theme=dark] .pay-notice { background:#2a2312 !important; }
   html[data-theme=dark] #app .pill.ok { background:#0f2a22; color:#7ef0c5; }
+
+  /* ===== statement score ===== */
+  .ss-hero { display:flex; gap:18px; align-items:center; flex-wrap:wrap; margin:14px 0; }
+  .ss-gauge { --p:0; --c:#10b981; width:132px; height:132px; border-radius:50%; display:grid; place-items:center; position:relative; flex:0 0 auto;
+              background:conic-gradient(var(--c) calc(var(--p) * 1%), #e3eafa 0); }
+  .ss-gauge::before { content:""; position:absolute; inset:12px; border-radius:50%; background:var(--card, #fff); }
+  .ss-gauge > * { position:relative; text-align:center; line-height:1.05; }
+  .ss-gauge b { font-size:38px; display:block; } .ss-gauge small { color:#68758e; font-size:12px; }
+  .ss-verdict { display:inline-block; padding:4px 14px; border-radius:99px; font-weight:800; font-size:14px; color:#fff; background:#10b981; }
+  .ss-kpis { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:10px; margin:12px 0; }
+  .ss-kpi { border:1px solid var(--line); border-radius:14px; padding:12px; } .ss-kpi small { color:#68758e; display:block; } .ss-kpi b { font-size:19px; overflow-wrap:anywhere; }
+  .ss-three { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:12px; margin:12px 0; }
+  .ss-box { border:1px solid var(--line); border-radius:14px; padding:12px 14px; } .ss-box h4 { margin:0 0 6px; font-size:14px; }
+  .ss-box ul { margin:0; padding-left:18px; font-size:13.5px; line-height:1.5; } .ss-box.good { border-left:4px solid #10b981; } .ss-box.bad { border-left:4px solid #f59e0b; } .ss-box.tip { border-left:4px solid #1769ff; }
+  .ss-loan { border:1px dashed #1769ff; border-radius:14px; padding:12px 14px; margin:12px 0; background:rgba(23,105,255,.06); }
+  .ss-factor { display:grid; grid-template-columns:minmax(120px,1fr) 2fr auto; gap:10px; align-items:center; font-size:13px; margin:6px 0; }
+  .ss-bar { height:9px; border-radius:99px; background:#e3eafa; overflow:hidden; } .ss-bar i { display:block; height:100%; background:linear-gradient(90deg,#1769ff,#22d3ee); }
+  .ss-table { width:100%; border-collapse:collapse; font-size:13.5px; } .ss-table th, .ss-table td { padding:8px 10px; border-bottom:1px solid var(--line); text-align:right; white-space:nowrap; }
+  .ss-table th:first-child, .ss-table td:first-child { text-align:left; } .ss-neg { color:#c0392b; font-weight:700; }
+  #ssCard { min-width:0; max-width:100%; overflow-x:hidden; } #ssCard .row > * { min-width:0; max-width:100%; } #ssCard canvas { max-width:100%; }
+  .ss-wrap { overflow-x:auto; max-width:100%; -webkit-overflow-scrolling:touch; } .ss-note { font-size:12.5px; color:#68758e; margin-top:10px; }
+  @media (max-width:760px) { .ss-kpis { grid-template-columns:repeat(2,minmax(0,1fr)); } .ss-three { grid-template-columns:1fr; } .ss-factor { grid-template-columns:1fr; gap:3px; } }
+  html[data-theme=dark] .ss-gauge::before { background:#121b2e; } html[data-theme=dark] .ss-gauge { background:conic-gradient(var(--c) calc(var(--p) * 1%), #26354f 0); }
+  html[data-theme=dark] .ss-bar { background:#26354f; } html[data-theme=dark] .ss-loan { background:rgba(23,105,255,.14); }
+  html[data-theme=dark] #app .ss-kpi, html[data-theme=dark] #app .ss-box { background:#0e1729; }
 </style>
 </head>
 <body>
@@ -528,7 +553,7 @@
       </div>
     </section>
 
-    <div class="trust">🔐 Encrypted &nbsp;·&nbsp; ✅ Two-factor ready &nbsp;·&nbsp; 📊 Built for ATM &amp; POS teams &nbsp;·&nbsp; 💬 WhatsApp support</div>
+    <div class="trust">🔐 Encrypted &nbsp;·&nbsp; ✅ Two-factor ready &nbsp;·&nbsp; 📊 Built for ATM &amp; POS teams &nbsp;·&nbsp; 💬 WhatsApp support &nbsp;·&nbsp; ✉️ <a href="mailto:reconciliationsolutionssupport@gmail.com" style="color:inherit">reconciliationsolutionssupport@gmail.com</a></div>
 
     <section class="features">
       <div class="glass feat"><div class="ic">🧠</div><h3>Understands any report</h3><p>It tells you what the report is, the period it covers and what looks wrong - the moment you upload it.</p></div>
@@ -562,6 +587,16 @@
         </div>
       </div>
       <div class="works-with"><span>📊 Excel</span><span>📄 CSV</span><span>📕 PDF</span><span>📝 Word</span><span>🧾 JSON / XML</span><span>🌐 HTML</span><span>📷 Photos &amp; screenshots</span></div>
+    </section>
+
+    <section class="sec" id="loancheck">
+      <h2>Check any bank statement in seconds</h2>
+      <p class="sub">Upload a statement and see how the account really looks, month by month.</p>
+      <div class="steps3">
+        <div class="glass step"><div class="n">📊</div><b>Income vs spending</b><span class="d">Every credit and debit sorted for you, month by month.</span></div>
+        <div class="glass step"><div class="n">💰</div><b>What is left each month</b><span class="d">Income, spending and the balance for February, March and every month you choose.</span></div>
+        <div class="glass step"><div class="n">🏦</div><b>Loan-readiness score</b><span class="d">A clear score out of 100, what lenders may like or worry about, and how to improve.</span></div>
+      </div>
     </section>
 
     <section class="sec" id="pricing">
@@ -598,7 +633,7 @@
       <p>Join teams who reconcile faster and sleep better.</p>
       <button type="button" onclick="document.querySelector('.login').scrollIntoView({behavior:'smooth',block:'center'})">Get started →</button>
     </section>
-    <div class="foot">Built for teams that handle sensitive financial data. · <a href="#" data-legal="terms">Terms</a> · <a href="#" data-legal="privacy">Privacy</a></div>
+    <div class="foot">Built for teams that handle sensitive financial data. · Contact: <a href="mailto:reconciliationsolutionssupport@gmail.com">reconciliationsolutionssupport@gmail.com</a> · <a href="#" data-legal="terms">Terms</a> · <a href="#" data-legal="privacy">Privacy</a></div>
   </div>
 </div>
 
@@ -612,6 +647,7 @@
     <button type="button" class="sb-item analyst-up hidden" data-nav="upload"><span class="ic">⬆️</span><span>Upload Report</span></button>
     <button type="button" class="sb-item" data-nav="reports"><span class="ic">📄</span><span>My Reports</span></button>
     <button type="button" class="sb-item" data-nav="analytics"><span class="ic">💬</span><span>Ask &amp; Analytics</span></button>
+    <button type="button" class="sb-item" data-nav="statement"><span class="ic">🏦</span><span>Statement Score</span></button>
     <button type="button" class="sb-item" data-nav="insights"><span class="ic">📊</span><span>Company Insights</span></button>
     <button type="button" class="sb-item" data-nav="reconciliation"><span class="ic">⚖️</span><span>Reconciliation</span></button>
     <button type="button" class="sb-item" data-nav="discrepancies"><span class="ic">🚨</span><span>Discrepancies</span></button>
@@ -627,6 +663,7 @@
   <button type="button" class="sb-q analyst-up hidden" data-nav="upload"><span>⬆️ Upload a Report</span><i>›</i></button>
   <button type="button" class="sb-q" data-nav="analytics"><span>📈 View Analytics</span><i>›</i></button>
   <a class="sb-q" href="https://wa.me/2348100481004?text=Hello%2C%20I%20need%20support%20with%20Report%20Analyzer" target="_blank" rel="noopener noreferrer"><span>🎧 Get Support</span><i>›</i></a>
+  <a class="sb-q" href="mailto:reconciliationsolutionssupport@gmail.com?subject=Report%20Analyzer%20support"><span>✉️ Email support</span><i>›</i></a>
   <div class="sb-card">
     <div class="sb-heart">❤️</div><b>Support Our Mission</b>
     <p>Help us keep Report Analyzer running and improving.</p>
@@ -662,6 +699,7 @@
       <div class="d-greet-sub">Here's what's happening with your reports today.</div>
       <div class="d-chips">
         <button type="button" class="d-chip" data-nav="analytics">📈 Analyze</button>
+        <button type="button" class="d-chip" data-nav="statement">🏦 Loan check</button>
         <button type="button" class="d-chip" data-nav="reconciliation">⚖️ Reconcile</button>
         <button type="button" class="d-chip" data-nav="discrepancies">🔎 Track</button>
         <button type="button" class="d-chip" data-nav="insights">🌱 Grow</button>
@@ -739,6 +777,35 @@
   <section class="d-panel admin-only hidden" data-views="overview">
     <h3>👎 Answers customers marked wrong</h3>
     <div id="fbList" style="display:grid;gap:6px"></div>
+  </section>
+
+  <section class="card" data-views="statement" id="ssCard">
+    <h2>🏦 Statement Score</h2>
+    <p class="d-sub">Upload a bank statement under <b>Upload Report</b>, pick it below, and get income, spending and what is left for every month, plus a loan-readiness score.</p>
+    <div class="row">
+      <select id="ssReport"></select>
+      <select id="ssFrom" title="First month"><option value="">From: first month</option></select>
+      <select id="ssTo" title="Last month"><option value="">To: last month</option></select>
+      <button type="button" id="ssRun">🔍 Check statement</button>
+    </div>
+    <div class="error" id="ssErr"></div>
+    <div id="ssOut" class="hidden">
+      <div class="ss-hero">
+        <div class="ss-gauge" id="ssGauge"><div><b id="ssScore">0</b><small>out of 100</small></div></div>
+        <div style="flex:1;min-width:220px"><span class="ss-verdict" id="ssVerdict"></span><p id="ssElig" style="margin:8px 0 0;font-size:15px"></p><small class="mute" id="ssPeriod"></small></div>
+      </div>
+      <div class="ss-kpis" id="ssKpis"></div>
+      <canvas id="ssChart" height="120"></canvas>
+      <h3 style="margin:16px 0 6px">Month by month</h3>
+      <div class="ss-wrap" id="ssTableWrap"></div>
+      <div class="ss-loan hidden" id="ssLoan"></div>
+      <div class="ss-three"><div class="ss-box good"><h4>✅ Good signs</h4><ul id="ssGood"></ul></div><div class="ss-box bad"><h4>⚠️ What lenders may worry about</h4><ul id="ssBad"></ul></div><div class="ss-box tip"><h4>💡 How to improve</h4><ul id="ssTips"></ul></div></div>
+      <h3 style="margin:16px 0 6px">How the score is built</h3>
+      <div id="ssFactors"></div>
+      <div class="insight" id="ssSimple" style="margin-top:14px"></div>
+      <div class="row" style="margin-top:10px"><a id="ssXlsx" href="#"><button type="button" class="ghost">⬇ Excel</button></a><a id="ssPdf" href="#"><button type="button" class="ghost">📄 PDF</button></a></div>
+      <p class="ss-note" id="ssDisc"></p>
+    </div>
   </section>
 
   <section class="d-panel" data-views="notifications">
@@ -1103,7 +1170,7 @@
       <h3>8. Changes</h3>
       <p>We may update these terms as the service grows. If you keep using the service after an update, it means you accept the new terms.</p>
       <h3>9. Contact</h3>
-      <p>Questions? Message us on WhatsApp using the support button on the site.</p>
+      <p>Questions? Email us at <a href="mailto:reconciliationsolutionssupport@gmail.com">reconciliationsolutionssupport@gmail.com</a> or message us on WhatsApp using the support button on the site.</p>
     </div>
 
     <div id="legalPrivacy" class="hidden">
@@ -1129,7 +1196,7 @@
       <h3>7. Keeping and deleting data</h3>
       <p>We keep your data while your account is active. You can ask us to delete your reports or your whole account at any time, and we will do so, including from backups in due course.</p>
       <h3>8. Your choices</h3>
-      <p>You can ask to see, correct or delete your information. Message us on WhatsApp using the support button on the site.</p>
+      <p>You can ask to see, correct or delete your information. Email us at <a href="mailto:reconciliationsolutionssupport@gmail.com">reconciliationsolutionssupport@gmail.com</a> or message us on WhatsApp using the support button on the site.</p>
       <h3>9. Children</h3>
       <p>Report Analyzer is for businesses and is not meant for anyone under 18.</p>
       <h3>10. Changes</h3>
@@ -2225,8 +2292,62 @@ api("/api/me").then(start).catch(showLanding);
       refreshBell().then(() => { const ids = news.filter(n => !n.is_read).map(n => n.id); ids.forEach(id => fresh.add(id)); renderNotifPage(); if (ids.length) markRead(ids); });
     }
     if (v === "broadcast") loadBroadcasts();
+    if (v === "statement") ssFillReports();
     renderBanner();
   };
+
+  /* ---------- statement score ---------- */
+  const ngn = v => (v == null || isNaN(v)) ? "–" : (v < 0 ? "-" : "") + "₦" + Math.abs(Math.round(v)).toLocaleString();
+  function ssFillReports() {
+    const sel = $("ssReport"), keep = sel.value;
+    sel.replaceChildren(); (S.reports || []).forEach(r => { const o = el("option", `#${r.id} ${r.filename}`); o.value = r.id; sel.append(o); });
+    const all = el("option", "All reports combined"); all.value = "all"; sel.append(all);
+    if (keep && [...sel.options].some(o => o.value === keep)) sel.value = keep; else if (S.reports && S.reports.length) sel.value = S.reports[S.reports.length - 1].id;
+  }
+  function ssList(id, items, empty) { const ul = $(id); ul.replaceChildren(); (items.length ? items : [empty]).forEach(t => ul.append(el("li", t))); }
+  function ssRender(r) {
+    $("ssOut").classList.remove("hidden");
+    const col = r.score >= 75 ? "#10b981" : r.score >= 60 ? "#22a6b3" : r.score >= 45 ? "#f59e0b" : "#ef4444";
+    $("ssGauge").style.setProperty("--p", r.score); $("ssGauge").style.setProperty("--c", col);
+    $("ssScore").textContent = r.score; $("ssVerdict").textContent = r.verdict; $("ssVerdict").style.background = col;
+    $("ssElig").textContent = r.eligibility; $("ssPeriod").textContent = `Period checked: ${r.period} · ${r.totals.months} month(s)`;
+    const k = r.totals; $("ssKpis").replaceChildren(...[["Total income", ngn(k.income)], ["Total spending", ngn(k.expenses)], ["Left over", ngn(k.net)], ["Avg left over / month", ngn(k.avg_left_over)]]
+      .map(([a, b]) => { const d = el("div", "", "ss-kpi"); d.append(el("small", a), el("b", b)); return d; }));
+    if (S.ssChart) S.ssChart.destroy();
+    S.ssChart = new Chart($("ssChart"), { type: "bar", data: { labels: r.chart.labels, datasets: [
+      { label: "Income", data: r.chart.income, backgroundColor: "rgba(16,185,129,.75)" }, { label: "Spending", data: r.chart.expenses, backgroundColor: "rgba(239,68,68,.75)" },
+      { type: "line", label: "Left over", data: r.chart.left, borderColor: "#2b59ff", backgroundColor: "#2b59ff", tension: .25 }] }, options: { responsive: true } });
+    const tbl = el("table", "", "ss-table"), head = el("tr");
+    r.columns.forEach(c => head.append(el("th", c))); tbl.append(head);
+    r.rows.forEach(row => { const tr = el("tr"); r.columns.forEach(c => {
+      const v = row[c], money = /income|expenses|left over|balance/i.test(c), td = el("td", money ? ngn(v) : (v == null ? "–" : String(v)));
+      if (money && v < 0) td.className = "ss-neg"; tr.append(td); }); tbl.append(tr); });
+    $("ssTableWrap").replaceChildren(tbl);
+    const g = r.loan_guide, box = $("ssLoan"); box.classList.toggle("hidden", !g);
+    if (g) box.replaceChildren(el("b", "💰 Rough loan guide"), el("div", `Comfortable monthly repayment: up to ${ngn(g.max_monthly_repayment)}`),
+      el("div", `Roughly ${ngn(g.rough_loan_6_months)} over 6 months, or ${ngn(g.rough_loan_12_months)} over 12 months (before interest).`), el("small", g.how, "mute"));
+    ssList("ssGood", r.strengths, "Nothing stands out yet."); ssList("ssBad", r.concerns, "No big worries found."); ssList("ssTips", r.advice, "Keep doing what you are doing.");
+    $("ssFactors").replaceChildren(...r.factors.map(f => { const d = el("div", "", "ss-factor"), bar = el("div", "", "ss-bar"), i = el("i");
+      i.style.width = (f.max ? f.score / f.max * 100 : 0) + "%"; bar.append(i);
+      const lab = el("div"); lab.append(el("b", f.name), el("div", f.detail, "mute")); d.append(lab, bar, el("b", `${f.score} / ${f.max}`)); return d; }));
+    $("ssSimple").textContent = r.simple || ""; $("ssSimple").classList.toggle("hidden", !r.simple);
+    $("ssXlsx").href = `/api/download/${r.result_id}`; $("ssPdf").href = `/api/download/${r.result_id}/pdf`; $("ssDisc").textContent = r.disclaimer;
+    ["ssFrom", "ssTo"].forEach((id, n) => { const sel = $(id), keep = sel.value;
+      sel.replaceChildren(...[el("option", n ? "To: last month" : "From: first month"), ...r.months_available.map(m => el("option", m))]);
+      [...sel.options].forEach((o, j) => { o.value = j ? o.textContent : ""; }); sel.value = keep; });
+  }
+  $("ssRun").onclick = async () => {
+    $("ssErr").textContent = ""; if (!$("ssReport").value) { $("ssErr").textContent = "Upload a statement first, then pick it here."; return; }
+    $("ssRun").disabled = true; $("ssRun").textContent = "Checking…";
+    try {
+      const v = $("ssReport").value;
+      ssRender(await jpost("/api/statement-score", { company_id: Number($("company").value), report_id: v === "all" ? null : Number(v),
+        from_month: $("ssFrom").value || null, to_month: $("ssTo").value || null }));
+      $("ssOut").scrollIntoView({ behavior: "smooth", block: "start" });
+    } catch (e) { $("ssErr").textContent = "❌ " + e.message; }
+    $("ssRun").disabled = false; $("ssRun").textContent = "🔍 Check statement";
+  };
+  $("ssReport").addEventListener("change", () => { $("ssFrom").value = ""; $("ssTo").value = ""; });
 
   /* ---------- dark mode ---------- */
   function setTheme(t) {
@@ -2457,7 +2578,7 @@ api("/api/me").then(start).catch(showLanding);
 
 <a class="support-contact" href="https://wa.me/2348100481004?text=Hello%2C%20I%20would%20like%20to%20say%20something%20about%20your%20Reconciliation%20Solutions%20Website" target="_blank" rel="noopener noreferrer" aria-label="Contact Report Analyzer support on WhatsApp">
   <span class="wa-icon" aria-hidden="true">☎</span>
-  <span>WhatsApp support<small>Questions or Telegram bot issues?</small></span>
+  <span>WhatsApp support<small>Questions? We reply fast</small></span>
 </a>
 </body>
 </html>
