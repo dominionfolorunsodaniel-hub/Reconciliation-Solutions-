@@ -39,11 +39,11 @@ FILE_TYPES_TEXT = "CSV, Excel (.xlsx/.xls), PDF, Word (.docx), JSON, XML, HTML, 
 ALLOWED_AGGS = {"sum", "mean", "count", "min", "max", "median", "nunique"}
 FREQ_NAMES = {"D": "Day", "W": "Week", "M": "Month", "Q": "Quarter", "Y": "Year"}
 TOTAL_WORDS = {"total", "grand total", "subtotal", "sub total", "sub-total"}
-NUM_RE = r"^\s*\(?-?[$€£₦]?\s*\d[\d,]*\.?\d*\)?\s*%?\s*$"
+NUM_RE = r"^\s*\(?[+-]?\s*(?:NGN|N|[$€£₦])?\s*\d[\d,]*\.?\d*-?\)?\s*(?:%|CR|DR|Cr|Dr|cr|dr)?\s*$"
 DATE_RE = re.compile(
     r"\d{1,4}[-/.]\d{1,2}[-/.]\d{1,4}"  # 2026-03-01, 01/03/2026
-    r"|\d{1,2}\s+[A-Za-z]{3,9}\.?,?\s+\d{2,4}"  # 1 March 2026
-    r"|[A-Za-z]{3,9}\.?\s+\d{1,2},?\s+\d{2,4}"  # March 1, 2026
+    r"|\d{1,2}[\s\-/]+[A-Za-z]{3,9}\.?,?[\s\-/]+\d{2,4}"  # 1 March 2026, 01-Sep-2026, 01/Sep/26
+    r"|[A-Za-z]{3,9}\.?[\s\-]+\d{1,2},?[\s\-]+\d{2,4}"  # March 1, 2026
 )
 
 _client = None
@@ -390,16 +390,29 @@ def _dayfirst(values) -> bool:
     return True
 
 
+_BLANK_CELLS = {"--", "-", "—", "–", "n/a", "na", "nil", "null", "none", ".", ""}
+
+
 def coerce_types(df: pd.DataFrame) -> pd.DataFrame:
     for c in df.columns:
         s = df[c]
         nn = s.dropna()
         if nn.empty:
             continue
+        # banks such as OPay write "--" (or "-", "nil", "N/A") where there is no amount; treat those as blank
+        blank = nn.astype(str).str.strip().str.lower().isin(_BLANK_CELLS)
+        if blank.any() and blank.mean() < 1:
+            rest = nn[~blank]
+            if rest.astype(str).str.match(NUM_RE).mean() > 0.9:
+                s = s.where(~s.astype(str).str.strip().str.lower().isin(_BLANK_CELLS))
+                df[c] = s
+                nn = s.dropna()
         if nn.astype(str).str.match(NUM_RE).mean() > 0.9:
             cleaned = (
                 s.astype(str)
                 .str.replace(r"^\s*\((.*)\)\s*$", r"-\1", regex=True)
+                .str.replace(r"^(.*?)\s*(?:DR|Dr|dr)\s*$", r"-\1", regex=True)   # "500.00 DR" = minus
+                .str.replace(r"^(.*\d)-\s*$", r"-\1", regex=True)                # "500.00-" = minus
                 .str.replace(r"[^\d.\-]", "", regex=True)
             )
             num = pd.to_numeric(cleaned, errors="coerce")
@@ -435,8 +448,8 @@ CREDIT_WORDS = {"credit", "credits", "cr", "c", "deposit", "deposits", "lodgemen
                 "inflow", "inflows", "money in", "received", "receipt", "income"}
 DEBIT_WORDS = {"debit", "debits", "dr", "d", "withdrawal", "withdrawals", "withdraw", "outflow", "outflows",
                "money out", "paid", "payment", "expense"}
-_CR_NAME = re.compile(r"\b(credit|credits|cr|deposit|deposits|lodgement|lodgements|lodgment|money in|inflow|received)\b", re.I)
-_DR_NAME = re.compile(r"\b(debit|debits|dr|withdrawal|withdrawals|money out|outflow|paid)\b", re.I)
+_CR_NAME = re.compile(r"\b(credit|credits|cr|deposit|deposits|lodgement|lodgements|lodgment|money in|paid in|inflow|received)\b", re.I)
+_DR_NAME = re.compile(r"\b(debit|debits|dr|withdrawal|withdrawals|money out|paid out|outflow|paid)\b", re.I)
 _NOT_AMOUNT = re.compile(r"balance|\bbal\b|\bid\b|ref|\bno\b|number|fee|charge|vat|rate|account|acct|terminal|stan|rrn|pan\b", re.I)
 CRED_COL, AMT_COL = "Credit/Debit", "Amount (always positive)"
 _ALIAS_GROUPS = [CREDIT_WORDS, DEBIT_WORDS]
@@ -461,8 +474,9 @@ def add_money_columns(df: pd.DataFrame):
 
         d = df.copy()
         # 1) two separate columns, one for credit and one for debit
-        cr = [c for c in nums if _CR_NAME.search(str(c))]
-        dr = [c for c in nums if _DR_NAME.search(str(c))]
+        both = [c for c in nums if _CR_NAME.search(str(c)) and _DR_NAME.search(str(c))]   # "Debit/Credit" = one signed column
+        cr = [c for c in nums if _CR_NAME.search(str(c)) and c not in both]
+        dr = [c for c in nums if _DR_NAME.search(str(c)) and c not in both]
         if cr and dr:
             c_ = pd.to_numeric(df[cr[0]], errors="coerce").astype("float64").fillna(0)
             d_ = pd.to_numeric(df[dr[0]], errors="coerce").astype("float64").fillna(0)
@@ -472,8 +486,22 @@ def add_money_columns(df: pd.DataFrame):
             d[AMT_COL] = c_.abs().where(c_.abs() > 0, d_.abs())
             return d, (f'Your table has separate "{cr[0]}" (money coming in) and "{dr[0]}" (money going out) columns. '
                        f'I combined them into "{CRED_COL}" and "{AMT_COL}".')
+        # 1b) only one of the two columns exists (the other was empty for the whole period and got dropped)
+        if (cr and not dr) or (dr and not cr):
+            only = (cr or dr)[0]
+            others = [c for c in nums if c != only and not _NOT_AMOUNT.search(str(c)) and re.search(r"amount|value|sum", str(c), re.I)]
+            if not others:
+                v = pd.to_numeric(df[only], errors="coerce").astype("float64")
+                kind = "Credit" if cr else "Debit"
+                d[CRED_COL] = pd.Series(pd.NA, index=d.index, dtype=object)
+                d.loc[v.abs() > 0, CRED_COL] = kind
+                d[AMT_COL] = v.abs()
+                return d, (f'This table only has a "{only}" column with amounts, so I treated every amount as a {kind.lower()} '
+                           f'({"money coming in" if cr else "money going out"}) and added "{CRED_COL}" and "{AMT_COL}".')
         # 2) a text column that says credit/debit (or CR/DR) for each row
         amt = amount_col()
+        if both and (pd.to_numeric(df[both[0]], errors="coerce") < 0).any():
+            amt = both[0]   # one "Debit/Credit" column holding +5,000 and -2,000
         for c in df.columns:
             if c == amt or pd.api.types.is_numeric_dtype(df[c]) or pd.api.types.is_datetime64_any_dtype(df[c]):
                 continue

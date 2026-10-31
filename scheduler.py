@@ -147,7 +147,7 @@ async def watchdog_loop():
 
 def start() -> list[asyncio.Task]:
     return [asyncio.create_task(f()) for f in
-            (retention_loop, backup_loop, intake_loop, digest_loop, watchdog_loop, scheduled_reconciliation_loop, subscription_reminder_loop, expiry_reminder_loop)]
+            (retention_loop, backup_loop, intake_loop, digest_loop, watchdog_loop, scheduled_reconciliation_loop, subscription_reminder_loop, expiry_reminder_loop, weekly_email_loop)]
 
 
 async def scheduled_reconciliation_loop():
@@ -229,3 +229,19 @@ async def subscription_reminder_loop():
         except Exception:  # noqa: BLE001
             log.exception("subscription reminder loop failed")
         await asyncio.sleep(6 * 3600)
+
+
+async def weekly_email_loop():
+    """Monday after 08:00 (TIMEZONE), send the opt-in weekly email. Each person gets at most one per week."""
+    import weekly
+    await asyncio.sleep(90)
+    while True:
+        try:
+            now = dt.datetime.now(local_tz())
+            if now.weekday() == 0 and now.hour >= 8:
+                n = await asyncio.to_thread(weekly.run_due)
+                if n:
+                    log.info("Sent %s weekly email(s)", n)
+        except Exception:  # noqa: BLE001
+            log.exception("weekly email loop failed")
+        await asyncio.sleep(3600)

@@ -74,7 +74,11 @@ def start(name, command):
 
 
 preflight()
-children["bot"] = start("bot", [sys.executable, "bot.py"])
+USE_BOT = bool(os.getenv("TELEGRAM_TOKEN", "").strip())  # website-only hosting: no token = no bot process
+if USE_BOT:
+    children["bot"] = start("bot", [sys.executable, "bot.py"])
+else:
+    print("[supervisor] TELEGRAM_TOKEN is not set: running the website only (no Telegram bot).", flush=True)
 children["web"] = start("web", [sys.executable, "web.py"])
 
 try:
@@ -85,8 +89,8 @@ try:
             banner(f"[supervisor] WEBSITE CRASHED (exit code {web.returncode}). Last lines it printed:", list(tails["web"])[-25:] or ["(it printed nothing)"])
             print(f"[supervisor] web exited with code {web.returncode}; stopping service", flush=True)
             break
-        bot = children["bot"]
-        if bot.poll() is not None:
+        bot = children.get("bot")
+        if bot is not None and bot.poll() is not None:
             time.sleep(0.5)
             banner(f"[supervisor] BOT STOPPED (exit code {bot.returncode}). Last lines it printed:", list(tails["bot"])[-15:] or ["(it printed nothing)"])
             print(f"[supervisor] bot exited with code {bot.returncode}; restarting in 5 seconds", flush=True)

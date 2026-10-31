@@ -22,6 +22,7 @@ from fastapi.responses import FileResponse, JSONResponse, StreamingResponse
 from pydantic import BaseModel
 
 import anomaly
+import apikeys
 import backup
 import core
 import db
@@ -30,11 +31,16 @@ import enterprise_features as ef
 import extras
 import notify
 import portal
+import receipts
 import recon
 import report_pdf
+import safety
 import scheduler
+import sharing
 import statement
+import tickets
 import totp
+import weekly
 
 log = logging.getLogger("web")
 INSIGHTS = os.getenv("AUTO_INSIGHTS", "1") != "0"
@@ -72,9 +78,19 @@ async def security_headers(request: Request, call_next):
     resp.headers["Content-Security-Policy"] = (
         "default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; "
         "style-src 'self' 'unsafe-inline'; img-src 'self' data:; connect-src 'self'; frame-ancestors 'none'")
-    if request.url.path.startswith("/api/"):
+    if request.url.path.startswith("/api/") or request.url.path.startswith("/share/"):
         resp.headers["Cache-Control"] = "no-store"
+    if request.url.path.startswith("/share/") or request.url.path.startswith("/api/shared/"):
+        resp.headers["X-Robots-Tag"] = "noindex, nofollow, noarchive"
     return resp
+
+
+def client_ip(request: Request) -> str:
+    """Best guess at the visitor's address (behind Render's proxy). Only shown to the owner of the account; never used for security limits."""
+    fwd = request.headers.get("x-forwarded-for", "")
+    if fwd:
+        return fwd.split(",")[0].strip()[:64]
+    return request.client.host if request.client else ""
 
 
 # ------------------------------- auth helpers ------------------------------ #
@@ -201,6 +217,7 @@ class AnalyzeIn(BaseModel):
 class StatementIn(BaseModel):
     company_id: int
     report_id: int | None = None
+    report_ids: list[int] | None = None   # 2 or more = combine these accounts
     from_month: str | None = None   # "2026-02"
     to_month: str | None = None
 
@@ -381,10 +398,12 @@ async def login(body: LoginIn, request: Request, response: Response):
             db.audit(user, "login_failed", detail="wrong 2FA code")
             raise HTTPException(401, "Wrong or already-used 2-factor code.")
     FAILS.pop(key, None)
-    token = db.create_session(user["id"])
+    ua, ip = request.headers.get("user-agent", ""), client_ip(request)
+    token = db.create_session(user["id"], ua, ip)
     response.set_cookie("session", token, httponly=True, samesite="lax", secure=COOKIE_SECURE,
                         max_age=db.SESSION_HOURS * 3600)
     db.audit(user, "login")
+    await asyncio.to_thread(safety.note_login, user, ua, ip)
     return public(user)
 
 
@@ -407,6 +426,46 @@ def health():
     """For uptime monitors (UptimeRobot etc.). Reveals nothing."""
     db.list_companies()
     return {"ok": True}
+
+
+_STATIC = Path(__file__).parent / "static"
+_PWA_HEADERS = {"Cache-Control": "public, max-age=3600"}
+
+
+@app.get("/manifest.webmanifest")
+def pwa_manifest():
+    return FileResponse(_STATIC / "manifest.webmanifest", media_type="application/manifest+json", headers=_PWA_HEADERS)
+
+
+@app.get("/sw.js")
+def pwa_service_worker():
+    # must be served from the site root so it can cover every page; never cached for long so updates arrive
+    return FileResponse(_STATIC / "sw.js", media_type="application/javascript", headers={"Cache-Control": "no-cache", "Service-Worker-Allowed": "/"})
+
+
+@app.get("/offline.html")
+def pwa_offline():
+    return FileResponse(_STATIC / "offline.html", media_type="text/html", headers=_PWA_HEADERS)
+
+
+@app.get("/static/icon-192.png")
+def pwa_icon_192():
+    return FileResponse(_STATIC / "icon-192.png", media_type="image/png", headers=_PWA_HEADERS)
+
+
+@app.get("/static/icon-512.png")
+def pwa_icon_512():
+    return FileResponse(_STATIC / "icon-512.png", media_type="image/png", headers=_PWA_HEADERS)
+
+
+@app.get("/static/icon-maskable-512.png")
+def pwa_icon_maskable():
+    return FileResponse(_STATIC / "icon-maskable-512.png", media_type="image/png", headers=_PWA_HEADERS)
+
+
+@app.get("/static/apple-touch-icon.png")
+def pwa_apple_icon():
+    return FileResponse(_STATIC / "apple-touch-icon.png", media_type="image/png", headers=_PWA_HEADERS)
 
 
 @app.get("/static/login-character.png")
@@ -501,13 +560,9 @@ async def upload(company_id: int, file: UploadFile = File(...), user: dict = Dep
         df, notes, _ = await asyncio.to_thread(core.load_report, data, name)
     except Exception as e:  # noqa: BLE001
         raise HTTPException(400, f"Couldn't read that file: {e}")
-    reservation = reserve_plan_usage(user, company_id, "report_description")
-    try:
-        desc = await core.describe_report(df, name)
-    except Exception:
-        finish_plan_usage(reservation, False)
-        raise
-    finish_plan_usage(reservation, True)
+    # Reading a new upload is not charged as one of the plan's monthly checks (only real questions, comparisons and
+    # statement checks are). The daily AI limit still protects against abuse.
+    desc = await core.describe_report(df, name)
     rid = await asyncio.to_thread(db.save_upload, company_id, name, data, df, user["id"])
     db.save_description(rid, desc)
     db.audit(user, "upload", company_id, f"#{rid} {name} ({len(df)} rows)")
@@ -540,22 +595,16 @@ async def describe(report_id: int, user: dict = Depends(current_user)):
     r = report_for(user, report_id)
     desc = db.get_description(report_id)
     if desc is None:
-        reservation = reserve_plan_usage(user, r["company_id"], "report_description")
-        try:
-            df = await asyncio.to_thread(db.get_frame, report_id)
-            desc = await core.describe_report(df, r["filename"])
-        except Exception:
-            finish_plan_usage(reservation, False)
-            raise
-        finish_plan_usage(reservation, True)
+        df = await asyncio.to_thread(db.get_frame, report_id)
+        desc = await core.describe_report(df, r["filename"])
         db.save_description(report_id, desc)
     return desc
 
 
 # ----------------------------------- analysis -------------------------------- #
-def _store_result(data: bytes, user: dict, company_id: int, pdf: dict | None = None) -> str:
+def _store_result(data: bytes, user: dict, company_id: int, pdf: dict | None = None, share: dict | None = None) -> str:
     rid = secrets.token_urlsafe(8)
-    RESULTS[rid] = {"data": data, "user": user["id"], "company": company_id, "pdf": pdf}
+    RESULTS[rid] = {"data": data, "user": user["id"], "company": company_id, "pdf": pdf, "share": share}
     while len(RESULTS) > 50:
         RESULTS.popitem(last=False)
     return rid
@@ -597,9 +646,33 @@ async def analyze(body: AnalyzeIn, user: dict = Depends(current_user)):
     return response
 
 
+def _statement_items(user: dict, body: "StatementIn") -> list[tuple[str, "pd.DataFrame"]]:
+    """One account, all of the company's reports, or several chosen accounts to be added together."""
+    ids = list(dict.fromkeys(body.report_ids or []))
+    if len(ids) >= 2:
+        if len(ids) > 6:
+            raise ValueError("Combine at most 6 accounts at a time.")
+        items = []
+        for rid in ids:
+            r = db.get_report(rid)
+            if not r or r["company_id"] != body.company_id:
+                raise ValueError("One of the chosen reports doesn't belong to this company.")
+            f = db.get_frame(rid)
+            f.attrs["filename"] = r["filename"]
+            items.append((f"#{rid} {r['filename']}", f))
+        return items
+    one = ids[0] if ids else body.report_id
+    f = db.resolve_frame(body.company_id, one)
+    if one:
+        rep = db.get_report(one)
+        if rep:
+            f.attrs["filename"] = rep["filename"]
+    return [("", f)]
+
+
 @app.post("/api/statement-score")
 async def statement_score(body: StatementIn, user: dict = Depends(current_user)):
-    """Monthly income / spending / what is left, plus an indicative loan-readiness score for a bank statement."""
+    """Monthly income / spending / what is left, a loan-readiness score, an authenticity check, unusual patterns and spending categories."""
     need_company(user, body.company_id)
     month_ok = re.compile(r"^\d{4}-(0[1-9]|1[0-2])$")
     for m in (body.from_month, body.to_month):
@@ -607,8 +680,8 @@ async def statement_score(body: StatementIn, user: dict = Depends(current_user))
             raise HTTPException(400, "Months must look like 2026-02.")
     reservation = reserve_plan_usage(user, body.company_id, "statement_score")
     try:
-        df = await asyncio.to_thread(db.resolve_frame, body.company_id, body.report_id)
-        r = await asyncio.to_thread(statement.build, df, body.from_month or None, body.to_month or None)
+        items = await asyncio.to_thread(_statement_items, user, body)
+        r = await asyncio.to_thread(statement.build_many, items, body.from_month or None, body.to_month or None)
     except Exception as e:  # noqa: BLE001
         finish_plan_usage(reservation, False)
         raise HTTPException(400, str(e))
@@ -624,22 +697,431 @@ async def statement_score(body: StatementIn, user: dict = Depends(current_user))
             if bad:
                 simple += "\n\nPlease double-check these figures, I could not match them directly: " + ", ".join(bad) + "."
     full = ((simple + "\n\n") if simple else "") + text
-    db.audit(user, "statement_score", body.company_id, f"report={body.report_id}; score={r['score']}; months={r['totals']['months']}")
+    db.audit(user, "statement_score", body.company_id,
+             f"report={body.report_id or body.report_ids}; score={r['score']}; months={r['totals']['months']}; balance_check={r['integrity']['status']}; flags={len(r['flags'])}")
     xlsx = await asyncio.to_thread(statement.excel, r)
     png = await asyncio.to_thread(statement.chart_png, r["table"])
     pdf = {"title": f"Statement check: {r['verdict']} ({r['score']}/100)", "question": f"Period {r['period']}", "insight": full,
            "table": r["table"], "chart": png, "total_rows": len(r["table"])}
     t = r["table"]
-    return {
+    response = {
         "score": r["score"], "verdict": r["verdict"], "eligibility": r["eligibility"], "factors": r["factors"],
         "strengths": r["strengths"], "concerns": r["concerns"], "advice": r["advice"], "loan_guide": r["loan_guide"],
         "totals": r["totals"], "disclaimer": r["disclaimer"], "period": r["period"], "months_available": r["months_available"],
         "notes": r["notes"], "simple": simple, "text": full,
+        "integrity": r["integrity"], "flags": r["flags"], "categories": statement.categories_json(r.get("categories")),
+        "forecast": r.get("forecast"),
+        "accounts": r.get("accounts", []),
         "columns": list(t.columns), "rows": json.loads(t.to_json(orient="records")),
         "chart": {"labels": t["Month"].tolist(), "income": t["Income (credits)"].tolist(),
                   "expenses": t["Expenses (debits)"].tolist(), "left": t["Left over (income - expenses)"].tolist()},
-        "result_id": _store_result(xlsx.getvalue(), user, body.company_id, pdf),
     }
+    share = sharing.safe_payload(response, (db.get_company(body.company_id) or {}).get("name", ""))
+    share["simple"] = simple
+    response["result_id"] = _store_result(xlsx.getvalue(), user, body.company_id, pdf, share)
+    return response
+
+
+@app.post("/api/statement-batch")
+async def statement_batch(company_id: int = Form(...), files: list[UploadFile] = File(...), user: dict = Depends(current_user)):
+    """For lenders: score many applicants' statements at once and rank them. Files are read and thrown away, never stored."""
+    need(user, "analyst")
+    need_company(user, company_id)
+    if not files:
+        raise HTTPException(400, "Choose at least one statement.")
+    if len(files) > 25:
+        raise HTTPException(400, "Up to 25 statements at a time.")
+    rows, total, stopped = [], 0, False
+    for f in files:
+        name = f.filename or "statement"
+        label = name.rsplit(".", 1)[0][:80] or name
+        if stopped:
+            rows.append({"applicant": label, "error": "Skipped: your plan's monthly checks ran out"})
+            continue
+        ext = name.lower().rsplit(".", 1)[-1] if "." in name else ""
+        if ext and ext not in core.ALLOWED_EXT:
+            rows.append({"applicant": label, "error": "File type not supported"})
+            continue
+        data = await f.read()
+        total += len(data)
+        if len(data) > core.MAX_FILE_MB * 1024 * 1024 or total > 80 * 1024 * 1024:
+            rows.append({"applicant": label, "error": f"File too large (limit {core.MAX_FILE_MB} MB each)"})
+            continue
+        try:
+            reservation = reserve_plan_usage(user, company_id, "statement_score")
+        except HTTPException:
+            stopped = True
+            rows.append({"applicant": label, "error": "Skipped: your plan's monthly checks ran out"})
+            continue
+
+        def work(data=data, name=name, label=label):
+            df, _, _ = core.load_report(data, name)
+            df.attrs["filename"] = name
+            return statement.score_one(label, df)
+        try:
+            row = await asyncio.to_thread(work)
+        except Exception as e:  # noqa: BLE001
+            row = {"applicant": label, "error": str(e)[:200]}
+        finish_plan_usage(reservation, "error" not in row)
+        rows.append(row)
+    table = statement.batch_table(rows)
+    scored = [r for r in rows if "error" not in r]
+    db.audit(user, "statement_batch", company_id, f"files={len(files)}; scored={len(scored)}")
+    xlsx = await asyncio.to_thread(statement.batch_excel, rows)
+    insight = (f"{len(scored)} of {len(rows)} statements scored. " +
+               (f"Highest {max(r['score'] for r in scored)}, lowest {min(r['score'] for r in scored)}. " if scored else "") +
+               statement.DISCLAIMER)
+    pdf = {"title": "Statement ranking", "question": f"{len(rows)} statements", "insight": insight,
+           "table": table.drop(columns=[c for c in ("Main concern", "Period") if c in table.columns]), "chart": None, "total_rows": len(table)}
+    return {"columns": list(table.columns), "rows": json.loads(table.to_json(orient="records")), "scored": len(scored),
+            "failed": len(rows) - len(scored), "summary": insight, "result_id": _store_result(xlsx.getvalue(), user, company_id, pdf)}
+
+
+# ------------------------------- share links ------------------------------- #
+SHARE_HITS: dict[str, list[float]] = {}
+
+
+def _share_guard(request: Request) -> None:
+    ip, now = client_ip(request) or "?", time.time()
+    hits = [t for t in SHARE_HITS.get(ip, []) if now - t < 300]
+    if len(hits) >= 60:
+        raise HTTPException(429, "Too many requests. Please wait a few minutes.")
+    hits.append(now)
+    SHARE_HITS[ip] = hits
+    if len(SHARE_HITS) > 5000:
+        SHARE_HITS.clear()
+
+
+class ShareIn(BaseModel):
+    result_id: str
+    days: int = 7
+
+
+@app.post("/api/shares")
+def create_share(body: ShareIn, user: dict = Depends(current_user)):
+    item = _owned_result(body.result_id, user)
+    payload = item.get("share")
+    if not payload:
+        raise HTTPException(400, "Only Statement Score results can be shared.")
+    try:
+        token, meta = sharing.create(user["id"], item["company"], f"Statement check {payload['score']}/100 - {payload['period']}", payload, body.days)
+    except ValueError as e:
+        raise HTTPException(400, str(e))
+    db.audit(user, "share_create", item["company"], f"expires={meta['expires_at']}")
+    return {"url_path": f"/share/{token}", **meta}
+
+
+@app.get("/api/shares")
+def my_shares(user: dict = Depends(current_user)):
+    return sharing.list_mine(user["id"])
+
+
+@app.delete("/api/shares/{share_id}")
+def revoke_share(share_id: int, user: dict = Depends(current_user)):
+    if not sharing.revoke(user["id"], share_id, user["role"] == "admin"):
+        raise HTTPException(404, "Link not found.")
+    db.audit(user, "share_revoke", None, f"id={share_id}")
+    return {"ok": True}
+
+
+@app.get("/share/{token}")
+def share_page(token: str, request: Request):
+    _share_guard(request)
+    return FileResponse(Path(__file__).parent / "static" / "share.html", headers={"Cache-Control": "no-store"})
+
+
+@app.get("/api/shared/{token}")
+def shared_data(token: str, request: Request):
+    _share_guard(request)
+    data = sharing.get_public(token)
+    if not data:
+        raise HTTPException(404, "This link has expired or was switched off.")
+    data.pop("_company_id", None)
+    return data
+
+
+@app.get("/api/shared/{token}/pdf")
+def shared_pdf(token: str, request: Request):
+    _share_guard(request)
+    d = sharing.get_public(token, count_view=False)
+    if not d:
+        raise HTTPException(404, "This link has expired or was switched off.")
+    import pandas as pd
+    table = pd.DataFrame(d["rows"], columns=d["columns"])
+    png = statement.chart_png(table)
+    good = "; ".join(d.get("strengths") or []) or "none noted"
+    worry = "; ".join(d.get("concerns") or []) or "none noted"
+    text = (f"Loan readiness {d['score']} out of 100 - {d['verdict']}. {d['eligibility']}\n\nGood signs: {good}\nConcerns: {worry}\n\n"
+            f"Authenticity check: {(d.get('integrity') or {}).get('message') or 'not available'}\n\n{d['disclaimer']}")
+    pdf = report_pdf.build_pdf(d.get("company") or "Report Analyzer", f"Statement check: {d['verdict']} ({d['score']}/100)",
+                               f"Period {d['period']}", text, table, png, db.get_branding(d["_company_id"]), len(table))
+    return StreamingResponse(iter([pdf]), media_type="application/pdf",
+                             headers={"Content-Disposition": 'attachment; filename="statement-check.pdf"', "X-Robots-Tag": "noindex"})
+
+
+# ------------------------------- support tickets ------------------------------- #
+class TicketIn(BaseModel):
+    company_id: int
+    subject: str
+    body: str
+
+
+class TicketReplyIn(BaseModel):
+    body: str
+
+
+@app.get("/api/tickets")
+def my_tickets(all: bool = False, status: str | None = None, user: dict = Depends(current_user_any)):
+    if all:
+        need(user, "admin")
+        return tickets.list_all(status)
+    return tickets.list_mine(user["id"])
+
+
+@app.post("/api/tickets")
+def new_ticket(body: TicketIn, user: dict = Depends(current_user_any)):
+    need_company(user, body.company_id)
+    try:
+        out = tickets.create(user, body.company_id, body.subject, body.body)
+    except ValueError as e:
+        raise HTTPException(400, str(e))
+    db.audit(user, "ticket_create", body.company_id, f"#{out['id']}")
+    return out
+
+
+@app.get("/api/tickets/{ticket_id}")
+def read_ticket(ticket_id: int, user: dict = Depends(current_user_any)):
+    t = tickets.get(ticket_id, user)
+    if not t:
+        raise HTTPException(404, "Conversation not found.")
+    return t
+
+
+@app.post("/api/tickets/{ticket_id}/reply")
+def reply_ticket(ticket_id: int, body: TicketReplyIn, user: dict = Depends(current_user_any)):
+    try:
+        out = tickets.reply(ticket_id, user, body.body)
+    except LookupError as e:
+        raise HTTPException(404, str(e))
+    except ValueError as e:
+        raise HTTPException(400, str(e))
+    db.audit(user, "ticket_reply", None, f"#{ticket_id}")
+    return out
+
+
+@app.post("/api/tickets/{ticket_id}/close")
+def close_ticket(ticket_id: int, user: dict = Depends(current_user_any)):
+    if not tickets.close(ticket_id, user):
+        raise HTTPException(404, "Conversation not found.")
+    db.audit(user, "ticket_close", None, f"#{ticket_id}")
+    return {"ok": True}
+
+
+# ----------------------------------- lender API ----------------------------------- #
+class ApiKeyIn(BaseModel):
+    company_id: int
+    label: str = ""
+
+
+API_HITS: dict[int, list[float]] = {}
+
+
+@app.get("/api/api-keys")
+def list_api_keys(company_id: int, user: dict = Depends(current_user)):
+    need(user, "analyst")
+    need_company(user, company_id)
+    return apikeys.list_for_company(company_id)
+
+
+@app.post("/api/api-keys")
+def create_api_key(body: ApiKeyIn, user: dict = Depends(current_user)):
+    need(user, "analyst")
+    need_company(user, body.company_id)
+    try:
+        key, meta = apikeys.create(user["id"], body.company_id, body.label)
+    except ValueError as e:
+        raise HTTPException(400, str(e))
+    db.audit(user, "api_key_create", body.company_id, f"{meta['prefix']}... {meta['label']}")
+    return {"key": key, **meta, "note": "Copy this key now. For your safety it is never shown again."}
+
+
+@app.delete("/api/api-keys/{key_id}")
+def revoke_api_key(key_id: int, company_id: int, user: dict = Depends(current_user)):
+    need(user, "analyst")
+    need_company(user, company_id)
+    if not apikeys.revoke(key_id, company_id):
+        raise HTTPException(404, "Key not found.")
+    db.audit(user, "api_key_revoke", company_id, f"id={key_id}")
+    return {"ok": True}
+
+
+@app.post("/api/v1/statement-score")
+async def api_statement_score(request: Request, file: UploadFile = File(...)):
+    """For a lender's own system: send one statement with the header X-API-Key, get the score back as JSON."""
+    info = apikeys.verify(request.headers.get("x-api-key", "").strip())
+    if not info:
+        raise HTTPException(401, "Missing or invalid API key.")
+    owner = db.get_user(info["user_id"])
+    if not owner or not owner["active"]:
+        raise HTTPException(401, "This key's owner is no longer active.")
+    now = time.time()
+    hits = [t for t in API_HITS.get(info["id"], []) if now - t < 60]
+    if len(hits) >= 30:
+        raise HTTPException(429, "Too many requests. Limit is 30 per minute per key.")
+    hits.append(now)
+    API_HITS[info["id"]] = hits
+    name = file.filename or "statement"
+    if "." in name and name.lower().rsplit(".", 1)[-1] not in core.ALLOWED_EXT:
+        raise HTTPException(400, "Supported files: " + core.FILE_TYPES_TEXT)
+    data = await file.read()
+    if len(data) > core.MAX_FILE_MB * 1024 * 1024:
+        raise HTTPException(400, f"File too large (limit {core.MAX_FILE_MB} MB)")
+    charged = {"id": owner["id"], "role": "analyst"}      # API calls always spend the company's plan checks
+    reservation = reserve_plan_usage(charged, info["company_id"], "statement_score")
+    try:
+        df, _, _ = await asyncio.to_thread(core.load_report, data, name)
+        df.attrs["filename"] = name
+        r = await asyncio.to_thread(statement.build, df)
+    except Exception as e:  # noqa: BLE001
+        finish_plan_usage(reservation, False)
+        raise HTTPException(400, str(e))
+    finish_plan_usage(reservation, True)
+    db.audit(owner, "api_statement_score", info["company_id"], f"key={info['prefix']}; score={r['score']}", source="api")
+    g = r["loan_guide"]
+    cats = (r.get("categories") or {})
+    return {
+        "score": r["score"], "verdict": r["verdict"], "eligibility": r["eligibility"], "period": r["period"], "months": r["totals"]["months"],
+        "totals": r["totals"], "loan_guide": g, "balance_check": {"status": r["integrity"]["status"], "message": r["integrity"]["message"]},
+        "flags": [{"severity": f["severity"], "title": f["title"], "detail": f["detail"]} for f in r["flags"]],
+        "strengths": r["strengths"], "concerns": r["concerns"],
+        "monthly": json.loads(r["table"].to_json(orient="records")),
+        "top_spending": cats.get("spending", [])[:5], "top_income": cats.get("income", [])[:5],
+        "next_step": statement.next_step(r["verdict"], r["integrity"]["status"], sum(f["severity"] == "high" for f in r["flags"])),
+        "disclaimer": r["disclaimer"],
+    }
+
+
+# --------------------------- account security & data --------------------------- #
+@app.get("/api/me/sessions")
+def my_sessions(request: Request, user: dict = Depends(current_user_any)):
+    return safety.list_sessions(user["id"], request.cookies.get("session"))
+
+
+@app.delete("/api/me/sessions/{session_id}")
+def end_session(session_id: str, request: Request, user: dict = Depends(current_user_any)):
+    if not safety.revoke_session(user["id"], session_id, request.cookies.get("session")):
+        raise HTTPException(404, "That device is not signed in any more.")
+    db.audit(user, "session_revoke", None, "one device signed out")
+    return {"ok": True}
+
+
+@app.post("/api/me/sessions/revoke-others")
+def end_other_sessions(request: Request, user: dict = Depends(current_user_any)):
+    n = safety.revoke_other_sessions(user["id"], request.cookies.get("session"))
+    db.audit(user, "session_revoke_others", None, f"{n} device(s) signed out")
+    return {"signed_out": n}
+
+
+EXPORT_LAST: dict[int, float] = {}
+
+
+@app.get("/api/me/export")
+def export_my_data(user: dict = Depends(current_user_any)):
+    now = time.time()
+    if now - EXPORT_LAST.get(user["id"], 0) < 60:
+        raise HTTPException(429, "Please wait a minute before downloading again.")
+    EXPORT_LAST[user["id"]] = now
+    data = safety.export_zip(user)
+    db.audit(user, "data_export", None, f"{len(data)} bytes")
+    return StreamingResponse(iter([data]), media_type="application/zip",
+                             headers={"Content-Disposition": 'attachment; filename="my-report-analyzer-data.zip"'})
+
+
+class DeleteReqIn(BaseModel):
+    password: str
+    note: str = ""
+
+
+@app.get("/api/me/deletion-request")
+def my_deletion_request(user: dict = Depends(current_user_any)):
+    return {"pending": safety.my_request(user["id"])}
+
+
+@app.post("/api/me/deletion-request")
+async def ask_deletion(body: DeleteReqIn, user: dict = Depends(current_user_any)):
+    if user["role"] == "admin":
+        raise HTTPException(400, "The owner account cannot be deleted from here.")
+    ok = await asyncio.to_thread(db.verify_login, user["username"], body.password)
+    if not ok:
+        db.audit(user, "deletion_request_bad_password")
+        raise HTTPException(401, "That password is not right.")
+    try:
+        out = await asyncio.to_thread(safety.request_deletion, user, body.note)
+    except ValueError as e:
+        raise HTTPException(400, str(e))
+    db.audit(user, "deletion_request", None, "requested")
+    return {"pending": out}
+
+
+@app.delete("/api/me/deletion-request")
+def cancel_deletion(user: dict = Depends(current_user_any)):
+    if not safety.cancel_request(user["id"]):
+        raise HTTPException(404, "You have no open request.")
+    db.audit(user, "deletion_request_cancel")
+    return {"ok": True}
+
+
+@app.get("/api/admin/deletion-requests")
+def admin_deletion_requests(user: dict = Depends(current_user)):
+    need(user, "admin")
+    return safety.list_requests()
+
+
+@app.post("/api/admin/deletion-requests/{request_id}/done")
+def admin_deletion_done(request_id: int, user: dict = Depends(current_user)):
+    need(user, "admin")
+    if not safety.mark_done(request_id):
+        raise HTTPException(404, "Request not found or already handled.")
+    db.audit(user, "deletion_request_done", None, f"id={request_id}")
+    return {"ok": True}
+
+
+class WeeklyIn(BaseModel):
+    enabled: bool
+
+
+@app.get("/api/me/weekly-email")
+def weekly_get(user: dict = Depends(current_user_any)):
+    return {**weekly.get_pref(user["id"]), "email_ready": notify.email_configured()}
+
+
+@app.post("/api/me/weekly-email")
+def weekly_set(body: WeeklyIn, user: dict = Depends(current_user_any)):
+    try:
+        return {**weekly.set_pref(user["id"], body.enabled), "email_ready": notify.email_configured()}
+    except ValueError as e:
+        raise HTTPException(400, str(e))
+
+
+WEEKLY_TEST: dict[int, float] = {}
+
+
+@app.post("/api/me/weekly-email/test")
+async def weekly_test(user: dict = Depends(current_user_any)):
+    if not notify.email_configured():
+        raise HTTPException(400, "Email sending is not set up on this website yet.")
+    now = time.time()
+    if now - WEEKLY_TEST.get(user["id"], 0) < 300:
+        raise HTTPException(429, "Please wait a few minutes before sending another sample.")
+    WEEKLY_TEST[user["id"]] = now
+    u = db.get_user(user["id"]) or {}
+    if not u.get("email"):
+        raise HTTPException(400, "Add your email address first.")
+    subject, body = await asyncio.to_thread(weekly.build_report, u)
+    ok = await asyncio.to_thread(notify.send_email, u["email"], subject, body)
+    if not ok:
+        raise HTTPException(502, "The email could not be sent right now. Please try again later.")
+    return {"sent_to": u["email"]}
 
 
 @app.post("/api/reconcile")
@@ -911,15 +1393,8 @@ def billing_status(company_id: int, user: dict = Depends(current_user)):
     # Do not advertise temporarily unavailable plans; keep the current plan visible for existing subscribers.
     result["plans"] = {key: plan for key, plan in db.PLANS.items()
                         if plan.get("available", True) or key == result.get("plan")}
-    # Support two temporary receiving accounts; secrets/details stay in Render environment variables.
-    result["banks"] = [
-        {"name": os.getenv("MONIEPOINT_BANK_NAME") or "Moniepoint",
-         "account_number": os.getenv("MONIEPOINT_ACCOUNT") or "8100481004",
-         "account_name": os.getenv("MONIEPOINT_OWNER") or "Daniel Dominion Folorunso"},
-        {"name": os.getenv("OPAY_BANK_NAME") or "OPay",
-         "account_number": os.getenv("OPAY_ACCOUNT") or "8083878507",
-         "account_name": os.getenv("OPAY_OWNER") or "Mary Olubunmi Folorunso"},
-    ]
+    # Two temporary receiving accounts; the details can be changed with environment variables.
+    result["banks"] = receipts.bank_accounts()
     # Backward compatibility for any older frontend using the original single-account fields.
     result["bank"] = {"name": os.getenv("BANK_NAME", ""), "account_number": os.getenv("BANK_ACCOUNT", ""),
                       "account_name": os.getenv("BANK_OWNER", "")}
@@ -1156,7 +1631,7 @@ def audit_log(limit: int = 100, user: dict = Depends(current_user)):
 def usage(user: dict = Depends(current_user)):
     need(user, "admin")
     return {"today": db.usage_today(),
-            "per_user_limit": int(os.getenv("DAILY_AI_CALLS_PER_USER", "150")),
+            "per_user_limit": int(os.getenv("DAILY_AI_CALLS_PER_USER", "300")),
             "total_limit": int(os.getenv("DAILY_AI_CALLS_TOTAL", "1500"))}
 
 
@@ -1299,24 +1774,48 @@ def customer_invoices(company_id: int, user: dict = Depends(current_user)):
 @app.get("/api/billing/invoices/{invoice_id}/pdf")
 def invoice_pdf(invoice_id: int, user: dict = Depends(current_user)):
     invoice = ef.get_invoice(invoice_id)
-    if not invoice: raise HTTPException(404, "Invoice not found.")
+    if not invoice:
+        raise HTTPException(404, "Invoice not found.")
     need_company(user, invoice["company_id"])
-    from reportlab.lib import colors
-    from reportlab.lib.pagesizes import A4
-    from reportlab.lib.styles import getSampleStyleSheet
-    from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle
-    buf = io.BytesIO(); styles = getSampleStyleSheet()
-    story = [Paragraph("Report Analyzer — Payment Invoice / Receipt", styles["Title"]), Spacer(1, 16),
-             Paragraph(f"Invoice: {invoice['invoice_number']}", styles["Normal"]),
-             Paragraph(f"Company: {invoice['company_name']}", styles["Normal"]),
-             Paragraph(f"Issued (UTC): {invoice['issued_at']}", styles["Normal"]),
-             Paragraph(f"Status: {invoice['status'].upper()}", styles["Normal"]), Spacer(1, 18)]
-    table = Table([["Plan", "Billing term", "Amount"], [invoice["plan"].replace("_", " ").title(), "Fixed-term subscription", f"NGN {invoice['amount_ngn']:,}"]], colWidths=[190, 150, 130])
-    table.setStyle(TableStyle([("BACKGROUND", (0,0),(-1,0), colors.HexColor("#243b75")), ("TEXTCOLOR", (0,0),(-1,0),colors.white), ("GRID",(0,0),(-1,-1),0.5,colors.grey), ("PADDING",(0,0),(-1,-1),8)]))
-    story.extend([table, Spacer(1, 16), Paragraph("Payment was manually verified by a Report Analyzer administrator. This document is a product receipt and is not a tax invoice unless separately validated for local tax requirements.", styles["BodyText"])])
-    SimpleDocTemplate(buf, pagesize=A4).build(story)
+    pay = sub = None
+    try:
+        with db._db() as con:
+            if invoice.get("payment_request_id"):
+                row = con.execute("SELECT transfer_reference FROM payment_requests WHERE id = ?", (invoice["payment_request_id"],)).fetchone()
+                pay = dict(row) if row else None
+            if invoice.get("subscription_id"):
+                row = con.execute("SELECT starts_at, expires_at FROM subscriptions WHERE id = ?", (invoice["subscription_id"],)).fetchone()
+                sub = dict(row) if row else None
+    except Exception:  # noqa: BLE001  (a missing detail just leaves that line off the receipt)
+        log.exception("receipt details unavailable")
+    pdf = receipts.receipt_pdf(invoice, invoice["company_name"], pay, sub, db.get_branding(invoice["company_id"]))
     db.audit(user, "invoice_export", invoice["company_id"], invoice["invoice_number"])
-    return StreamingResponse(iter([buf.getvalue()]), media_type="application/pdf", headers={"Content-Disposition": f'attachment; filename="{invoice["invoice_number"]}.pdf"'})
+    return StreamingResponse(iter([pdf]), media_type="application/pdf",
+                             headers={"Content-Disposition": f'attachment; filename="{invoice["invoice_number"]}.pdf"'})
+
+
+class ProformaIn(BaseModel):
+    company_id: int
+    plan: str
+    coupon_code: str | None = None
+
+
+@app.post("/api/billing/proforma")
+def billing_proforma(body: ProformaIn, user: dict = Depends(current_user)):
+    """A pro-forma invoice (a request for payment with the bank details) for a plan the company is thinking of buying."""
+    need_company(user, body.company_id)
+    if body.plan not in db.PAID_PLANS:
+        raise HTTPException(400, "Choose one of the currently offered paid plans.")
+    company = db.get_company(body.company_id)
+    discount = 0
+    if body.coupon_code:
+        try:
+            _, discount = extras.percent_discount(body.coupon_code, body.company_id, int(db.PLANS[body.plan]["price_ngn"]))
+        except ValueError as e:
+            raise HTTPException(400, str(e))
+    pdf = receipts.proforma_pdf(company["name"], body.plan, db.get_branding(body.company_id), discount)
+    db.audit(user, "proforma_export", body.company_id, body.plan)
+    return StreamingResponse(iter([pdf]), media_type="application/pdf", headers={"Content-Disposition": 'attachment; filename="invoice.pdf"'})
 
 
 # ----------------------- secure generic external integration ----------------------- #

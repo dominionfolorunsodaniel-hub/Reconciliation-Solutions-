@@ -248,6 +248,8 @@ def _init_schema(_con) -> None:
         "CREATE TABLE IF NOT EXISTS broadcast_reads (broadcast_id INTEGER NOT NULL, user_id INTEGER NOT NULL, "
         "read_at TEXT NOT NULL, PRIMARY KEY (broadcast_id, user_id));")
     _ensure_column(_con, "broadcasts", "target_user_id", "INTEGER")   # NULL = announcement for everyone
+    _ensure_column(_con, "sessions", "user_agent", "TEXT")            # shown in "devices signed in"
+    _ensure_column(_con, "sessions", "ip", "TEXT")
 
 
 run_startup_migration(_init_schema)
@@ -566,12 +568,12 @@ def _th(token: str) -> str:
     return hashlib.sha256(token.encode()).hexdigest()
 
 
-def create_session(user_id: int) -> str:
+def create_session(user_id: int, user_agent: str = "", ip: str = "") -> str:
     token = secrets.token_urlsafe(32)
     exp = (dt.datetime.now(dt.timezone.utc) + dt.timedelta(hours=SESSION_HOURS)).strftime(FMT)
     with _db() as con:
-        con.execute("INSERT INTO sessions(token_hash, user_id, expires_at, created_at) VALUES (?,?,?,?)",
-                    (_th(token), user_id, exp, _now()))
+        con.execute("INSERT INTO sessions(token_hash, user_id, expires_at, created_at, user_agent, ip) VALUES (?,?,?,?,?,?)",
+                    (_th(token), user_id, exp, _now(), (user_agent or "")[:300], (ip or "")[:64]))
     return token
 
 
@@ -847,7 +849,7 @@ def _today() -> str:
 
 def check_limit(user_id: int | None) -> None:
     """Raise core.LimitReached when today's AI budget (per user / whole system) is used up."""
-    per_user = int(os.getenv("DAILY_AI_CALLS_PER_USER", "150"))
+    per_user = int(os.getenv("DAILY_AI_CALLS_PER_USER", "300"))
     total_cap = int(os.getenv("DAILY_AI_CALLS_TOTAL", "1500"))
     with _db() as con:
         total = con.execute("SELECT COALESCE(SUM(calls), 0) AS c FROM usage WHERE day = ?", (_today(),)).fetchone()["c"]
