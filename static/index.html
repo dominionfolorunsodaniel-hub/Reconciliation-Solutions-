@@ -4,6 +4,10 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="theme-color" content="#070b1a">
+<link rel="manifest" href="/manifest.webmanifest">
+<link rel="apple-touch-icon" href="/static/apple-touch-icon.png">
+<meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Report Analyzer"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <title>Report Analyzer - turn any report into answers</title>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
 <style>
@@ -471,6 +475,25 @@
   .ss-table th:first-child, .ss-table td:first-child { text-align:left; } .ss-neg { color:#c0392b; font-weight:700; }
   #ssCard { min-width:0; max-width:100%; overflow-x:hidden; } #ssCard .row > * { min-width:0; max-width:100%; } #ssCard canvas { max-width:100%; }
   .ss-wrap { overflow-x:auto; max-width:100%; -webkit-overflow-scrolling:touch; } .ss-note { font-size:12.5px; color:#68758e; margin-top:10px; }
+  .ss-banner { border-radius:12px; padding:10px 14px; margin:10px 0; border-left:5px solid #10b981; background:rgba(16,185,129,.1); }
+  .ss-banner.warning { border-color:#f59e0b; background:rgba(245,158,11,.12); } .ss-banner.failed { border-color:#ef4444; background:rgba(239,68,68,.12); } .ss-banner.unavailable { border-color:#8a96ad; background:rgba(120,130,150,.1); }
+  .ss-banner small { display:block; margin-top:2px; }
+  .ss-flag { border:1px solid var(--line); border-left:4px solid #f59e0b; border-radius:12px; padding:8px 12px; margin:6px 0; font-size:13.5px; } .ss-flag.high { border-left-color:#ef4444; } .ss-flag small { display:block; color:#68758e; }
+  .ss-cats { display:grid; grid-template-columns:1fr 1fr; gap:14px; } .ss-cat { display:grid; grid-template-columns:minmax(100px,1.2fr) 2fr auto; gap:8px; align-items:center; font-size:13.5px; margin:5px 0; }
+  .ss-combo { margin:8px 0; border:1px dashed var(--line); border-radius:12px; padding:8px 12px; } .ss-combo summary { cursor:pointer; font-weight:700; } .ss-combo label { display:block; margin:4px 0; font-size:13.5px; }
+  .ss-share { border:1px solid var(--line); border-radius:12px; padding:10px 12px; margin:10px 0; } .ss-share input { width:100%; }
+  #batchCard, #secCard { min-width:0; max-width:100%; overflow-x:hidden; } #btTable { max-width:100%; }
+  .bt-table { width:100%; border-collapse:collapse; font-size:13.5px; } .bt-table th, .bt-table td { padding:8px 10px; border-bottom:1px solid var(--line); text-align:left; white-space:nowrap; } .bt-table td.n { text-align:right; }
+  .bt-pill { display:inline-block; padding:2px 10px; border-radius:99px; color:#fff; font-weight:700; font-size:12.5px; }
+  .tk-list .sec-row { cursor:pointer; } .tk-msg { border:1px solid var(--line); border-radius:12px; padding:8px 12px; margin:8px 0; max-width:92%; white-space:pre-wrap; overflow-wrap:anywhere; }
+  .tk-msg.staff { border-left:4px solid #1769ff; background:rgba(23,105,255,.07); } .tk-msg small { display:block; color:#68758e; margin-bottom:2px; }
+  .tk-badge { display:inline-block; padding:1px 9px; border-radius:99px; font-size:12px; font-weight:700; color:#fff; background:#f59e0b; } .tk-badge.answered { background:#10b981; } .tk-badge.closed { background:#8a96ad; }
+  .api-key-box { border:1px dashed #1769ff; border-radius:12px; padding:10px 12px; margin:8px 0; background:rgba(23,105,255,.06); } .api-key-box code { display:block; overflow-wrap:anywhere; font-size:13px; margin:6px 0; }
+  pre.api-ex { background:#0e1729; color:#d6e2ff; border-radius:10px; padding:10px 12px; overflow-x:auto; font-size:12.5px; max-width:100%; }
+  .ss-fc td.low, .ss-fc th.low { color:#68758e; }
+  .sec-row { display:flex; justify-content:space-between; align-items:center; gap:10px; flex-wrap:wrap; border-bottom:1px solid var(--line); padding:8px 0; font-size:14px; } .sec-row small { color:#68758e; display:block; }
+  @media (max-width:760px) { .ss-cats { grid-template-columns:1fr; } .ss-cat { grid-template-columns:1fr; gap:2px; } }
+  html[data-theme=dark] .ss-bar2 { background:#26354f; }
   @media (max-width:760px) { .ss-kpis { grid-template-columns:repeat(2,minmax(0,1fr)); } .ss-three { grid-template-columns:1fr; } .ss-factor { grid-template-columns:1fr; gap:3px; } }
   html[data-theme=dark] .ss-gauge::before { background:#121b2e; } html[data-theme=dark] .ss-gauge { background:conic-gradient(var(--c) calc(var(--p) * 1%), #26354f 0); }
   html[data-theme=dark] .ss-bar { background:#26354f; } html[data-theme=dark] .ss-loan { background:rgba(23,105,255,.14); }
@@ -648,6 +671,7 @@
     <button type="button" class="sb-item" data-nav="reports"><span class="ic">📄</span><span>My Reports</span></button>
     <button type="button" class="sb-item" data-nav="analytics"><span class="ic">💬</span><span>Ask &amp; Analytics</span></button>
     <button type="button" class="sb-item" data-nav="statement"><span class="ic">🏦</span><span>Statement Score</span></button>
+    <button type="button" class="sb-item analyst-up hidden" data-nav="batch"><span class="ic">🗂️</span><span>Batch Check</span></button>
     <button type="button" class="sb-item" data-nav="insights"><span class="ic">📊</span><span>Company Insights</span></button>
     <button type="button" class="sb-item" data-nav="reconciliation"><span class="ic">⚖️</span><span>Reconciliation</span></button>
     <button type="button" class="sb-item" data-nav="discrepancies"><span class="ic">🚨</span><span>Discrepancies</span></button>
@@ -656,6 +680,7 @@
     <button type="button" class="sb-item admin-only hidden" data-nav="broadcast"><span class="ic">📣</span><span>Broadcast</span></button>
     <button type="button" class="sb-item" data-nav="plan"><span class="ic">💳</span><span>Plan &amp; Billing</span></button>
     <button type="button" class="sb-item" data-nav="donations"><span class="ic">❤️</span><span>Donations</span></button>
+    <button type="button" class="sb-item" data-nav="support"><span class="ic">💬</span><span>Support</span></button>
     <button type="button" class="sb-item" data-nav="settings"><span class="ic">⚙️</span><span>Settings</span></button>
     <button type="button" class="sb-item" data-nav="guide"><span class="ic">📘</span><span>Help &amp; Guide</span></button>
   </nav>
@@ -685,6 +710,7 @@
   <span class="hdr-spacer"></span>
   <button class="ghost admin-only hidden" id="adminBtn">Admin</button>
   <button class="ghost v2-help-link v2-tour-launch" id="v2TourLaunch" type="button">❔ Help</button>
+  <button type="button" class="ghost hidden" id="installBtn" title="Install Report Analyzer on this device">📲 Install app</button>
   <button class="ghost" id="twofaBtn">🔐 2FA</button>
   <button type="button" class="ghost" id="themeBtn" aria-label="Dark mode" title="Switch to dark mode">🌙</button>
   <div class="bell-wrap"><button type="button" class="ghost bell" id="bellBtn" aria-label="Notifications" title="Notifications">🔔<span class="bell-label">Notifications</span><span id="bellBadge" class="bell-badge hidden">0</span></button><div id="bellPanel" class="bell-panel hidden"></div></div>
@@ -788,6 +814,10 @@
       <select id="ssTo" title="Last month"><option value="">To: last month</option></select>
       <button type="button" id="ssRun">🔍 Check statement</button>
     </div>
+    <details class="ss-combo"><summary>➕ Combine several accounts (for example a salary account and a business account)</summary>
+      <div class="mute" style="font-size:13px">Tick two or more statements to add them together. Money moved between your own accounts can look like extra income and spending.</div>
+      <div id="ssCombo"></div>
+    </details>
     <div class="error" id="ssErr"></div>
     <div id="ssOut" class="hidden">
       <div class="ss-hero">
@@ -795,17 +825,82 @@
         <div style="flex:1;min-width:220px"><span class="ss-verdict" id="ssVerdict"></span><p id="ssElig" style="margin:8px 0 0;font-size:15px"></p><small class="mute" id="ssPeriod"></small></div>
       </div>
       <div class="ss-kpis" id="ssKpis"></div>
+      <div class="ss-banner" id="ssIntegrity"></div>
+      <div id="ssFlags"></div>
       <canvas id="ssChart" height="120"></canvas>
       <h3 style="margin:16px 0 6px">Month by month</h3>
       <div class="ss-wrap" id="ssTableWrap"></div>
+      <div id="ssCatsBox" class="hidden"><h3 style="margin:16px 0 6px">Where the money goes and comes from</h3><div class="ss-cats"><div id="ssCatSpend"></div><div id="ssCatIn"></div></div></div>
+      <div id="ssFcBox" class="hidden"><h3 style="margin:16px 0 6px">🔮 What the next months may look like</h3><div class="ss-wrap" id="ssFcTable"></div><div id="ssFcWarn"></div><small class="mute" id="ssFcNote"></small></div>
       <div class="ss-loan hidden" id="ssLoan"></div>
       <div class="ss-three"><div class="ss-box good"><h4>✅ Good signs</h4><ul id="ssGood"></ul></div><div class="ss-box bad"><h4>⚠️ What lenders may worry about</h4><ul id="ssBad"></ul></div><div class="ss-box tip"><h4>💡 How to improve</h4><ul id="ssTips"></ul></div></div>
       <h3 style="margin:16px 0 6px">How the score is built</h3>
       <div id="ssFactors"></div>
       <div class="insight" id="ssSimple" style="margin-top:14px"></div>
-      <div class="row" style="margin-top:10px"><a id="ssXlsx" href="#"><button type="button" class="ghost">⬇ Excel</button></a><a id="ssPdf" href="#"><button type="button" class="ghost">📄 PDF</button></a></div>
+      <div class="row" style="margin-top:10px"><a id="ssXlsx" href="#"><button type="button" class="ghost">⬇ Excel</button></a><a id="ssPdf" href="#"><button type="button" class="ghost">📄 PDF</button></a><button type="button" class="ghost" id="ssShareBtn">🔗 Share with a lender</button></div>
+      <div class="ss-share hidden" id="ssSharePanel">
+        <b>Share a private link</b>
+        <div class="mute" style="font-size:13px;margin:3px 0 8px">Anyone with the link can see this result (no files, no login, no transaction descriptions). It stops working on its own, and you can switch it off any time below.</div>
+        <div class="row"><select id="ssShareDays"><option value="1">Works for 1 day</option><option value="7" selected>Works for 7 days</option><option value="30">Works for 30 days</option></select><button type="button" id="ssShareMake">Create link</button></div>
+        <div class="hidden" id="ssShareOut" style="margin-top:8px"><input type="text" id="ssShareUrl" readonly><div class="row" style="margin-top:6px"><button type="button" class="ghost" id="ssShareCopy">Copy link</button><a id="ssShareWa" target="_blank" rel="noopener"><button type="button" class="ghost">Send on WhatsApp</button></a></div></div>
+        <div class="error" id="ssShareErr"></div>
+      </div>
+      <h3 style="margin:16px 0 6px">My shared links</h3><div id="ssShareList" class="mute">None yet.</div>
       <p class="ss-note" id="ssDisc"></p>
     </div>
+  </section>
+
+  <section class="card analyst-up hidden" data-views="batch" id="batchCard">
+    <h2>🗂️ Batch Check <small class="mute">for lenders and agents</small></h2>
+    <p class="d-sub">Drop up to 25 applicants' bank statements at once. Each one gets the same score and is ranked from strongest to weakest. Files are read and thrown away; they are not saved. Each statement uses one check from your plan.</p>
+    <div class="row"><input type="file" id="btFiles" multiple accept=".csv,.xlsx,.xls,.xlsm,.ods,.pdf,.txt,.json,.xml,.html,.docx,.png,.jpg,.jpeg"><button type="button" id="btRun">🔍 Score all</button></div>
+    <div class="mute" id="btPicked"></div>
+    <div class="error" id="btErr"></div>
+    <div id="btOut" class="hidden"><p id="btSummary" class="insight"></p><div class="ss-wrap" id="btTable"></div>
+      <div class="row" style="margin-top:10px"><a id="btXlsx" href="#"><button type="button" class="ghost">⬇ Excel ranking</button></a><a id="btPdf" href="#"><button type="button" class="ghost">📄 PDF</button></a></div></div>
+  </section>
+
+  <section class="card" data-views="support" id="supportCard">
+    <h2>💬 Support</h2>
+    <p class="d-sub">Write to the Report Analyzer team here. We reply in this same place and you get a notification. You can also email <a href="mailto:reconciliationsolutionssupport@gmail.com">reconciliationsolutionssupport@gmail.com</a>.</p>
+    <div class="urow" id="tkNew"><b>Start a new conversation</b>
+      <div style="display:grid;gap:8px;margin-top:6px"><input type="text" id="tkSubject" maxlength="120" placeholder="Title, e.g. My payment is not showing"><textarea id="tkBody" rows="4" maxlength="3000" placeholder="Tell us what happened…"></textarea>
+      <div class="row"><button type="button" id="tkSend">Send</button><span class="mute" id="tkMsg"></span></div></div></div>
+    <div class="row admin-only hidden" style="margin:8px 0"><label class="mute"><input type="checkbox" id="tkAll" checked> Show everyone's conversations (owner)</label></div>
+    <h3 style="margin:14px 0 6px">Conversations</h3><div id="tkList" class="tk-list mute">None yet.</div>
+    <div id="tkView" class="hidden" style="margin-top:12px"><div class="row" style="justify-content:space-between"><b id="tkTitle"></b><span id="tkState"></span></div><div id="tkThread"></div>
+      <div id="tkReplyBox"><textarea id="tkReply" rows="3" maxlength="3000" placeholder="Write your reply…" style="width:100%"></textarea><div class="row" style="margin-top:6px"><button type="button" id="tkReplySend">Reply</button><button type="button" class="ghost" id="tkClose">Close conversation</button><span class="mute" id="tkErr"></span></div></div></div>
+  </section>
+
+  <section class="card analyst-up hidden" id="apiCard" data-views="settings">
+    <h2>🔌 API access <small class="mute">for lenders and developers</small></h2>
+    <div class="mute">Let your own system send a statement and get the score back automatically. Each call uses one check from your plan. Keep keys secret: anyone with the key can spend your checks.</div>
+    <div class="row" style="margin:8px 0"><input type="text" id="akLabel" maxlength="60" placeholder="Name this key, e.g. Loan app"><button type="button" id="akMake">Create key</button></div>
+    <div class="api-key-box hidden" id="akNew"><b>Your new key (copy it now, it is not shown again)</b><code id="akKey"></code><button type="button" class="ghost" id="akCopy">Copy key</button></div>
+    <div class="error" id="akErr"></div><div id="akList" class="mute">No keys yet.</div>
+    <details style="margin-top:8px"><summary><b>How to use it</b></summary>
+      <pre class="api-ex" id="akExample"></pre><div class="mute" style="font-size:13px">The answer is JSON: score, verdict, monthly figures, balance check, unusual patterns, loan guide and a suggested next step. Limit: 30 calls a minute per key, files up to 20 MB.</div></details>
+  </section>
+
+  <section class="card" id="secCard" data-views="settings">
+    <h2>🛡️ Security &amp; privacy</h2>
+    <div class="urow"><b>📬 Weekly email</b>
+      <div class="mute">A short Monday email: what you did last week, checks left and plan days left. Off by default.</div>
+      <label class="mute"><input type="checkbox" id="wkOn"> Send me the weekly email</label>
+      <div class="row"><button type="button" class="ghost" id="wkTest">Send me a sample now</button></div><div class="mute" id="wkMsg"></div></div>
+    <div class="urow"><b>💻 Devices signed in</b>
+      <div class="mute">If you see one you do not know, sign it out and change your password. We also tell you when a new device signs in.</div>
+      <div id="devList"></div>
+      <div class="row"><button type="button" class="ghost" id="devOthers">Sign out all other devices</button></div><div class="mute" id="devMsg"></div></div>
+    <div class="urow"><b>⬇️ Download my data</b>
+      <div class="mute">A ZIP of the information the website keeps about your account (profile, activity, questions, notifications). Passwords are never included.</div>
+      <div class="row"><a href="/api/me/export" id="exportLink"><button type="button" class="ghost">Download my data</button></a></div></div>
+    <div class="urow" id="delBox"><b>🗑️ Delete my account</b>
+      <div class="mute" id="delInfo">Ask us to remove your account and personal details. We process it within 7 days and write to you when it is done.</div>
+      <div id="delForm"><div class="row"><input type="password" id="delPw" placeholder="Your password" autocomplete="current-password"><input type="text" id="delNote" placeholder="Reason (optional)" maxlength="300"><button type="button" class="danger" id="delSend">Request deletion</button></div></div>
+      <div class="row hidden" id="delCancelRow"><button type="button" class="ghost" id="delCancel">Cancel my request</button></div>
+      <div class="mute" id="delMsg"></div></div>
+    <div class="urow admin-only hidden"><b>🗑️ Deletion requests (owner)</b><div id="delAdmin" class="mute">None.</div></div>
   </section>
 
   <section class="d-panel" data-views="notifications">
@@ -917,6 +1012,7 @@
       </select>
       <input id="transferReference" placeholder="Bank transfer reference" maxlength="120">
       <button id="submitPayment">Submit transfer for review</button>
+      <button type="button" class="ghost" id="proformaBtn">📄 Download invoice for this plan</button>
     </div>
     <div class="urow" style="margin-top:8px">
       <b>📸 Payment screenshot</b>
@@ -2303,6 +2399,9 @@ api("/api/me").then(start).catch(showLanding);
     sel.replaceChildren(); (S.reports || []).forEach(r => { const o = el("option", `#${r.id} ${r.filename}`); o.value = r.id; sel.append(o); });
     const all = el("option", "All reports combined"); all.value = "all"; sel.append(all);
     if (keep && [...sel.options].some(o => o.value === keep)) sel.value = keep; else if (S.reports && S.reports.length) sel.value = S.reports[S.reports.length - 1].id;
+    const box = $("ssCombo"), ticked = new Set([...box.querySelectorAll("input:checked")].map(i => i.value));
+    box.replaceChildren(...(S.reports || []).map(r => { const l = el("label"), c = el("input"); c.type = "checkbox"; c.value = r.id; c.checked = ticked.has(String(r.id)); l.append(c, document.createTextNode(` #${r.id} ${r.filename}`)); return l; }));
+    ssLoadShares();
   }
   function ssList(id, items, empty) { const ul = $(id); ul.replaceChildren(); (items.length ? items : [empty]).forEach(t => ul.append(el("li", t))); }
   function ssRender(r) {
@@ -2330,6 +2429,26 @@ api("/api/me").then(start).catch(showLanding);
     $("ssFactors").replaceChildren(...r.factors.map(f => { const d = el("div", "", "ss-factor"), bar = el("div", "", "ss-bar"), i = el("i");
       i.style.width = (f.max ? f.score / f.max * 100 : 0) + "%"; bar.append(i);
       const lab = el("div"); lab.append(el("b", f.name), el("div", f.detail, "mute")); d.append(lab, bar, el("b", `${f.score} / ${f.max}`)); return d; }));
+    const ig = r.integrity || {}, ib = $("ssIntegrity");
+    ib.className = "ss-banner " + (ig.status === "passed" ? "" : (ig.status || "unavailable"));
+    ib.replaceChildren(el("b", { passed: "✅ Statement looks genuine", warning: "⚠️ Some balances do not add up", failed: "🚩 Balances do not add up: this statement may have been edited", unavailable: "ℹ️ Authenticity check not possible" }[ig.status] || ""), el("small", ig.message || ""));
+    $("ssFlags").replaceChildren(...(r.flags || []).map(f => { const d = el("div", "", "ss-flag " + f.severity); d.append(el("b", f.title), el("div", f.detail)); if (f.examples && f.examples.length) d.append(el("small", "e.g. " + f.examples.slice(0, 3).join(" · "))); return d; }));
+    const cats = r.categories; $("ssCatsBox").classList.toggle("hidden", !cats);
+    if (cats) [["ssCatSpend", "Spending", cats.spending], ["ssCatIn", "Money in", cats.income]].forEach(([id, title, list]) => {
+      const box = $(id); box.replaceChildren(el("h4", title)); (list || []).slice(0, 8).forEach(c => { const row = el("div", "", "ss-cat"), tr = el("div", "", "ss-bar"), i = el("i"); i.style.width = c.share_pct + "%"; tr.append(i); row.append(el("span", c.category), tr, el("b", `${ngn(c.amount)} (${c.share_pct}%)`)); box.append(row); }); });
+    const fc = r.forecast, fb = $("ssFcBox"); fb.classList.toggle("hidden", !fc);
+    if (fc) {
+      if (!fc.available) { $("ssFcTable").replaceChildren(el("p", fc.reason, "mute")); $("ssFcWarn").replaceChildren(); $("ssFcNote").textContent = ""; }
+      else {
+        const t = el("table", "", "ss-table ss-fc"), hr = el("tr"), cols = ["Month", "Expected income", "Expected spending", "Expected left over"].concat(fc.rows[0]["Expected balance"] != null ? ["Expected balance"] : []);
+        cols.forEach(c => hr.append(el("th", c))); t.append(hr);
+        fc.rows.forEach(row => { const tr = el("tr"); cols.forEach(c => { const v = row[c], td = el("td", c === "Month" ? String(v) : ngn(v)); if (c !== "Month" && v < 0) td.className = "ss-neg"; tr.append(td); }); t.append(tr); });
+        $("ssFcTable").replaceChildren(t);
+        $("ssFcWarn").replaceChildren(...fc.warnings.map(w => el("div", "⚠️ " + w, "ss-flag")), el("div", `Confidence: ${fc.confidence} (based on the last ${fc.based_on_months} month(s))`, "mute"));
+        $("ssFcNote").textContent = fc.note;
+      }
+    }
+    S.ssResultId = r.result_id; $("ssSharePanel").classList.add("hidden"); $("ssShareOut").classList.add("hidden");
     $("ssSimple").textContent = r.simple || ""; $("ssSimple").classList.toggle("hidden", !r.simple);
     $("ssXlsx").href = `/api/download/${r.result_id}`; $("ssPdf").href = `/api/download/${r.result_id}/pdf`; $("ssDisc").textContent = r.disclaimer;
     ["ssFrom", "ssTo"].forEach((id, n) => { const sel = $(id), keep = sel.value;
@@ -2337,17 +2456,186 @@ api("/api/me").then(start).catch(showLanding);
       [...sel.options].forEach((o, j) => { o.value = j ? o.textContent : ""; }); sel.value = keep; });
   }
   $("ssRun").onclick = async () => {
-    $("ssErr").textContent = ""; if (!$("ssReport").value) { $("ssErr").textContent = "Upload a statement first, then pick it here."; return; }
+    $("ssErr").textContent = ""; if (!$("ssReport").value && ![...$("ssCombo").querySelectorAll("input:checked")].length) { $("ssErr").textContent = "Upload a statement first, then pick it here."; return; }
     $("ssRun").disabled = true; $("ssRun").textContent = "Checking…";
     try {
       const v = $("ssReport").value;
+      const combo = [...$("ssCombo").querySelectorAll("input:checked")].map(i => Number(i.value));
       ssRender(await jpost("/api/statement-score", { company_id: Number($("company").value), report_id: v === "all" ? null : Number(v),
-        from_month: $("ssFrom").value || null, to_month: $("ssTo").value || null }));
+        report_ids: combo.length >= 2 ? combo : null, from_month: $("ssFrom").value || null, to_month: $("ssTo").value || null }));
       $("ssOut").scrollIntoView({ behavior: "smooth", block: "start" });
     } catch (e) { $("ssErr").textContent = "❌ " + e.message; }
     $("ssRun").disabled = false; $("ssRun").textContent = "🔍 Check statement";
   };
   $("ssReport").addEventListener("change", () => { $("ssFrom").value = ""; $("ssTo").value = ""; });
+  $("ssCombo").addEventListener("change", () => { $("ssFrom").value = ""; $("ssTo").value = ""; });
+
+  /* ---------- share links ---------- */
+  const when = t => (t || "").replace("T", " ").slice(0, 16);
+  async function ssLoadShares() {
+    try {
+      const list = await api("/api/shares"), box = $("ssShareList");
+      if (!list.length) { box.textContent = "None yet."; return; }
+      box.replaceChildren(...list.slice(0, 10).map(x => { const row = el("div", "", "sec-row"), left = el("div");
+        left.append(el("b", x.title), el("small", `${x.active ? "✅ Active, until " + when(x.expires_at) + " UTC" : (x.revoked ? "⛔ Switched off" : "⌛ Expired")} · opened ${x.views} time(s)`)); row.append(left);
+        if (x.active) { const b = el("button", "Switch off"); b.type = "button"; b.className = "danger"; b.onclick = async () => { b.disabled = true; try { await api("/api/shares/" + x.id, { method: "DELETE" }); } catch (e) {} ssLoadShares(); }; row.append(b); }
+        return row; }));
+    } catch (e) { /* not signed in yet */ }
+  }
+  $("ssShareBtn").onclick = () => $("ssSharePanel").classList.toggle("hidden");
+  $("ssShareMake").onclick = async () => {
+    $("ssShareErr").textContent = "";
+    try {
+      const r = await jpost("/api/shares", { result_id: S.ssResultId, days: Number($("ssShareDays").value) });
+      const url = location.origin + r.url_path; $("ssShareUrl").value = url; $("ssShareOut").classList.remove("hidden");
+      $("ssShareWa").href = "https://wa.me/?text=" + encodeURIComponent("Here is my bank statement check (private link, works until " + when(r.expires_at) + " UTC): " + url);
+      ssLoadShares();
+    } catch (e) { $("ssShareErr").textContent = "❌ " + e.message; }
+  };
+  $("ssShareCopy").onclick = async () => { try { await navigator.clipboard.writeText($("ssShareUrl").value); $("ssShareCopy").textContent = "Copied ✓"; } catch (e) { $("ssShareUrl").select(); } setTimeout(() => { $("ssShareCopy").textContent = "Copy link"; }, 1800); };
+
+  /* ---------- batch check (lenders) ---------- */
+  $("btFiles").addEventListener("change", () => { const n = $("btFiles").files.length; $("btPicked").textContent = n ? `${n} file(s) chosen` + (n > 25 ? " - only 25 are allowed" : "") : ""; });
+  $("btRun").onclick = async () => {
+    $("btErr").textContent = ""; const files = [...$("btFiles").files];
+    if (!files.length) { $("btErr").textContent = "Choose the statements first."; return; }
+    if (files.length > 25) { $("btErr").textContent = "Up to 25 statements at a time."; return; }
+    const fd = new FormData(); fd.append("company_id", $("company").value); files.forEach(f => fd.append("files", f));
+    $("btRun").disabled = true; $("btRun").textContent = "Scoring…";
+    try {
+      const r = await api("/api/statement-batch", { method: "POST", body: fd });
+      $("btOut").classList.remove("hidden"); $("btSummary").textContent = r.summary;
+      const tbl = el("table", "", "bt-table"), head = el("tr"); r.columns.forEach(c => head.append(el("th", c))); tbl.append(head);
+      r.rows.forEach(row => { const tr = el("tr"); r.columns.forEach(c => { const v = row[c], money = /income|spending|repayment/i.test(c);
+        let td;
+        if (c === "Score" && v != null) { td = el("td"); const p = el("span", String(v), "bt-pill"); p.style.background = v >= 75 ? "#10b981" : v >= 60 ? "#22a6b3" : v >= 45 ? "#f59e0b" : "#ef4444"; td.append(p); }
+        else { td = el("td", v == null ? "" : (money ? ngn(v) : String(v))); if (typeof v === "number") td.className = "n"; }
+        tr.append(td); }); tbl.append(tr); });
+      $("btTable").replaceChildren(tbl); $("btXlsx").href = `/api/download/${r.result_id}`; $("btPdf").href = `/api/download/${r.result_id}/pdf`;
+      if (typeof loadBilling === "function") loadBilling();
+    } catch (e) { $("btErr").textContent = "❌ " + e.message; }
+    $("btRun").disabled = false; $("btRun").textContent = "🔍 Score all";
+  };
+
+  /* ---------- security & privacy ---------- */
+  async function loadSecurity() {
+    try {
+      const w = await api("/api/me/weekly-email"); $("wkOn").checked = w.enabled;
+      $("wkMsg").textContent = !w.has_email ? "Add your email above first." : (!w.email_ready ? "Email sending is not switched on for this website yet." : (w.last_sent_at ? "Last sent " + when(w.last_sent_at) + " UTC" : ""));
+    } catch (e) {}
+    try {
+      const list = await api("/api/me/sessions");
+      $("devList").replaceChildren(...list.map(d => { const row = el("div", "", "sec-row"), left = el("div");
+        left.append(el("b", d.device + (d.current ? "  (this device)" : "")), el("small", `${d.ip || "unknown address"} · signed in ${when(d.signed_in)} UTC`)); row.append(left);
+        if (!d.current) { const b = el("button", "Sign out"); b.type = "button"; b.className = "ghost"; b.onclick = async () => { try { await api("/api/me/sessions/" + d.id, { method: "DELETE" }); } catch (e) {} loadSecurity(); }; row.append(b); }
+        return row; }));
+    } catch (e) {}
+    try {
+      const r = await api("/api/me/deletion-request"), p = r.pending;
+      $("delForm").classList.toggle("hidden", !!p); $("delCancelRow").classList.toggle("hidden", !p);
+      $("delInfo").textContent = p ? `You asked us to delete your account on ${when(p.created_at)} UTC. We will process it within 7 days.` : "Ask us to remove your account and personal details. We process it within 7 days and write to you when it is done.";
+    } catch (e) {}
+    if (S.user && S.user.role === "admin") loadDeletionAdmin();
+  }
+  async function loadDeletionAdmin() {
+    try {
+      const list = await api("/api/admin/deletion-requests"), box = $("delAdmin");
+      if (!list.length) { box.textContent = "None."; return; }
+      box.replaceChildren(...list.map(x => { const row = el("div", "", "sec-row"), left = el("div");
+        left.append(el("b", `${x.username} (#${x.user_id})`), el("small", `${x.status} · ${when(x.created_at)} UTC${x.note ? " · " + x.note : ""}`)); row.append(left);
+        if (x.status === "pending") { const b = el("button", "Mark done"); b.type = "button"; b.className = "ghost"; b.onclick = async () => { try { await jpost("/api/admin/deletion-requests/" + x.id + "/done", {}); } catch (e) {} loadDeletionAdmin(); }; row.append(b); }
+        return row; }));
+    } catch (e) {}
+  }
+  $("wkOn").onchange = async () => { try { await jpost("/api/me/weekly-email", { enabled: $("wkOn").checked }); $("wkMsg").textContent = $("wkOn").checked ? "✅ Turned on. You will get it on Monday mornings." : "Turned off."; } catch (e) { $("wkOn").checked = false; $("wkMsg").textContent = "❌ " + e.message; } };
+  $("wkTest").onclick = async () => { $("wkMsg").textContent = "Sending…"; try { const r = await jpost("/api/me/weekly-email/test", {}); $("wkMsg").textContent = "✅ Sample sent to " + r.sent_to; } catch (e) { $("wkMsg").textContent = "❌ " + e.message; } };
+  $("devOthers").onclick = async () => { try { const r = await jpost("/api/me/sessions/revoke-others", {}); $("devMsg").textContent = `✅ Signed out ${r.signed_out} other device(s).`; } catch (e) { $("devMsg").textContent = "❌ " + e.message; } loadSecurity(); };
+  $("delSend").onclick = async () => {
+    $("delMsg").textContent = ""; if (!$("delPw").value) { $("delMsg").textContent = "Enter your password to confirm."; return; }
+    if (!confirm("Ask us to delete your account? This removes your access and personal details.")) return;
+    try { await jpost("/api/me/deletion-request", { password: $("delPw").value, note: $("delNote").value }); $("delPw").value = ""; $("delMsg").textContent = "✅ Request sent."; } catch (e) { $("delMsg").textContent = "❌ " + e.message; }
+    loadSecurity();
+  };
+  $("delCancel").onclick = async () => { try { await api("/api/me/deletion-request", { method: "DELETE" }); $("delMsg").textContent = "Request cancelled."; } catch (e) { $("delMsg").textContent = "❌ " + e.message; } loadSecurity(); };
+
+  /* ---------- installable app ---------- */
+  (function () {
+    if ("serviceWorker" in navigator) window.addEventListener("load", () => { navigator.serviceWorker.register("/sw.js").catch(() => {}); });
+    let prompt = null; const btn = $("installBtn");
+    const standalone = window.matchMedia("(display-mode: standalone)").matches || window.navigator.standalone === true;
+    const ios = /iphone|ipad|ipod/i.test(navigator.userAgent) && !standalone;
+    if (ios) btn.classList.remove("hidden");
+    window.addEventListener("beforeinstallprompt", e => { e.preventDefault(); prompt = e; if (!standalone) btn.classList.remove("hidden"); });
+    window.addEventListener("appinstalled", () => btn.classList.add("hidden"));
+    btn.onclick = async () => {
+      if (prompt) { prompt.prompt(); try { await prompt.userChoice; } catch (e) {} prompt = null; btn.classList.add("hidden"); }
+      else alert("To install: tap the Share button in Safari, then choose “Add to Home Screen”.");
+    };
+  })();
+
+  /* ---------- invoice for a plan ---------- */
+  async function downloadPost(path, body, filename) {
+    const r = await fetch(path, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
+    if (!r.ok) { let m = r.statusText; try { m = (await r.json()).detail || m; } catch (e) {} throw new Error(m); }
+    const url = URL.createObjectURL(await r.blob()), a = document.createElement("a"); a.href = url; a.download = filename; document.body.append(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(url), 4000);
+  }
+  $("proformaBtn").onclick = async () => {
+    try { await downloadPost("/api/billing/proforma", { company_id: Number($("company").value), plan: $("billingPlan").value, coupon_code: ($("payCoupon").value || "").trim() || null }, "invoice.pdf"); $("billingMsg").textContent = "✅ Invoice downloaded. Pay with the bank details on it, then submit your transfer reference."; }
+    catch (e) { $("billingMsg").textContent = "❌ " + e.message; }
+  };
+
+  /* ---------- support tickets ---------- */
+  let tkOpen = null;
+  const tkBadge = st => { const b = el("span", st, "tk-badge " + st); return b; };
+  async function loadTickets() {
+    const admin = S.user && S.user.role === "admin", all = admin && $("tkAll").checked;
+    try {
+      const list = await api("/api/tickets" + (all ? "?all=true" : "")), box = $("tkList");
+      if (!list.length) { box.textContent = "None yet."; return; }
+      box.replaceChildren(...list.map(t => { const row = el("div", "", "sec-row"), left = el("div");
+        left.append(el("b", t.subject), el("small", `${t.username ? t.username + " · " : ""}${t.company ? t.company + " · " : ""}updated ${when(t.updated_at)} UTC`)); row.append(left, tkBadge(t.status));
+        row.onclick = () => openTicket(t.id); return row; }));
+    } catch (e) {}
+  }
+  async function openTicket(id) {
+    try {
+      const t = await api("/api/tickets/" + id); tkOpen = id; $("tkView").classList.remove("hidden");
+      $("tkTitle").textContent = t.subject + (t.username && S.user.role === "admin" ? "  ·  " + t.username : ""); $("tkState").replaceChildren(tkBadge(t.status));
+      $("tkThread").replaceChildren(...t.messages.map(m => { const d = el("div", "", "tk-msg" + (m.staff ? " staff" : "")); d.append(el("small", `${m.from} · ${when(m.at)} UTC`), document.createTextNode(m.body)); return d; }));
+      $("tkReplyBox").classList.toggle("hidden", t.status === "closed" && S.user.role !== "admin"); $("tkErr").textContent = "";
+      $("tkView").scrollIntoView({ behavior: "smooth", block: "nearest" });
+    } catch (e) { $("tkErr").textContent = "❌ " + e.message; }
+  }
+  $("tkSend").onclick = async () => {
+    $("tkMsg").textContent = "";
+    try { await jpost("/api/tickets", { company_id: Number($("company").value), subject: $("tkSubject").value, body: $("tkBody").value }); $("tkSubject").value = ""; $("tkBody").value = ""; $("tkMsg").textContent = "✅ Sent. We will reply here."; loadTickets(); }
+    catch (e) { $("tkMsg").textContent = "❌ " + e.message; }
+  };
+  $("tkReplySend").onclick = async () => {
+    try { await jpost(`/api/tickets/${tkOpen}/reply`, { body: $("tkReply").value }); $("tkReply").value = ""; await openTicket(tkOpen); loadTickets(); } catch (e) { $("tkErr").textContent = "❌ " + e.message; }
+  };
+  $("tkClose").onclick = async () => { try { await jpost(`/api/tickets/${tkOpen}/close`, {}); await openTicket(tkOpen); loadTickets(); } catch (e) { $("tkErr").textContent = "❌ " + e.message; } };
+  $("tkAll").onchange = loadTickets;
+
+  /* ---------- API keys ---------- */
+  async function loadApiKeys() {
+    const ex = ['curl -X POST "' + location.origin + '/api/v1/statement-score" \\', '  -H "X-API-Key: YOUR_KEY" \\', '  -F "file=@statement.xlsx"'].join("\n");
+    $("akExample").textContent = ex;
+    try {
+      const list = await api("/api/api-keys?company_id=" + Number($("company").value)), box = $("akList");
+      const live = list.filter(k => !k.revoked); if (!list.length) { box.textContent = "No keys yet."; return; }
+      box.replaceChildren(...list.map(k => { const row = el("div", "", "sec-row"), left = el("div");
+        left.append(el("b", `${k.label}  (${k.prefix}…)`), el("small", `${k.revoked ? "⛔ Switched off" : "✅ Active"} · used ${k.uses} time(s)${k.last_used_at ? ", last " + when(k.last_used_at) + " UTC" : ""}`)); row.append(left);
+        if (!k.revoked) { const b = el("button", "Switch off"); b.type = "button"; b.className = "danger"; b.onclick = async () => { b.disabled = true; try { await api(`/api/api-keys/${k.id}?company_id=${Number($("company").value)}`, { method: "DELETE" }); } catch (e) {} loadApiKeys(); }; row.append(b); }
+        return row; }));
+    } catch (e) { /* viewers cannot see keys */ }
+  }
+  $("akMake").onclick = async () => {
+    $("akErr").textContent = "";
+    try { const r = await jpost("/api/api-keys", { company_id: Number($("company").value), label: $("akLabel").value }); $("akKey").textContent = r.key; $("akNew").classList.remove("hidden"); $("akLabel").value = ""; loadApiKeys(); }
+    catch (e) { $("akErr").textContent = "❌ " + e.message; }
+  };
+  $("akCopy").onclick = async () => { try { await navigator.clipboard.writeText($("akKey").textContent); $("akCopy").textContent = "Copied ✓"; } catch (e) {} setTimeout(() => { $("akCopy").textContent = "Copy key"; }, 1800); };
 
   /* ---------- dark mode ---------- */
   function setTheme(t) {
@@ -2510,7 +2798,8 @@ api("/api/me").then(start).catch(showLanding);
   window.onViewChange = function (v) {
     if (_ovc) _ovc(v);
     if (v === "overview") loadOverview();
-    if (v === "settings") loadAccount();
+    if (v === "settings") { loadAccount(); loadSecurity(); loadApiKeys(); }
+    if (v === "support") loadTickets();
     if (v === "analytics") loadSaved();
   };
   const _lr2 = loadReports;
