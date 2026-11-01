@@ -491,6 +491,11 @@
   .api-key-box { border:1px dashed #1769ff; border-radius:12px; padding:10px 12px; margin:8px 0; background:rgba(23,105,255,.06); } .api-key-box code { display:block; overflow-wrap:anywhere; font-size:13px; margin:6px 0; }
   pre.api-ex { background:#0e1729; color:#d6e2ff; border-radius:10px; padding:10px 12px; overflow-x:auto; font-size:12.5px; max-width:100%; }
   .ss-fc td.low, .ss-fc th.low { color:#68758e; }
+  .how-box { border:1px dashed #1769ff; border-radius:12px; padding:10px 14px; margin:8px 0; background:rgba(23,105,255,.06); font-size:14px; line-height:1.5; } .how-box ol { margin:6px 0 6px 18px; padding:0; }
+  .how-ex, .how-tip { margin-top:6px; padding:8px 10px; border-radius:10px; background:rgba(120,130,150,.1); } .how-ex i { color:#68758e; }
+  .ask-box { border:1px solid var(--line); border-radius:14px; padding:10px 14px; margin:14px 0; } .ask-box > b { display:block; margin-bottom:4px; }
+  .ask-ans { margin-top:10px; padding:10px 12px; border-radius:12px; background:rgba(23,105,255,.07); border-left:4px solid #1769ff; white-space:pre-wrap; overflow-wrap:anywhere; font-size:14.5px; line-height:1.55; }
+  .ask-ans.builtin { background:rgba(245,158,11,.1); border-left-color:#f59e0b; }
   .sec-row { display:flex; justify-content:space-between; align-items:center; gap:10px; flex-wrap:wrap; border-bottom:1px solid var(--line); padding:8px 0; font-size:14px; } .sec-row small { color:#68758e; display:block; }
   @media (max-width:760px) { .ss-cats { grid-template-columns:1fr; } .ss-cat { grid-template-columns:1fr; gap:2px; } }
   html[data-theme=dark] .ss-bar2 { background:#26354f; }
@@ -837,6 +842,7 @@
       <h3 style="margin:16px 0 6px">How the score is built</h3>
       <div id="ssFactors"></div>
       <div class="insight" id="ssSimple" style="margin-top:14px"></div>
+      <div id="ssAsk"></div>
       <div class="row" style="margin-top:10px"><a id="ssXlsx" href="#"><button type="button" class="ghost">⬇ Excel</button></a><a id="ssPdf" href="#"><button type="button" class="ghost">📄 PDF</button></a><button type="button" class="ghost" id="ssShareBtn">🔗 Share with a lender</button></div>
       <div class="ss-share hidden" id="ssSharePanel">
         <b>Share a private link</b>
@@ -1033,6 +1039,7 @@
       <li>Export useful findings to PDF and check important figures against your original records.</li>
       <li>Open Plan &amp; usage to see your company's shared quota and request a paid plan.</li>
     </ol>
+    <div id="helpAsk"></div>
     <p class="mute">Paid access starts only after an administrator verifies the bank transfer. AI findings can be wrong; validate high-impact financial decisions against source records.</p>
   </section>
   <section class="card hidden" id="aboutCard" data-views="upload analytics">
@@ -1051,6 +1058,20 @@
     <div class="row">
       <input type="text" id="question" placeholder='e.g. "total amount by branch and month, top 10"'>
       <button id="ask">Analyze</button>
+      <button type="button" class="ghost" id="howBtn" aria-expanded="false" aria-controls="howBox">💡 How to ask</button>
+    </div>
+    <div class="how-box hidden" id="howBox">
+      <b>Type your question the way you would say it to a person.</b> You do not need special words, and spelling mistakes are fine. A good question has up to four parts:
+      <ol>
+        <li><b>What to work out</b>: total, average, how many, highest, lowest, difference, percentage.</li>
+        <li><b>Split it by</b> (optional): branch, month, bank, terminal, day, channel.</li>
+        <li><b>Only for</b> (optional): a month, a branch, failed transactions, amounts above ₦50,000, credits or debits.</li>
+        <li><b>How many to show</b> (optional): top 10, bottom 5, all.</li>
+      </ol>
+      <div class="how-ex"><i>Example:</i> “total withdrawals by branch for March, top 5” = what (total withdrawals) + split (branch) + only for (March) + how many (top 5).</div>
+      <div class="how-tip">💬 Not sure? Just ask <b>“explain this report”</b>, <b>“what does this column mean?”</b> or <b>“why is this so high?”</b> and it will explain in simple words, step by step. To change the last answer, tick <b>Refine the previous result</b> and type what to change, for example “now only for Lagos”.</div>
+      <div class="mute" style="margin:8px 0 4px">Tap an example to put it in the question bar:</div>
+      <div id="howChips" class="row"></div>
     </div>
     <label class="mute"><input type="checkbox" id="followup"> Refine the previous result</label>
     <div id="savedQs"></div>
@@ -1085,13 +1106,21 @@
     <h2>Compare two files</h2>
     <div class="mute">Compare e.g. an ATM switch log with the bank ledger: matches, amount differences, and items missing on either side.</div>
     <div class="row" style="margin-top:8px"><select id="rA"></select> <span>vs</span> <select id="rB"></select></div>
-    <div class="row" style="margin-top:8px"><input type="text" id="rNote" placeholder="Optional note, e.g. match Reference with Ref No"><button id="rBtn">Reconcile</button></div>
+    <div class="row" style="margin-top:8px"><input type="text" id="rNote" placeholder="Optional note, e.g. match Reference with Ref No"><button id="rBtn">Reconcile</button><button type="button" class="ghost" id="rHowBtn" aria-expanded="false">💡 How to write a note</button></div>
+    <div class="how-box hidden" id="rHow">
+      <b>The note is optional.</b> With no note, the site works out which columns match by itself and tells you how it matched them. When you do write one, use your own words, spelling mistakes are fine. You can say:
+      <ol><li><b>Which columns match</b>: “match Reference with Ref No”, “match RRN with transaction id and amount with value”.</li>
+        <li><b>How much difference to ignore</b>: “ignore differences under 10 naira”, “tolerance of ₦50”.</li></ol>
+      <div class="how-tip">💬 After the result appears you can ask anything about it in the box under the table, for example “why are these missing?” or “which one is the biggest difference?”.</div>
+      <div class="mute" style="margin:8px 0 4px">Tap an example to put it in the note box:</div><div id="rHowChips" class="row"></div>
+    </div>
     <div class="error" id="rErr"></div>
     <div id="rOut" class="hidden" style="margin-top:10px">
       <pre class="recon" id="rText"></pre>
       <span class="row"><a id="rDownload"><button class="ghost">⬇ Excel (all details)</button></a><a id="rPdf"><button class="ghost">📄 PDF</button></a></span>
       <div class="tablewrap" style="margin-top:10px"><table id="rTable"></table></div>
       <div class="mute" id="rInfo"></div>
+      <div id="rAsk"></div>
     </div>
   </section>
 
@@ -1103,6 +1132,7 @@
       <b>Discrepancy cases &amp; resolution history</b>
       <div class="row"><select id="caseStatus"><option value="all">All statuses</option><option value="open">Open</option><option value="in_review">In review</option><option value="resolved">Resolved</option><option value="accepted">Accepted</option></select><button id="loadCases" class="ghost">Load cases</button></div>
       <div id="caseList" class="mute">Load cases to review and resolve discrepancies.</div>
+      <div id="caseAsk"></div>
     </div>
     <div class="urow" data-views="insights reconciliation">
       <b>Historical comparisons &amp; trends</b>
@@ -1535,7 +1565,7 @@ $("rBtn").onclick = async () => {
     const r = await jpost("/api/reconcile", { company_id: Number($("company").value), report_a: Number($("rA").value), report_b: Number($("rB").value), instruction: $("rNote").value });
     if (r.clarify) $("rErr").textContent = "🤔 " + r.clarify;
     else {
-      $("rOut").classList.remove("hidden"); $("rText").textContent = r.text; $("rDownload").href = `/api/download/${r.result_id}`; $("rPdf").href = `/api/download/${r.result_id}/pdf`;
+      S.reconResultId = r.result_id; $("rOut").classList.remove("hidden"); $("rText").textContent = r.text; $("rDownload").href = `/api/download/${r.result_id}`; $("rPdf").href = `/api/download/${r.result_id}/pdf`;
       fillTable($("rTable"), r.columns, r.rows);
       $("rInfo").textContent = r.total_problem_rows ? `${r.total_problem_rows} unmatched/mismatched row(s)` + (r.total_problem_rows > r.rows.length ? ` - showing ${r.rows.length}, download Excel for all.` : "") : "✅ Everything matched.";
     }
@@ -2557,6 +2587,53 @@ api("/api/me").then(start).catch(showLanding);
     loadSecurity();
   };
   $("delCancel").onclick = async () => { try { await api("/api/me/deletion-request", { method: "DELETE" }); $("delMsg").textContent = "Request cancelled."; } catch (e) { $("delMsg").textContent = "❌ " + e.message; } loadSecurity(); };
+
+  /* ---------- "ask about this" (any wording) ---------- */
+  function mountAsk(hostId, kind, payloadFn, examples, title) {
+    const host = $(hostId); if (!host) return;
+    const box = el("div", "", "ask-box"), inp = el("input"), btn = el("button", "Ask"), row = el("div", "", "row"), chips = el("div", "", "row"), out = el("div"), err = el("div", "", "error");
+    box.append(el("b", title || "💬 Ask anything about this"), el("div", "Type it your own way: short, casual, spelling mistakes are all fine.", "mute"));
+    inp.type = "text"; inp.maxLength = 600; inp.placeholder = examples[0]; inp.style.flex = "1"; btn.type = "button"; row.style.marginTop = "6px"; row.append(inp, btn);
+    chips.style.marginTop = "6px"; examples.forEach(q => { const c = el("button", q, "chip"); c.type = "button"; c.onclick = () => { inp.value = q; inp.focus(); }; chips.append(c); });
+    box.append(row, chips, err, out); host.replaceChildren(box);
+    const go = async () => {
+      err.textContent = ""; const q = inp.value.trim(); if (q.length < 2) { err.textContent = "Type your question first."; return; }
+      const payload = payloadFn(); if (!payload) { err.textContent = "Run it first, then ask about the result."; return; }
+      btn.disabled = true; btn.textContent = "Thinking…";
+      try { const r = await jpost("/api/explain", Object.assign({ kind, question: q }, payload)); const a = el("div", r.answer, "ask-ans" + (r.source === "built-in" ? " builtin" : "")); out.replaceChildren(a); }
+      catch (e) { err.textContent = "❌ " + e.message; }
+      btn.disabled = false; btn.textContent = "Ask";
+    };
+    btn.onclick = go; inp.addEventListener("keydown", e => { if (e.key === "Enter") go(); });
+  }
+  mountAsk("ssAsk", "result", () => S.ssResultId ? { result_id: S.ssResultId } : null,
+    ["Why is my score low?", "Explain this to me like I am new", "Which month was the worst and why?", "Can I afford a ₦500,000 loan?"], "💬 Ask about this statement result");
+  mountAsk("rAsk", "result", () => S.reconResultId ? { result_id: S.reconResultId } : null,
+    ["Why are there missing items?", "Which difference is the biggest?", "Explain this result in simple words", "What should I do next?"], "💬 Ask about this reconciliation");
+  mountAsk("caseAsk", "cases", () => ({ company_id: Number($("company").value) }),
+    ["How many cases are still open?", "Which case should I handle first?", "Explain what 'accepted' means", "Summarise the cases for my boss"], "💬 Ask about your cases");
+  mountAsk("helpAsk", "help", () => ({}),
+    ["How do I compare two reports?", "Why did my upload not use a check?", "How do I share a result with a lender?", "Wetin be Statement Score?"], "💬 Ask how to use Report Analyzer");
+  (function () {
+    const notes = ["match Reference with Ref No", "match RRN with transaction id and amount with value", "ignore differences under 10 naira", "match Reference with Ref No, tolerance of ₦50"];
+    notes.forEach(q => { const b = el("button", q, "chip"); b.type = "button"; b.onclick = () => { $("rNote").value = q; $("rNote").focus(); }; $("rHowChips").append(b); });
+    $("rHowBtn").onclick = () => { const open = $("rHow").classList.toggle("hidden") === false; $("rHowBtn").setAttribute("aria-expanded", String(open)); };
+  })();
+
+  /* ---------- how to ask ---------- */
+  (function () {
+    const groups = [
+      ["Totals", ["total amount by branch", "average transaction amount per day", "how many failed transactions are there?"]],
+      ["Top and bottom", ["top 10 terminals by amount", "which branch has the lowest total?", "highest single transaction and when it happened"]],
+      ["Credits and debits", ["total credits and total debits by month", "how much money came in and went out in March?", "list debits above 50,000"]],
+      ["Compare", ["compare this month with last month", "percentage of each bank in the total", "difference between withdrawals and deposits"]],
+      ["Explain", ["explain this report in simple words", "what does each column mean?", "why is the total so high?"]]
+    ];
+    const box = $("howChips");
+    groups.forEach(([name, qs]) => { const g = el("div"); g.style.cssText = "flex-basis:100%"; g.append(el("small", name, "mute")); const r = el("div", "", "row"); r.style.marginTop = "2px";
+      qs.forEach(q => { const b = el("button", q, "chip"); b.type = "button"; b.onclick = () => { $("question").value = q; $("followup").checked = false; $("question").focus(); }; r.append(b); }); g.append(r); box.append(g); });
+    $("howBtn").onclick = () => { const open = $("howBox").classList.toggle("hidden") === false; $("howBtn").setAttribute("aria-expanded", String(open)); };
+  })();
 
   /* ---------- installable app ---------- */
   (function () {
