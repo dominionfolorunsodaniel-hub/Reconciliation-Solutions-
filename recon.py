@@ -15,14 +15,59 @@ import core
 MONEY_RE = re.compile(r"amount|amt|value|total|sum|debit|credit", re.I)
 STATUSES = ["Matched", "Amount mismatch", "Only in A", "Only in B"]
 
-RECON_PROMPT = """You map columns between two reports so they can be reconciled.
+RECON_PROMPT = """You map columns between two reports so they can be reconciled (matched row by row).
 Reply with ONE JSON object and nothing else:
 {"keys": [{"a": "<column in A>", "b": "<column in B>"}],
  "amount": {"a": "<money column in A>", "b": "<money column in B>"} or null,
  "tolerance": 0.01,
- "clarify": null or "a short question if no sensible mapping exists"}
-keys = the column(s) that identify the SAME transaction in both reports (reference / RRN / transaction id;
-add date or terminal only if no unique id exists). Use ONLY exact column names. Never guess."""
+ "clarify": null}
+keys = the column(s) that identify the SAME transaction in both reports. Reference numbers can be named very differently
+(Reference, Ref No, RRN, STAN, Transaction ID, Session ID, Auth code...). Prefer a unique id; add date or terminal only if no unique id exists.
+The user's note can be written in any wording or with spelling mistakes ("match ref with rrn", "ignore small differences under 10 naira",
+"compare by date and amount"). Follow it. A tolerance is the biggest money difference to ignore, in naira.
+Use ONLY exact column names from the lists. ALWAYS give your best mapping. Never ask the user a question; leave "clarify" null."""
+
+REF_RE = re.compile(r"\b(ref(erence)?s?|rrn|stan|txn|trx|tran(saction)?s?\s*(id|no|num(ber)?|ref)?|session\s*id|auth(orization)?\s*code|order\s*(id|no)|receipt\s*(no|num(ber)?)|id)\b", re.I)
+DATE_RE_NAME = re.compile(r"date|time|\bday\b", re.I)
+TERM_RE = re.compile(r"terminal|\btid\b|\batm\b|\bpos\b|machine|device|merchant", re.I)
+TOL_RE = re.compile(r"(?:under|below|within|less than|upto|up to|tolerance(?: of)?|ignore(?: differences?)?(?: of)?)\s*(?:₦|ngn|naira|n)?\s*([\d,]+(?:\.\d+)?)", re.I)
+MATCH_RE = re.compile(r"match\s+(.+?)\s+(?:with|to|and|against|vs\.?)\s+(.+?)(?=\s+and\s+match|\s*[,;.]|\s+and\s+|$)", re.I)
+
+
+def parse_note(note: str, a: pd.DataFrame, b: pd.DataFrame) -> dict:
+    """Understand the simple things people write in the note box, without any AI: a tolerance and 'match X with Y' pairs."""
+    out = {"tolerance": None, "pairs": []}
+    note = note or ""
+    m = TOL_RE.search(note)
+    if m:
+        try:
+            out["tolerance"] = float(m.group(1).replace(",", ""))
+        except ValueError:
+            pass
+    for x, y in MATCH_RE.findall(note):
+        ca, cb = core.resolve_column(x.strip(" '\""), list(a.columns)), core.resolve_column(y.strip(" '\""), list(b.columns))
+        if ca in a.columns and cb in b.columns:
+            out["pairs"].append((ca, cb))
+    return out
+
+
+def _pair_by(a: pd.DataFrame, b: pd.DataFrame, rx, numeric: bool | None = None):
+    """Columns of A and B that both look like the same kind of thing (an id, a date, a terminal...). Same names first."""
+    ca = [c for c in a.columns if rx.search(str(c)) and (numeric is None or pd.api.types.is_numeric_dtype(a[c]) == numeric)]
+    cb = [c for c in b.columns if rx.search(str(c)) and (numeric is None or pd.api.types.is_numeric_dtype(b[c]) == numeric)]
+    low_b = {str(c).lower(): c for c in cb}
+    same = [(c, low_b[str(c).lower()]) for c in ca if str(c).lower() in low_b]
+    pairs = same + [(x, y) for x in ca for y in cb if (x, y) not in same]
+    seen, out = set(), []
+    for x, y in pairs:
+        if x not in seen:
+            seen.add(x)
+            out.append((x, y))
+    return out
+
+
+def _unique_share(df: pd.DataFrame, cols) -> float:
+    return _keycol(df, list(cols)).nunique() / max(len(df), 1)
 
 
 def _norm(s: pd.Series) -> pd.Series:
@@ -41,31 +86,51 @@ def _keycol(df: pd.DataFrame, cols: list[str]) -> pd.Series:
     return key
 
 
-def guess_plan(a: pd.DataFrame, b: pd.DataFrame) -> dict:
-    """Fallback when Gemini isn't available: match same-named columns."""
+def _money_pair(a: pd.DataFrame, b: pd.DataFrame, taken=()):
+    pairs = [p for p in _pair_by(a, b, MONEY_RE, numeric=True) if p[0] not in taken]
+    return pairs[0] if pairs else None
+
+
+def guess_plan(a: pd.DataFrame, b: pd.DataFrame, note: str = "") -> dict:
+    """Works out the matching without AI: the user's note first, then same-named columns, then columns that mean the same
+    thing under different names (Reference / Ref No / RRN), then date + amount (+ terminal). Never gives up while a sensible guess exists."""
+    info = parse_note(note, a, b)
+    tol = info["tolerance"] if info["tolerance"] is not None else 0.01
+    chosen = list(info["pairs"])
+    money = _money_pair(a, b, taken=[p[0] for p in chosen])
+    # pairs the user named that are money columns become the amount, not a key
+    keys = [p for p in chosen if not (pd.api.types.is_numeric_dtype(a[p[0]]) and MONEY_RE.search(str(p[0])))]
+    for p in chosen:
+        if p not in keys:
+            money = p
+    if keys:
+        return {"keys": [{"a": x, "b": y} for x, y in keys], "amount": {"a": money[0], "b": money[1]} if money else None, "tolerance": tol,
+                "how": "your note"}
     low_b = {str(c).lower(): c for c in b.columns}
     common = [(c, low_b[str(c).lower()]) for c in a.columns if str(c).lower() in low_b]
-    if not common:
-        raise ValueError(
-            "The two reports share no column names. Say which columns match, e.g. "
-            "/recon 3 4 match Reference with Ref No and Amount with Value."
-        )
     num = [p for p in common if pd.api.types.is_numeric_dtype(a[p[0]]) and pd.api.types.is_numeric_dtype(b[p[1]])]
-    money = next((p for p in num if MONEY_RE.search(str(p[0]))), None)
+    money = next((p for p in num if MONEY_RE.search(str(p[0]))), None) or _money_pair(a, b)
+    attempts = []
     cands = [p for p in common if p != money and not pd.api.types.is_datetime64_any_dtype(a[p[0]])]
-    cands.sort(key=lambda p: a[p[0]].nunique() / max(len(a), 1), reverse=True)
-    for k in range(1, min(3, len(cands)) + 1):
-        sel = cands[:k]
-        if _keycol(a, [p[0] for p in sel]).nunique() / max(len(a), 1) >= 0.9:
-            return {
-                "keys": [{"a": x, "b": y} for x, y in sel],
-                "amount": {"a": money[0], "b": money[1]} if money else None,
-                "tolerance": 0.01,
-            }
-    raise ValueError(
-        "I couldn't find columns that uniquely identify a transaction. Tell me which ones, e.g. "
-        "/recon 3 4 match Reference with Ref No."
-    )
+    cands.sort(key=lambda p: _unique_share(a, [p[0]]), reverse=True)
+    attempts.append(("columns with the same names", cands))
+    refs = [p for p in _pair_by(a, b, REF_RE) if p != money]
+    refs.sort(key=lambda p: _unique_share(a, [p[0]]), reverse=True)
+    attempts.append(("reference-style columns", refs))
+    for label, group in attempts:
+        for k in range(1, min(3, len(group)) + 1):
+            sel = group[:k]
+            if _unique_share(a, [p[0] for p in sel]) >= 0.9:
+                return {"keys": [{"a": x, "b": y} for x, y in sel], "amount": {"a": money[0], "b": money[1]} if money else None,
+                        "tolerance": tol, "how": f"automatically, from {label}"}
+    # no unique id anywhere: combine date + amount (+ terminal)
+    dates, terms = _pair_by(a, b, DATE_RE_NAME), _pair_by(a, b, TERM_RE)
+    if money and dates:
+        sel = [dates[0], money] + ([terms[0]] if terms else [])
+        return {"keys": [{"a": x, "b": y} for x, y in sel], "amount": None, "tolerance": tol,
+                "how": "automatically, from date + amount" + (" + terminal" if terms else "") + " (the reports have no unique reference, so similar transactions may pair up wrongly)"}
+    raise ValueError("I could not find which column in the first report is the same thing as a column in the second. "
+                     "Add a note such as: match Reference with Ref No and Amount with Value.")
 
 
 def _valid(plan: dict, a: pd.DataFrame, b: pd.DataFrame) -> bool:
@@ -122,7 +187,8 @@ def run_recon(a: pd.DataFrame, b: pd.DataFrame, plan: dict) -> dict:
 
 
 async def reconcile(a: pd.DataFrame, b: pd.DataFrame, instruction: str = "") -> dict:
-    """Returns run_recon's dict, or {"clarify": "..."}; raises ValueError if it can't be matched."""
+    """Returns run_recon's dict. The AI proposes the column mapping; if it is unavailable, unsure or wrong, the built-in logic
+    works it out from the note and the column names. A question comes back only when no sensible matching exists at all."""
     plan = None
     try:
         user_msg = (
@@ -137,17 +203,40 @@ async def reconcile(a: pd.DataFrame, b: pd.DataFrame, instruction: str = "") -> 
         )
         text = core._text_of(resp)
         data = json.loads(text[text.find("{"): text.rfind("}") + 1])
-        if data.get("clarify"):
-            return {"clarify": str(data["clarify"])}
-        plan = data if _valid(data, a, b) else None
-    except Exception:  # no API key / bad reply -> name-based fallback
+        if _valid(data, a, b):
+            plan = data
+            plan["how"] = "by the AI, from your columns" + (" and your note" if instruction else "")
+            info = parse_note(instruction, a, b)
+            if info["tolerance"] is not None:
+                plan["tolerance"] = info["tolerance"]
+    except Exception:  # no API key / bad reply -> built-in logic
         plan = None
     if plan is None:
-        plan = guess_plan(a, b)
-    return await asyncio.to_thread(run_recon, a, b, plan)
+        try:
+            plan = guess_plan(a, b, instruction)
+        except ValueError as e:
+            return {"clarify": str(e)}
+    out = await asyncio.to_thread(run_recon, a, b, plan)
+    out["how"] = describe_plan(plan)
+    return out
+
+
+def describe_plan(plan: dict) -> str:
+    keys = " + ".join(f"{k['a']} (A) = {k['b']} (B)" for k in plan["keys"])
+    amt = plan.get("amount")
+    tol = float(plan.get("tolerance") or 0.01)
+    txt = f"HOW I MATCHED THEM ({plan.get('how', 'automatically')}): rows are the same transaction when {keys}."
+    if amt:
+        txt += f" Amounts compared: {amt['a']} (A) with {amt['b']} (B); differences up to {tol:g} are ignored."
+    return txt
 
 
 def summary_text(result: dict, label_a: str, label_b: str) -> str:
+    base = _summary_text(result, label_a, label_b)
+    return (result["how"] + "\n\n" + base) if result.get("how") else base
+
+
+def _summary_text(result: dict, label_a: str, label_b: str) -> str:
     plan = result["plan"]
     keys = ", ".join(f'{k["a"]} = {k["b"]}' for k in plan["keys"])
     amt = plan.get("amount")

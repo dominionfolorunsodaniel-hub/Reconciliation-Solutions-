@@ -17,12 +17,14 @@ from collections import OrderedDict
 from contextlib import asynccontextmanager
 from pathlib import Path
 
+import pandas as pd
 from fastapi import Depends, FastAPI, File, Form, HTTPException, Request, Response, UploadFile
 from fastapi.responses import FileResponse, JSONResponse, StreamingResponse
 from pydantic import BaseModel
 
 import anomaly
 import apikeys
+import assistant
 import backup
 import core
 import db
@@ -602,9 +604,9 @@ async def describe(report_id: int, user: dict = Depends(current_user)):
 
 
 # ----------------------------------- analysis -------------------------------- #
-def _store_result(data: bytes, user: dict, company_id: int, pdf: dict | None = None, share: dict | None = None) -> str:
+def _store_result(data: bytes, user: dict, company_id: int, pdf: dict | None = None, share: dict | None = None, ctx: str | None = None) -> str:
     rid = secrets.token_urlsafe(8)
-    RESULTS[rid] = {"data": data, "user": user["id"], "company": company_id, "pdf": pdf, "share": share}
+    RESULTS[rid] = {"data": data, "user": user["id"], "company": company_id, "pdf": pdf, "share": share, "ctx": ctx}
     while len(RESULTS) > 50:
         RESULTS.popitem(last=False)
     return rid
@@ -718,7 +720,16 @@ async def statement_score(body: StatementIn, user: dict = Depends(current_user))
     }
     share = sharing.safe_payload(response, (db.get_company(body.company_id) or {}).get("name", ""))
     share["simple"] = simple
-    response["result_id"] = _store_result(xlsx.getvalue(), user, body.company_id, pdf, share)
+    ctx = full + "\n\nMONTH BY MONTH:\n" + r["table"].to_string(index=False)
+    cats = r.get("categories") or {}
+    if cats.get("spending"):
+        ctx += "\n\nSPENDING BY CATEGORY:\n" + "\n".join(f"{c['category']}: {c['amount']:,.2f} ({c['share_pct']}%)" for c in cats["spending"][:12])
+    if cats.get("income"):
+        ctx += "\n\nMONEY IN BY CATEGORY:\n" + "\n".join(f"{c['category']}: {c['amount']:,.2f} ({c['share_pct']}%)" for c in cats["income"][:12])
+    fc = r.get("forecast") or {}
+    if fc.get("available"):
+        ctx += "\n\nFORECAST (estimate):\n" + pd.DataFrame(fc["rows"]).to_string(index=False) + "\n" + fc["note"]
+    response["result_id"] = _store_result(xlsx.getvalue(), user, body.company_id, pdf, share, ctx)
     return response
 
 
@@ -846,7 +857,6 @@ def shared_pdf(token: str, request: Request):
     d = sharing.get_public(token, count_view=False)
     if not d:
         raise HTTPException(404, "This link has expired or was switched off.")
-    import pandas as pd
     table = pd.DataFrame(d["rows"], columns=d["columns"])
     png = statement.chart_png(table)
     good = "; ".join(d.get("strengths") or []) or "none noted"
@@ -857,6 +867,64 @@ def shared_pdf(token: str, request: Request):
                                f"Period {d['period']}", text, table, png, db.get_branding(d["_company_id"]), len(table))
     return StreamingResponse(iter([pdf]), media_type="application/pdf",
                              headers={"Content-Disposition": 'attachment; filename="statement-check.pdf"', "X-Robots-Tag": "noindex"})
+
+
+# ------------------------------- ask about this ------------------------------- #
+class ExplainIn(BaseModel):
+    kind: str                       # "result" (a statement or reconciliation result), "cases" or "help"
+    question: str
+    company_id: int | None = None
+    result_id: str | None = None
+
+
+EXPLAIN_HITS: dict[int, list[float]] = {}
+
+
+def _cases_context(company_id: int) -> str:
+    rows = ef.list_cases(company_id, "all", 60)
+    counts: dict[str, int] = {}
+    for r in rows:
+        counts[r["status"]] = counts.get(r["status"], 0) + 1
+    lines = [f"Discrepancy cases for this company (showing up to 60 newest/open): " + ", ".join(f"{k}: {v}" for k, v in counts.items())]
+    for r in rows:
+        d = json.dumps(r.get("details"), default=str)[:260]
+        lines.append(f"#{r['id']} status={r['status']} created={r.get('created_at')} assigned={r.get('assigned_username') or '-'} details={d}")
+    return "\n".join(lines)
+
+
+@app.post("/api/explain")
+async def explain(body: ExplainIn, user: dict = Depends(current_user_any)):
+    """Plain-language answers about a result, the discrepancy cases, or how to use the website. Not charged as a plan check."""
+    q = (body.question or "").strip()
+    if len(q) < 2:
+        raise HTTPException(400, "Type your question first.")
+    q = q[:600]
+    now = time.time()
+    hits = [t for t in EXPLAIN_HITS.get(user["id"], []) if now - t < 3600]
+    if len(hits) >= 40:
+        raise HTTPException(429, "You have asked a lot of questions this hour. Please try again a little later.")
+    hits.append(now)
+    EXPLAIN_HITS[user["id"]] = hits
+    if body.kind == "help":
+        ctx = assistant.HELP_TEXT
+    elif body.kind == "cases":
+        if body.company_id is None:
+            raise HTTPException(400, "Choose a company first.")
+        need_company(user, body.company_id)
+        ctx = await asyncio.to_thread(_cases_context, body.company_id)
+    elif body.kind == "result":
+        item = _owned_result(body.result_id or "", user)
+        ctx = item.get("ctx")
+        if not ctx:
+            raise HTTPException(400, "Run it again, then ask your question about the new result.")
+    else:
+        raise HTTPException(400, "Unknown kind of question.")
+    try:
+        out = await assistant.answer(body.kind, q, ctx)
+    except core.LimitReached as e:
+        raise HTTPException(429, str(e))
+    db.audit(user, "explain", body.company_id, f"{body.kind}: {q[:120]}")
+    return out
 
 
 # ------------------------------- support tickets ------------------------------- #
@@ -1153,7 +1221,7 @@ async def reconcile(body: ReconIn, user: dict = Depends(current_user)):
     hints = recon.likely_causes(out)
     if hints:
         text += "\n\nPOSSIBLE REASONS (found by comparing the numbers; please confirm):\n" + "\n".join("- " + h for h in hints)
-    pdf = {"title": "Reconciliation", "question": f"{la} vs {lb}", "insight": text.split("\n\n")[0],
+    pdf = {"title": "Reconciliation", "question": f"{la} vs {lb}", "insight": (out.get("how") or "") + "\n\n" + recon._summary_text(out, la, lb).split("\n\n")[0],
            "table": out["summary"], "chart": None, "total_rows": len(out["summary"])}
     response = {
         "text": text, "hints": hints,
@@ -1163,7 +1231,8 @@ async def reconcile(body: ReconIn, user: dict = Depends(current_user)):
         "total_problem_rows": len(problems),
         "reconciliation_run_id": run_id,
         "cases_created": cases_created,
-        "result_id": _store_result(xlsx.getvalue(), user, body.company_id, pdf),
+        "result_id": _store_result(xlsx.getvalue(), user, body.company_id, pdf,
+                                   ctx=text + "\n\nROWS THAT DID NOT MATCH (first 40):\n" + problems.head(40).to_string(index=False, max_colwidth=40)),
     }
     return response
 
