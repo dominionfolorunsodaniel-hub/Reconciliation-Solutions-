@@ -47,7 +47,7 @@ HELP_SECTIONS = [
     ("Share links", "share link lender accountant private expire",
      "After a Statement Score check, press Share with a lender and choose 1, 7 or 30 days. Anyone with the link can see that one result (no files, no login, no transaction descriptions). Switch it off any time under My shared links."),
     ("Notifications and support", "notification bell announcement support help ticket message email",
-     "The bell shows announcements and personal messages. Open Support in the side menu to write to the team and read replies. You can also email reconciliationsolutionssupport@gmail.com."),
+     "The bell shows announcements and personal messages. Open Support in the side menu to write to the team and read replies. You can also email reconciliationsolutionsupport@gmail.com."),
     ("API access", "api key developer lender integration automatic",
      "Analysts can create API keys in Settings, API access. Send a statement to /api/v1/statement-score with the X-API-Key header and get the score as JSON. Each call uses one plan check."),
     ("Install as an app", "install app phone home screen pwa offline",

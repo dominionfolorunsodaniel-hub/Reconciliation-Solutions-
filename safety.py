@@ -205,7 +205,7 @@ def request_deletion(user: dict, note: str) -> dict:
             if u["role"] == "admin":
                 extras.notice(u["id"], "🗑️ Account deletion request", msg, "warning")
         notify.alert_admins("🗑️ " + msg)
-        support = os.getenv("SUPPORT_EMAIL", "reconciliationsolutionssupport@gmail.com")
+        support = os.getenv("SUPPORT_EMAIL", "reconciliationsolutionsupport@gmail.com")
         extras._mail_async(support, "Account deletion request", msg)
     except Exception:  # noqa: BLE001
         log.exception("could not alert the owner about a deletion request")

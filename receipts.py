@@ -19,7 +19,7 @@ from reportlab.platypus import Paragraph, SimpleDocTemplate, Spacer, Table, Tabl
 import db
 import report_pdf
 
-SUPPORT = os.getenv("SUPPORT_EMAIL", "reconciliationsolutionssupport@gmail.com")
+SUPPORT = os.getenv("SUPPORT_EMAIL", "reconciliationsolutionsupport@gmail.com")
 
 
 def bank_accounts() -> list[dict]:

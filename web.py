@@ -31,6 +31,7 @@ import db
 import forecast
 import enterprise_features as ef
 import extras
+import landing
 import notify
 import portal
 import receipts
@@ -56,6 +57,8 @@ FAILS: dict = {}  # (username, ip) -> timestamps of failed logins
 RESULTS: "OrderedDict[str, dict]" = OrderedDict()  # recent exports, kept in memory only
 _tasks: set = set()
 REGISTRATION_FAILS: dict = {}  # in-memory public signup throttling by IP
+REGISTRATION_OK: dict = {}  # successful sign-up requests per visitor address (stops bots flooding the approval list)
+REGISTRATION_OK_MAX_PER_IP, REGISTRATION_OK_MAX_TOTAL = 10, 60  # per hour
 
 
 @asynccontextmanager
@@ -174,6 +177,7 @@ class RegistrationIn(BaseModel):
     telegram_id: int | None = None
     email: str | None = None
     referral_code: str | None = None
+    website: str | None = None  # hidden honeypot field: real people leave it empty
 
 
 class RegistrationDecisionIn(BaseModel):
@@ -348,9 +352,17 @@ def register_customer(body: RegistrationIn, request: Request):
     """Public customer request. New accounts remain disabled until an admin approves."""
     ip = request.client.host if request.client else "?"
     now = time.time()
+    if body.website:  # a robot filled the hidden field: look successful, create nothing
+        return {"message": "Request submitted. An administrator must approve it before you can sign in.",
+                "request_id": 0, "status": "pending"}
     attempts = [t for t in REGISTRATION_FAILS.get(ip, []) if now - t < 3600]
     if len(attempts) >= 5:
         raise HTTPException(429, "Too many registration attempts. Try again in one hour.")
+    visitor = client_ip(request) or ip
+    ok_mine = [t for t in REGISTRATION_OK.get(visitor, []) if now - t < 3600]
+    ok_all = sum(1 for v in REGISTRATION_OK.values() for t in v if now - t < 3600)
+    if len(ok_mine) >= REGISTRATION_OK_MAX_PER_IP or ok_all >= REGISTRATION_OK_MAX_TOTAL:
+        raise HTTPException(429, "We have received many requests from your connection. Please try again later or email us.")
     try:
         result = portal.submit_registration(body.company_name, body.username, body.password, body.telegram_id,
                                             body.email, body.referral_code)
@@ -359,6 +371,7 @@ def register_customer(body: RegistrationIn, request: Request):
         REGISTRATION_FAILS[ip] = attempts
         raise HTTPException(400, str(e))
     REGISTRATION_FAILS[ip] = attempts
+    REGISTRATION_OK[visitor] = ok_mine + [now]
     return {"message": "Request submitted. An administrator must approve it before you can sign in.",
             "request_id": result["id"], "status": "pending"}
 
@@ -475,9 +488,69 @@ def login_character():
     return FileResponse(Path(__file__).parent / "static" / "login-character.png", media_type="image/png", headers={"Cache-Control": "public, max-age=86400"})
 
 
+def public_base(request: Request) -> str:
+    """The site's public address (for link previews and the sitemap). Set PUBLIC_URL to be sure; otherwise taken from the request."""
+    fixed = os.getenv("PUBLIC_URL", "").strip().rstrip("/")
+    if fixed.startswith("http"):
+        return fixed
+    proto = (request.headers.get("x-forwarded-proto", "") or request.url.scheme).split(",")[0].strip() or "https"
+    host = (request.headers.get("x-forwarded-host", "") or request.headers.get("host", "")).split(",")[0].strip()
+    return f"{proto}://{host}" if host else str(request.base_url).rstrip("/")
+
+
 @app.get("/")
-def index():
-    return FileResponse(Path(__file__).parent / "static" / "index.html")
+def index(request: Request):
+    html = (Path(__file__).parent / "static" / "index.html").read_text(encoding="utf-8").replace("__BASE__", public_base(request))
+    return Response(content=html, media_type="text/html; charset=utf-8")
+
+
+@app.get("/robots.txt")
+def robots_txt(request: Request):
+    body = f"User-agent: *\nAllow: /\nDisallow: /api/\nDisallow: /share/\nSitemap: {public_base(request)}/sitemap.xml\n"
+    return Response(content=body, media_type="text/plain")
+
+
+@app.get("/sitemap.xml")
+def sitemap_xml(request: Request):
+    body = ('<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n'
+            f"  <url><loc>{public_base(request)}/</loc></url>\n</urlset>\n")
+    return Response(content=body, media_type="application/xml")
+
+
+@app.get("/api/public/sample-statement")
+def public_sample_statement():
+    """A ready-made example of the bank statement check, built from invented data. No sign-in needed."""
+    return landing.sample_result()
+
+
+class ContactIn(BaseModel):
+    name: str
+    email: str
+    company: str | None = None
+    message: str
+    website: str | None = None  # hidden honeypot field
+
+
+@app.post("/api/public/contact")
+def public_contact(body: ContactIn, request: Request):
+    try:
+        return landing.submit_contact(body.name, body.email, body.company or "", body.message, body.website or "",
+                                      client_ip(request) or "?")
+    except ValueError as e:
+        raise HTTPException(400, str(e))
+
+
+@app.get("/api/admin/contact-messages")
+def admin_contact_messages(user: dict = Depends(current_user)):
+    need(user, "admin")
+    return landing.list_contacts()
+
+
+@app.post("/api/admin/contact-messages/{contact_id}/handled")
+def admin_contact_handled(contact_id: int, user: dict = Depends(current_user)):
+    need(user, "admin")
+    landing.mark_handled(contact_id, True)
+    return {"ok": True}
 
 
 # ----------------------------------- two-factor ------------------------------- #

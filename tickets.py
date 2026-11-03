@@ -37,7 +37,7 @@ def _tell_admins(title: str, body: str) -> None:
         for u in db.list_users():
             if u["role"] == "admin":
                 extras.notice(u["id"], title, body, "info")
-        extras._mail_async(os.getenv("SUPPORT_EMAIL", "reconciliationsolutionssupport@gmail.com"), title, body)
+        extras._mail_async(os.getenv("SUPPORT_EMAIL", "reconciliationsolutionsupport@gmail.com"), title, body)
     except Exception:  # noqa: BLE001
         log.exception("could not alert the owner about a ticket")
 
