@@ -9,6 +9,14 @@
 <meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="Report Analyzer"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <title>Report Analyzer - turn any report into answers</title>
+<meta name="description" content="Report Analyzer reconciles ATM, POS and bank reports in seconds, checks bank statements, and answers questions about your data in plain English. Built for finance and operations teams in Nigeria.">
+<link rel="canonical" href="__BASE__/">
+<meta property="og:type" content="website"><meta property="og:site_name" content="Report Analyzer">
+<meta property="og:title" content="Report Analyzer - turn any report into answers">
+<meta property="og:description" content="Report Analyzer reconciles ATM, POS and bank reports in seconds, checks bank statements, and answers questions about your data in plain English. Built for finance and operations teams in Nigeria.">
+<meta property="og:url" content="__BASE__/"><meta property="og:image" content="__BASE__/static/icon-512.png">
+<meta name="twitter:card" content="summary"><meta name="twitter:title" content="Report Analyzer - turn any report into answers">
+<meta name="twitter:description" content="Report Analyzer reconciles ATM, POS and bank reports in seconds, checks bank statements, and answers questions about your data in plain English. Built for finance and operations teams in Nigeria.">
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
 <style>
   :root { --bg:#f4f6fb; --card:#fff; --ink:#151b2c; --mute:#6b7385; --brand:#2b59ff; --brand2:#06b6d4; --line:#e5e8f0; --navy:#0a1236; }
@@ -138,8 +146,8 @@
   button:focus-visible,a:focus-visible { outline:3px solid #5ad9e9; outline-offset:3px; }
   .tablewrap { border-radius:13px; border-color:#e1e8f4; }
   th { background:#eef4ff; color:#243a60; }
-  .support-contact { position:fixed; right:18px; bottom:18px; z-index:1000; display:flex; align-items:center; gap:10px; max-width:calc(100vw - 28px); padding:12px 17px; border-radius:999px; color:#fff; text-decoration:none; font-weight:750; font-size:14px; letter-spacing:.1px; background:linear-gradient(135deg,#16a765,#07844f); border:1px solid rgba(255,255,255,.5); box-shadow:0 10px 30px rgba(0,100,62,.28); transition:transform .18s ease,box-shadow .18s ease; }
-  .support-contact:hover { transform:translateY(-3px); box-shadow:0 15px 34px rgba(0,100,62,.34); }
+  .support-contact { position:fixed; right:18px; bottom:18px; z-index:1000; display:flex; align-items:center; gap:10px; max-width:calc(100vw - 28px); padding:12px 17px; border-radius:999px; color:#fff; text-decoration:none; font-weight:750; font-size:14px; letter-spacing:.1px; background:linear-gradient(135deg,#2f5bff,#1b3fd1); border:1px solid rgba(255,255,255,.5); box-shadow:0 10px 30px rgba(27,63,209,.35); transition:transform .18s ease,box-shadow .18s ease; }
+  .support-contact:hover { transform:translateY(-3px); box-shadow:0 15px 34px rgba(27,63,209,.45); }
   .support-contact .wa-icon { display:grid; place-items:center; width:28px; height:28px; flex:0 0 28px; border-radius:50%; background:rgba(255,255,255,.18); font-size:18px; }
   .support-contact small { display:block; font-size:10px; font-weight:500; opacity:.9; line-height:1.2; }
   @media(max-width:560px) { main { padding:12px 10px 90px; } .support-contact { right:12px; bottom:12px; padding:10px 13px; font-size:13px; } .support-contact small { font-size:9px; } }
@@ -504,6 +512,29 @@
   html[data-theme=dark] .ss-bar { background:#26354f; } html[data-theme=dark] .ss-loan { background:rgba(23,105,255,.14); }
   html[data-theme=dark] #app .ss-kpi, html[data-theme=dark] #app .ss-box { background:#0e1729; }
 </style>
+<style>
+/* ===== landing additions: sample check, contact form, honeypot ===== */
+.hp-field { position:absolute !important; left:-9999px !important; width:1px !important; height:1px !important; opacity:0 !important; }
+.sample-out { max-width:860px; margin:16px auto 0; padding:20px; text-align:left; }
+.sample-out h3 { margin:0 0 4px; font-size:18px; }
+.sample-out .sm-top { display:flex; gap:18px; align-items:center; flex-wrap:wrap; margin-bottom:12px; }
+.sample-out .sm-score { font-size:44px; font-weight:800; line-height:1; }
+.sample-out .sm-score small { font-size:16px; font-weight:600; color:#b8c2e0; }
+.sample-out .sm-pill { display:inline-block; padding:3px 11px; border-radius:99px; background:rgba(34,211,238,.18); border:1px solid rgba(34,211,238,.5); font-weight:700; font-size:13px; }
+.sample-out table { width:100%; border-collapse:collapse; font-size:14px; margin:8px 0 12px; }
+.sample-out th, .sample-out td { padding:7px 8px; text-align:right; border-bottom:1px solid rgba(255,255,255,.12); }
+.sample-out th:first-child, .sample-out td:first-child { text-align:left; }
+.sample-out th { color:#d7e0ff; background:rgba(255,255,255,.08); font-weight:600; }
+.sample-out .sm-grid { display:grid; grid-template-columns:1fr 1fr; gap:14px; }
+.sample-out ul { margin:6px 0 0; padding-left:18px; color:#dbe3ff; font-size:14px; line-height:1.55; }
+.sample-out .sm-note { margin-top:12px; font-size:12.5px; color:#9fb0e6; }
+.contact-form { max-width:560px; margin:0 auto; padding:20px; display:grid; gap:10px; text-align:left; position:relative; }
+.contact-form input, .contact-form textarea { width:100%; box-sizing:border-box; padding:11px 12px; border:0; border-radius:10px; font:inherit; background:rgba(255,255,255,.95); color:#151b2c; }
+.contact-form textarea { resize:vertical; min-height:96px; }
+.contact-form button { padding:12px; font-size:16px; }
+@media (max-width:900px) { #whofor .features { grid-template-columns:1fr 1fr !important; } }
+@media (max-width:560px) { #whofor .features { grid-template-columns:1fr !important; } .sample-out .sm-grid { grid-template-columns:1fr; } .sample-out { padding:14px; } }
+</style>
 </head>
 <body>
 
@@ -518,7 +549,7 @@
         <span class="badge">✨ AI report analysis for ATM, POS &amp; finance teams</span>
         <h1>Find the missing money in <span class="grad">seconds</span>.</h1>
         <p class="lead">Upload your ATM, POS or ledger reports and see exactly what does not match. Ask in plain English and get exact tables, alerts and a branded PDF.</p>
-        <div class="pills"><span>📄 CSV · Excel · PDF</span><span>💬 Web + Telegram</span><span>🔒 Encrypted &amp; audited</span><span>⚖️ Reconciliation</span><span>📈 ATM cash forecast</span></div>
+        <div class="pills"><span>📄 CSV · Excel · PDF</span><span>💬 Ask in plain English</span><span>🔒 Encrypted &amp; audited</span><span>⚖️ Reconciliation</span><span>📈 ATM cash forecast</span></div>
 
         <div class="preview glass" aria-hidden="true">
           <div class="pv-head"><span class="dot r"></span><span class="dot y"></span><span class="dot g"></span><span class="pv-title">Total amount by branch · last 6 months</span></div>
@@ -571,6 +602,7 @@
             <input type="email" id="regEmail" placeholder="Email address (for password reset and updates)" maxlength="160" autocomplete="email">
             <input type="text" id="regReferral" placeholder="Referral code (optional)" maxlength="20" autocomplete="off">
             <input type="number" id="regTelegram" placeholder="Telegram ID (optional)" class="hidden">
+            <input type="text" id="regWebsite" tabindex="-1" autocomplete="off" aria-hidden="true" class="hp-field">
             <button id="regBtn" type="button">Request access</button>
             <div class="mute" style="font-size:12px;color:#aebbe0">By requesting access you agree to our <a href="#" data-legal="terms" style="color:#dbe6ff">Terms</a> and <a href="#" data-legal="privacy" style="color:#dbe6ff">Privacy Policy</a>.</div>
             <div class="err" id="regMsg" aria-live="polite"></div>
@@ -581,16 +613,27 @@
       </div>
     </section>
 
-    <div class="trust">🔐 Encrypted &nbsp;·&nbsp; ✅ Two-factor ready &nbsp;·&nbsp; 📊 Built for ATM &amp; POS teams &nbsp;·&nbsp; 💬 WhatsApp support &nbsp;·&nbsp; ✉️ <a href="mailto:reconciliationsolutionssupport@gmail.com" style="color:inherit">reconciliationsolutionssupport@gmail.com</a></div>
+    <div class="trust">🔐 Encrypted &nbsp;·&nbsp; ✅ Two-factor ready &nbsp;·&nbsp; 📊 Built for ATM &amp; POS teams &nbsp;·&nbsp; 💬 In-app support &nbsp;·&nbsp; ✉️ <a href="mailto:reconciliationsolutionsupport@gmail.com" style="color:inherit">reconciliationsolutionsupport@gmail.com</a></div>
 
     <section class="features">
       <div class="glass feat"><div class="ic">🧠</div><h3>Understands any report</h3><p>It tells you what the report is, the period it covers and what looks wrong - the moment you upload it.</p></div>
       <div class="glass feat"><div class="ic">💬</div><h3>Ask in plain English</h3><p>"Failed transactions per ATM, top 10." Exact numbers from your data - never guessed.</p></div>
       <div class="glass feat"><div class="ic">⚖️</div><h3>Reconcile in one click</h3><p>Match a switch log against the ledger and see exactly what is missing or different.</p></div>
       <div class="glass feat"><div class="ic">📈</div><h3>ATM cash forecast</h3><p>How much cash each ATM will need, and the day it will run out.</p></div>
-      <div class="glass feat"><div class="ic">🚨</div><h3>Alerts on Telegram</h3><p>Failure spikes, silent terminals and odd amounts are pushed to your phone.</p></div>
+      <div class="glass feat"><div class="ic">🔔</div><h3>Alerts and reminders</h3><p>Scheduled reconciliation results, usage warnings and renewal reminders reach your email.</p></div>
       <div class="glass feat"><div class="ic">📄</div><h3>Branded PDF reports</h3><p>Share a clean summary with your own logo and colours.</p></div>
     </section>
+    <section class="sec" id="whofor">
+      <h2>Built for teams that live in spreadsheets</h2>
+      <p class="sub">If you match reports, check statements or answer for the numbers, this saves you hours.</p>
+      <div class="features" style="grid-template-columns:repeat(4,1fr)">
+        <div class="glass feat"><div class="ic">🏧</div><h3>ATM and POS operations</h3><p>Match switch logs against ledgers and find missing or different transactions fast.</p></div>
+        <div class="glass feat"><div class="ic">🧾</div><h3>Finance and accounting</h3><p>Month-end checks, discrepancy cases and branded PDF or Excel reports.</p></div>
+        <div class="glass feat"><div class="ic">🏦</div><h3>Lenders and loan officers</h3><p>Check a customer's bank statement and get a clear loan-readiness view.</p></div>
+        <div class="glass feat"><div class="ic">💼</div><h3>Small businesses</h3><p>Ask questions about your own statements and see where the money went.</p></div>
+      </div>
+    </section>
+
     <section class="sec">
       <h2>Reconcile in 3 simple steps</h2>
       <p class="sub">No spreadsheets. No headaches.</p>
@@ -625,6 +668,9 @@
         <div class="glass step"><div class="n">💰</div><b>What is left each month</b><span class="d">Income, spending and the balance for February, March and every month you choose.</span></div>
         <div class="glass step"><div class="n">🏦</div><b>Loan-readiness score</b><span class="d">A clear score out of 100, what lenders may like or worry about, and how to improve.</span></div>
       </div>
+      <div class="works-with" style="margin-top:6px"><span>GTBank</span><span>Access</span><span>Zenith</span><span>UBA</span><span>First Bank</span><span>OPay</span><span>Moniepoint</span><span>Kuda</span><span>PalmPay</span><span>and other common layouts</span></div>
+      <div style="text-align:center;margin-top:20px"><button type="button" id="sampleBtn">▶ See a sample check (no sign-up)</button></div>
+      <div id="sampleOut" class="glass sample-out hidden" aria-live="polite"></div>
     </section>
 
     <section class="sec" id="pricing">
@@ -642,7 +688,7 @@
           <button type="button" onclick="document.querySelector('.login').scrollIntoView({behavior:'smooth',block:'center'})">Get Growth</button></div>
         <div class="glass plan"><h3>Bigger teams</h3><div class="price">Let's talk</div><div class="per">Message us before you pay</div>
           <ul><li>Professional · ₦350,000 · 750 analyses · 10 members</li><li>Business · ₦1,000,000 · 1,500 analyses · 15 members</li><li>Corporate · ₦2,500,000 · 4,000 analyses · 30 members</li><li>Enterprise · ₦5,000,000 · 10,000 analyses · 75 members</li></ul>
-          <button type="button" onclick="window.open('https://wa.me/2348100481004?text=Hello%2C%20I%20would%20like%20a%20bigger%20Report%20Analyzer%20plan','_blank','noopener')">Message us on WhatsApp</button></div>
+          <button type="button" onclick="document.getElementById('contact').scrollIntoView({behavior:'smooth',block:'center'})">Contact us</button></div>
       </div>
       <p class="plans-note">Access lasts for the period shown on each plan. Larger payments are arranged with us first so everything goes smoothly.</p>
     </section>
@@ -651,9 +697,27 @@
       <h2>Questions? Answered.</h2>
       <div class="faq">
         <details class="glass"><summary>Is my data safe?</summary><p>Yes. Data is encrypted, two-factor login is available, and every action is logged.</p></details>
-        <details class="glass"><summary>Can I use it on my phone?</summary><p>Yes. The site works on mobile, and you can also use the Telegram bot.</p></details>
+        <details class="glass"><summary>Can I use it on my phone?</summary><p>Yes. The site works in your phone's browser, so there is nothing to install.</p></details>
+        <details class="glass"><summary>Which bank statements and files work?</summary><p>Statements and reports as CSV, Excel or PDF, including GTBank, Access, Zenith, UBA, First Bank, OPay, Moniepoint, Kuda and PalmPay layouts, plus other common formats. Scanned PDFs are read too.</p></details>
+        <details class="glass"><summary>How do I pay?</summary><p>For now by bank transfer to the account shown on the Plan &amp; Billing page. Your plan starts once we confirm the payment. Card payment is coming soon.</p></details>
+        <details class="glass"><summary>Can I talk to someone before I sign up?</summary><p>Yes. Use the contact form on this page or email <a href="mailto:reconciliationsolutionsupport@gmail.com" style="color:inherit">reconciliationsolutionsupport@gmail.com</a> and we will reply.</p></details>
         <details class="glass"><summary>How do I get started?</summary><p>Tap "Request an account" in the login box. Once an administrator approves it, you can sign in.</p></details>
       </div>
+    </section>
+
+    <section class="sec" id="contact">
+      <h2>Talk to us</h2>
+      <p class="sub">A question, a demo or a bigger plan? Send a message and we will reply by email.</p>
+      <form id="contactForm" class="glass contact-form" novalidate>
+        <input type="text" id="ctName" placeholder="Your name" maxlength="80" autocomplete="name">
+        <input type="email" id="ctEmail" placeholder="Your email" maxlength="160" autocomplete="email">
+        <input type="text" id="ctCompany" placeholder="Company (optional)" maxlength="120" autocomplete="organization">
+        <textarea id="ctMessage" rows="4" maxlength="2000" placeholder="How can we help?"></textarea>
+        <input type="text" id="ctWebsite" tabindex="-1" autocomplete="off" aria-hidden="true" class="hp-field">
+        <button type="submit" id="ctSend">Send message</button>
+        <div class="mute" id="ctMsg" aria-live="polite" style="min-height:20px"></div>
+        <div class="secure">Or email <a href="mailto:reconciliationsolutionsupport@gmail.com" style="color:inherit">reconciliationsolutionsupport@gmail.com</a></div>
+      </form>
     </section>
 
     <section class="cta">
@@ -661,7 +725,7 @@
       <p>Join teams who reconcile faster and sleep better.</p>
       <button type="button" onclick="document.querySelector('.login').scrollIntoView({behavior:'smooth',block:'center'})">Get started →</button>
     </section>
-    <div class="foot">Built for teams that handle sensitive financial data. · Contact: <a href="mailto:reconciliationsolutionssupport@gmail.com">reconciliationsolutionssupport@gmail.com</a> · <a href="#" data-legal="terms">Terms</a> · <a href="#" data-legal="privacy">Privacy</a></div>
+    <div class="foot">Built for teams that handle sensitive financial data. · Contact: <a href="mailto:reconciliationsolutionsupport@gmail.com">reconciliationsolutionsupport@gmail.com</a> · <a href="#" data-legal="terms">Terms</a> · <a href="#" data-legal="privacy">Privacy</a></div>
   </div>
 </div>
 
@@ -692,8 +756,7 @@
   <div class="sb-label">Quick actions</div>
   <button type="button" class="sb-q analyst-up hidden" data-nav="upload"><span>⬆️ Upload a Report</span><i>›</i></button>
   <button type="button" class="sb-q" data-nav="analytics"><span>📈 View Analytics</span><i>›</i></button>
-  <a class="sb-q" href="https://wa.me/2348100481004?text=Hello%2C%20I%20need%20support%20with%20Report%20Analyzer" target="_blank" rel="noopener noreferrer"><span>🎧 Get Support</span><i>›</i></a>
-  <a class="sb-q" href="mailto:reconciliationsolutionssupport@gmail.com?subject=Report%20Analyzer%20support"><span>✉️ Email support</span><i>›</i></a>
+  <a class="sb-q" href="mailto:reconciliationsolutionsupport@gmail.com?subject=Report%20Analyzer%20support"><span>✉️ Email support</span><i>›</i></a>
   <div class="sb-card">
     <div class="sb-heart">❤️</div><b>Support Our Mission</b>
     <p>Help us keep Report Analyzer running and improving.</p>
@@ -810,6 +873,12 @@
     <div id="fbList" style="display:grid;gap:6px"></div>
   </section>
 
+  <section class="d-panel admin-only hidden" data-views="overview">
+    <h3>📩 Messages from the website</h3>
+    <p class="d-sub">People who used the contact form on the home page. Reply to their email, then mark it handled.</p>
+    <div id="ctList" style="display:grid;gap:8px"></div>
+  </section>
+
   <section class="card" data-views="statement" id="ssCard">
     <h2>🏦 Statement Score</h2>
     <p class="d-sub">Upload a bank statement under <b>Upload Report</b>, pick it below, and get income, spending and what is left for every month, plus a loan-readiness score.</p>
@@ -868,7 +937,7 @@
 
   <section class="card" data-views="support" id="supportCard">
     <h2>💬 Support</h2>
-    <p class="d-sub">Write to the Report Analyzer team here. We reply in this same place and you get a notification. You can also email <a href="mailto:reconciliationsolutionssupport@gmail.com">reconciliationsolutionssupport@gmail.com</a>.</p>
+    <p class="d-sub">Write to the Report Analyzer team here. We reply in this same place and you get a notification. You can also email <a href="mailto:reconciliationsolutionsupport@gmail.com">reconciliationsolutionsupport@gmail.com</a>.</p>
     <div class="urow" id="tkNew"><b>Start a new conversation</b>
       <div style="display:grid;gap:8px;margin-top:6px"><input type="text" id="tkSubject" maxlength="120" placeholder="Title, e.g. My payment is not showing"><textarea id="tkBody" rows="4" maxlength="3000" placeholder="Tell us what happened…"></textarea>
       <div class="row"><button type="button" id="tkSend">Send</button><span class="mute" id="tkMsg"></span></div></div></div>
@@ -936,8 +1005,8 @@
   <section class="d-panel" data-views="donations">
     <h3>❤️ Support Our Mission</h3>
     <p>Report Analyzer exists to make financial reconciliation simple and affordable for teams like yours. Your support helps cover hosting, security and new features.</p>
-    <p class="mute">Online donations are still being set up. If you would like to support the project today, message us on WhatsApp and we will share the details.</p>
-    <a class="d-btn" href="https://wa.me/2348100481004?text=Hello%2C%20I%20would%20like%20to%20support%20Report%20Analyzer" target="_blank" rel="noopener noreferrer">Message us on WhatsApp</a>
+    <p class="mute">Online donations are still being set up. If you would like to support the project today, email us and we will share the details.</p>
+    <a class="d-btn" href="mailto:reconciliationsolutionsupport@gmail.com?subject=Supporting%20Report%20Analyzer">Email us</a>
   </section>
 
   <section class="card" id="accountCard" data-views="settings">
@@ -1296,7 +1365,7 @@
       <h3>8. Changes</h3>
       <p>We may update these terms as the service grows. If you keep using the service after an update, it means you accept the new terms.</p>
       <h3>9. Contact</h3>
-      <p>Questions? Email us at <a href="mailto:reconciliationsolutionssupport@gmail.com">reconciliationsolutionssupport@gmail.com</a> or message us on WhatsApp using the support button on the site.</p>
+      <p>Questions? Email us at <a href="mailto:reconciliationsolutionsupport@gmail.com">reconciliationsolutionsupport@gmail.com</a> or write to us from the Support section after you sign in.</p>
     </div>
 
     <div id="legalPrivacy" class="hidden">
@@ -1322,7 +1391,7 @@
       <h3>7. Keeping and deleting data</h3>
       <p>We keep your data while your account is active. You can ask us to delete your reports or your whole account at any time, and we will do so, including from backups in due course.</p>
       <h3>8. Your choices</h3>
-      <p>You can ask to see, correct or delete your information. Email us at <a href="mailto:reconciliationsolutionssupport@gmail.com">reconciliationsolutionssupport@gmail.com</a> or message us on WhatsApp using the support button on the site.</p>
+      <p>You can ask to see, correct or delete your information. Email us at <a href="mailto:reconciliationsolutionsupport@gmail.com">reconciliationsolutionsupport@gmail.com</a> or write to us from the Support section after you sign in.</p>
       <h3>9. Children</h3>
       <p>Report Analyzer is for businesses and is not meant for anyone under 18.</p>
       <h3>10. Changes</h3>
@@ -1400,7 +1469,8 @@ $("regBtn").onclick = async () => {
     password: $("regPassword").value,
     telegram_id: $("regTelegram").value ? Number($("regTelegram").value) : null,
     email: $("regEmail").value.trim() || null,
-    referral_code: $("regReferral").value.trim() || null
+    referral_code: $("regReferral").value.trim() || null,
+    website: $("regWebsite") ? $("regWebsite").value : ""
   };
   if (!payload.company_name || !payload.username || !payload.password) {
     msg.textContent = "Enter company name, username, and password."; btn.disabled = false; return;
@@ -2838,7 +2908,7 @@ api("/api/me").then(start).catch(showLanding);
       host.append(listBox("🕒 In grace period (plan ended, still working)", o.in_grace.map(x => `${x.company}: ${x.plan}, grace ends ${x.grace_ends_at} UTC`), "Nobody."));
       host.append(listBox("👍 / 👎 answer ratings (30 days)", [`👍 ${o.feedback_up_30d}   👎 ${o.feedback_down_30d}`], ""));
     } catch (e) { host.textContent = "❌ " + e.message; }
-    loadFeedbackAdmin(); loadCoupons();
+    loadFeedbackAdmin(); loadContactAdmin(); loadCoupons();
   }
   async function loadFeedbackAdmin() {
     const host = $("fbList"); try {
@@ -2846,6 +2916,21 @@ api("/api/me").then(start).catch(showLanding);
       const bad = f.items.filter(i => i.rating < 0).slice(0, 8);
       if (!bad.length) { host.append(el("div", "No 👎 ratings yet.", "mute")); return; }
       bad.forEach(i => host.append(el("div", `👎 ${i.company || ""} · ${i.username || ""}: “${i.question || "?"}”` + (i.comment ? ` — ${i.comment}` : ""), "mute")));
+    } catch (e) { host.textContent = ""; }
+  }
+  async function loadContactAdmin() {
+    const host = $("ctList"); if (!host) return;
+    try {
+      const rows = (await api("/api/admin/contact-messages")).filter(m => !m.handled).slice(0, 10); host.replaceChildren();
+      if (!rows.length) { host.append(el("div", "No new messages.", "mute")); return; }
+      rows.forEach(m => {
+        const box = el("div", "", "urow");
+        box.append(el("b", `${m.name} · ${m.email}` + (m.company ? ` · ${m.company}` : "")), el("div", m.message), el("small", (m.created_at || "").slice(0, 16) + " UTC", "mute"));
+        const reply = el("a", "Reply by email"); reply.href = "mailto:" + encodeURIComponent(m.email).replace("%40", "@") + "?subject=" + encodeURIComponent("Re: your message to Report Analyzer"); reply.style.marginRight = "12px";
+        const done = el("button", "Mark handled", "ghost"); done.type = "button";
+        done.onclick = async () => { try { await api("/api/admin/contact-messages/" + m.id + "/handled", { method: "POST" }); } catch (e) {} loadContactAdmin(); };
+        const row = el("div"); row.style.marginTop = "6px"; row.append(reply, done); box.append(row); host.append(box);
+      });
     } catch (e) { host.textContent = ""; }
   }
   async function loadCoupons() {
@@ -2942,9 +3027,68 @@ api("/api/me").then(start).catch(showLanding);
 
 </script>
 
-<a class="support-contact" href="https://wa.me/2348100481004?text=Hello%2C%20I%20would%20like%20to%20say%20something%20about%20your%20Reconciliation%20Solutions%20Website" target="_blank" rel="noopener noreferrer" aria-label="Contact Report Analyzer support on WhatsApp">
-  <span class="wa-icon" aria-hidden="true">☎</span>
-  <span>WhatsApp support<small>Questions? We reply fast</small></span>
+<a class="support-contact" id="floatSupport" href="mailto:reconciliationsolutionsupport@gmail.com?subject=Report%20Analyzer%20support" aria-label="Contact Report Analyzer support by email">
+  <span class="wa-icon" aria-hidden="true">✉</span>
+  <span>Contact support<small>We reply by email</small></span>
 </a>
+<script>
+/* ---- landing additions: sample check, contact form, support button ---- */
+(function () {
+  const ngn = n => "₦" + Math.round(Number(n) || 0).toLocaleString("en-NG");
+  const mk = (tag, text, cls) => { const e = document.createElement(tag); if (text !== undefined) e.textContent = text; if (cls) e.className = cls; return e; };
+  const list = items => { const u = mk("ul"); items.forEach(t => u.append(mk("li", t))); return u; };
+
+  const sampleBtn = document.getElementById("sampleBtn");
+  if (sampleBtn) sampleBtn.onclick = async () => {
+    const out = document.getElementById("sampleOut"); sampleBtn.disabled = true;
+    out.classList.remove("hidden"); out.textContent = "Checking the sample statement…";
+    try {
+      const r = await (await fetch("/api/public/sample-statement")).json();
+      if (!r || r.score === undefined) throw new Error("The sample is not available right now.");
+      out.replaceChildren();
+      const top = mk("div", "", "sm-top");
+      const sc = mk("div", String(r.score), "sm-score"); sc.append(mk("small", " / 100"));
+      const side = mk("div"); side.append(mk("span", r.verdict, "sm-pill"), mk("div", "Period: " + r.period), mk("div", "Balance check: " + (r.integrity.status === "passed" ? "passed ✅" : r.integrity.status)));
+      top.append(sc, side); out.append(top);
+      out.append(mk("h3", "Month by month"));
+      const t = mk("table"), head = mk("tr");
+      ["Month", "Money in", "Spent", "Left over"].forEach(h => head.append(mk("th", h))); t.append(head);
+      r.months.forEach(m => { const tr = mk("tr"); [m.month, ngn(m.income), ngn(m.spent), ngn(m.left)].forEach(v => tr.append(mk("td", v))); t.append(tr); });
+      out.append(t);
+      const grid = mk("div", "", "sm-grid");
+      const a = mk("div"); a.append(mk("h3", "Where the money went"), list((r.spending || []).map(c => `${c.category}: ${ngn(c.amount)} (${c.share_pct}%)`)));
+      const b = mk("div"); b.append(mk("h3", "What a lender may notice"), list([...(r.strengths || []).map(x => "✅ " + x), ...((r.concerns || []).length ? r.concerns.map(x => "⚠️ " + x) : ["No major worries found."])]));
+      grid.append(a, b); out.append(grid);
+      out.append(mk("div", r.note, "sm-note"));
+      const go = mk("button", "Request an account to check your own statement"); go.type = "button"; go.style.marginTop = "12px";
+      go.onclick = () => { const l = document.querySelector(".login"); if (l) l.scrollIntoView({ behavior: "smooth", block: "center" }); };
+      out.append(go);
+    } catch (e) { out.textContent = "❌ " + (e.message || "Could not load the sample."); }
+    finally { sampleBtn.disabled = false; }
+  };
+
+  const form = document.getElementById("contactForm");
+  if (form) form.addEventListener("submit", async ev => {
+    ev.preventDefault();
+    const msg = document.getElementById("ctMsg"), btn = document.getElementById("ctSend"), v = id => document.getElementById(id).value.trim();
+    msg.textContent = ""; btn.disabled = true;
+    try {
+      await fetch("/api/public/contact", { method: "POST", headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name: v("ctName"), email: v("ctEmail"), company: v("ctCompany"), message: v("ctMessage"), website: document.getElementById("ctWebsite").value }) })
+        .then(async r => { if (!r.ok) { let m = "Something went wrong. Please try again or email us."; try { const d = await r.json(); if (typeof d.detail === "string") m = d.detail; } catch (e) {} throw new Error(m); } });
+      msg.textContent = "✅ Thank you. We received your message and will reply to " + v("ctEmail") + ".";
+      ["ctName", "ctEmail", "ctCompany", "ctMessage"].forEach(id => { document.getElementById(id).value = ""; });
+    } catch (e) { msg.textContent = "❌ " + e.message; }
+    finally { btn.disabled = false; }
+  });
+
+  const fl = document.getElementById("floatSupport");
+  if (fl) fl.addEventListener("click", ev => {
+    const land = document.getElementById("landing");
+    if (land && !land.classList.contains("hidden")) { ev.preventDefault(); const c = document.getElementById("contact"); if (c) c.scrollIntoView({ behavior: "smooth", block: "start" }); return; }
+    const nav = document.querySelector('[data-nav="support"]'); if (nav) { ev.preventDefault(); nav.click(); }
+  });
+})();
+</script>
 </body>
 </html>
