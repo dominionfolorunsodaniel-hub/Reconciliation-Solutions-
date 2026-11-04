@@ -21,5 +21,12 @@
 - `SUPPORT_EMAIL` - overrides the support address used for notices (default is the Gmail above).
 
 ## Checked
-- `python -m py_compile` on all changed Python files; `billing_test.py` (12 tests) passes; every inline script in `static/index.html` passes `node --check`; landing page exercised in a browser at phone and desktop width (sample check, contact form, floating button).
+- `python -m py_compile` on all changed Python files; `billing_test.py` (13 tests) passes; every inline script in `static/index.html` passes `node --check`; landing page exercised in a browser at phone and desktop width (sample check, contact form, floating button).
 - NOT run in the build workspace: `smoke_test.py` and the FastAPI routes themselves (the web framework could not be installed there). Run `python smoke_test.py` and open `/robots.txt`, `/sitemap.xml`, the contact form and the registration form once after deploying.
+
+## Pricing (moderate monthly plans)
+- Starter ₦25,000, Growth ₦60,000, Professional ₦150,000: each 30 days of access (was 3, 5 and 7 days). Allowances and team sizes are unchanged (50 / 200 / 750 analyses per month; 3 / 5 / 10 members). Professional at ₦150,000 stays within the temporary payment-account limit.
+- Business, Corporate and Enterprise are now custom quotes: hidden from the customer plan list, the payment request, the pro-forma invoice and the bot's plan list. Their payment requests are refused with a friendly message that points to Support. You can still grant them from Admin after agreeing a price (default 30 days).
+- Landing page: four plan cards (Free, Starter, Growth - recommended, Professional) plus a "Business and above - get a custom quote" banner that scrolls to the contact form. Dashboard billing list and admin grant list updated.
+- Existing subscriptions keep their current plan and expiry date. Only new payments and grants use the new prices and terms.
+- Tests: `billing_test.py` updated (13 tests, passing).

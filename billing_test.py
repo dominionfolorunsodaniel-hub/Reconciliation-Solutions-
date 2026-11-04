@@ -53,16 +53,16 @@ class BillingTests(unittest.TestCase):
 
     def test_payment_is_pending_until_admin_approval(self):
         cid, uid = self.company["id"], self.user["id"]
-        req = db.create_payment_request(cid, uid, "enterprise", "REF-" + os.urandom(5).hex())
+        req = db.create_payment_request(cid, uid, "professional", "REF-" + os.urandom(5).hex())
         self.assertEqual(req["status"], "pending")
-        self.assertEqual(req["amount_ngn"], 5000000)
+        self.assertEqual(req["amount_ngn"], 150000)
         self.assertEqual(db.get_plan_status(cid)["plan"], "free")
         with self.assertRaises(ValueError):
             db.create_payment_request(cid, uid, "starter", "ANOTHER-" + os.urandom(5).hex())
         db.decide_payment_request(req["id"], "approve", self.admin["id"], "verified in bank")
-        self.assertEqual(db.get_plan_status(cid)["plan"], "enterprise")
-        self.assertEqual(db.get_plan_status(cid)["team_limit"], 75)
-        self.assertEqual(db.get_plan_status(cid)["monthly_limit"], 10000)
+        self.assertEqual(db.get_plan_status(cid)["plan"], "professional")
+        self.assertEqual(db.get_plan_status(cid)["team_limit"], 10)
+        self.assertEqual(db.get_plan_status(cid)["monthly_limit"], 750)
 
     def test_rejected_payment_does_not_activate_plan(self):
         req = db.create_payment_request(self.company["id"], self.user["id"], "starter", "REF-" + os.urandom(5).hex())
@@ -77,10 +77,10 @@ class BillingTests(unittest.TestCase):
         self.assertFalse(db.PLANS["enterprise_plus"].get("available", True))
         self.assertNotIn("enterprise_plus", db.PAID_PLANS)
         self.assertEqual(db.PLANS["enterprise"]["price_ngn"], 5000000)
-        self.assertEqual(db.PLANS["enterprise"]["duration_days"], 21)
+        self.assertEqual(db.PLANS["enterprise"]["duration_days"], 30)
         with self.assertRaises(ValueError):
             db.create_payment_request(self.company["id"], self.user["id"], "enterprise_plus", "HIDDEN-" + os.urandom(5).hex())
-        self.assertEqual(db.PLANS["business"]["duration_days"], 10.5)
+        self.assertEqual(db.PLANS["business"]["duration_days"], 30)
         self.assertEqual(db.PLANS["free"]["duration_days"], 2)
         self.assertNotIn("lifetime", db.PAID_PLANS)
         cid, uid = self.company["id"], self.user["id"]
@@ -92,14 +92,23 @@ class BillingTests(unittest.TestCase):
 
     def test_all_paid_plan_durations_are_configured(self):
         expected = {
-            "starter": (25000, 3), "growth": (100000, 5), "professional": (350000, 7),
-            "business": (1000000, 10.5), "corporate": (2500000, 14),
-            "enterprise": (5000000, 21),
+            "starter": (25000, 30), "growth": (60000, 30), "professional": (150000, 30),
+            "business": (1000000, 30), "corporate": (2500000, 30),
+            "enterprise": (5000000, 30),
         }
         for key, (price, days) in expected.items():
             self.assertEqual(db.PLANS[key]["price_ngn"], price)
             self.assertEqual(db.PLANS[key]["duration_days"], days)
             self.assertTrue(db.duration_label(key))
+
+    def test_business_and_above_are_custom_quotes(self):
+        for key in ("starter", "growth", "professional"):
+            self.assertIn(key, db.SELF_SERVE_PLANS)
+            self.assertLessEqual(db.PLANS[key]["price_ngn"], 150000)
+        for key in ("business", "corporate", "enterprise"):
+            self.assertTrue(db.PLANS[key].get("custom"))
+            self.assertNotIn(key, db.SELF_SERVE_PLANS)
+            self.assertIn(key, db.ADMIN_GRANT_PLANS)  # the owner can still grant them after agreeing a quote
 
     def test_enterprise_plus_is_hidden_from_new_sales(self):
         self.assertEqual(db.PLANS["enterprise"]["price_ngn"], 5000000)
@@ -119,7 +128,7 @@ class BillingTests(unittest.TestCase):
         with self.assertRaises(core.LimitReached):
             db.reserve_monthly_usage(cid, uid, "analysis_question")
 
-    def test_half_week_business_term_is_applied(self):
+    def test_business_term_is_thirty_days(self):
         cid, uid = self.company["id"], self.user["id"]
         req = db.create_payment_request(cid, uid, "business", "HALF-" + os.urandom(5).hex())
         db.decide_payment_request(req["id"], "approve", self.admin["id"], "verified business payment")
@@ -128,8 +137,8 @@ class BillingTests(unittest.TestCase):
         expiry = __import__("datetime").datetime.strptime(status["expires_at"], "%Y-%m-%d %H:%M:%S")
         now = __import__("datetime").datetime.now(__import__("datetime").timezone.utc).replace(tzinfo=None)
         remaining = (expiry - now).total_seconds() / 86400
-        self.assertGreater(remaining, 10.4)
-        self.assertLessEqual(remaining, 10.5)
+        self.assertGreater(remaining, 29.9)
+        self.assertLessEqual(remaining, 30)
 
     def test_legacy_lifetime_not_offered_for_new_payment(self):
         with self.assertRaises(ValueError):

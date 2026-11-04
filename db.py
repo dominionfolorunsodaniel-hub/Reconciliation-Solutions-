@@ -882,14 +882,16 @@ def usage_today() -> list[dict]:
 # ---- subscriptions, manual payments, and shared monthly quotas ---------------------------
 # Plan duration controls access expiry; analysis allowances remain company-wide per calendar month.
 # Bank transfers are manually verified by an administrator before paid access is activated.
+# Starter, Growth and Professional are self-serve monthly plans (30 days). Business, Corporate and Enterprise are
+# "custom": arranged with the customer first (quote), then granted by an administrator; they are not shown for self-service purchase.
 PLANS = {
     "free": {"name": "Free Trial", "price_ngn": 0, "billing_period": "trial", "duration_days": 2, "monthly_limit": 5, "team_limit": 1},
-    "starter": {"name": "Starter", "price_ngn": 25000, "billing_period": "fixed_term", "duration_days": 3, "monthly_limit": 50, "team_limit": 3},
-    "growth": {"name": "Growth", "price_ngn": 100000, "billing_period": "fixed_term", "duration_days": 5, "monthly_limit": 200, "team_limit": 5},
-    "professional": {"name": "Professional", "price_ngn": 350000, "billing_period": "fixed_term", "duration_days": 7, "monthly_limit": 750, "team_limit": 10},
-    "business": {"name": "Business", "price_ngn": 1000000, "billing_period": "fixed_term", "duration_days": 10.5, "monthly_limit": 1500, "team_limit": 15},
-    "corporate": {"name": "Corporate", "price_ngn": 2500000, "billing_period": "fixed_term", "duration_days": 14, "monthly_limit": 4000, "team_limit": 30},
-    "enterprise": {"name": "Enterprise", "price_ngn": 5000000, "billing_period": "fixed_term", "duration_days": 21, "monthly_limit": 10000, "team_limit": 75},
+    "starter": {"name": "Starter", "price_ngn": 25000, "billing_period": "fixed_term", "duration_days": 30, "monthly_limit": 50, "team_limit": 3},
+    "growth": {"name": "Growth", "price_ngn": 60000, "billing_period": "fixed_term", "duration_days": 30, "monthly_limit": 200, "team_limit": 5},
+    "professional": {"name": "Professional", "price_ngn": 150000, "billing_period": "fixed_term", "duration_days": 30, "monthly_limit": 750, "team_limit": 10},
+    "business": {"name": "Business", "price_ngn": 1000000, "billing_period": "fixed_term", "duration_days": 30, "monthly_limit": 1500, "team_limit": 15, "custom": True},
+    "corporate": {"name": "Corporate", "price_ngn": 2500000, "billing_period": "fixed_term", "duration_days": 30, "monthly_limit": 4000, "team_limit": 30, "custom": True},
+    "enterprise": {"name": "Enterprise", "price_ngn": 5000000, "billing_period": "fixed_term", "duration_days": 30, "monthly_limit": 10000, "team_limit": 75, "custom": True},
     "enterprise_plus": {"name": "Enterprise Plus", "price_ngn": 50000000, "billing_period": "fixed_term", "duration_days": 30, "monthly_limit": 20000, "team_limit": 100, "available": False},  # Temporarily hidden from new purchases; retained for existing records.
     # Legacy-only: retained to read existing subscriptions, but not offered for new purchases.
     "lifetime": {"name": "Company Lifetime (legacy)", "price_ngn": 150000, "billing_period": "lifetime", "duration_days": None, "monthly_limit": 4000, "team_limit": 50, "available": False},
@@ -898,6 +900,7 @@ PLANS = {
 
 PAID_PLANS = tuple(k for k, p in PLANS.items() if k not in ("free", "expired") and p.get("available", True))
 ADMIN_GRANT_PLANS = PAID_PLANS
+SELF_SERVE_PLANS = tuple(k for k in PAID_PLANS if not PLANS[k].get("custom"))
 
 
 def duration_label(plan: str) -> str:

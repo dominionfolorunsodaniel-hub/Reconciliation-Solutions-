@@ -19,15 +19,15 @@ This audit reflects source inspection plus the automated tests run in this build
 ## Billing configuration
 
 - Free Trial: ₦0, 2 days, 5 analyses/month, 1 member.
-- Starter: ₦25,000, 3 days, 50 analyses/month, 3 members.
-- Growth: ₦100,000, 5 days, 200 analyses/month, 5 members.
-- Professional: ₦350,000, 7 days, 750 analyses/month, 10 members.
-- Business: ₦1,000,000, 10.5 days, 1,500 analyses/month, 15 members.
-- Corporate: ₦2,500,000, 14 days, 4,000 analyses/month, 30 members.
-- Enterprise: ₦5,000,000, 21 days, 10,000 analyses/month, 75 members.
+- Starter: ₦25,000, 30 days, 50 analyses/month, 3 members.
+- Growth: ₦60,000, 30 days, 200 analyses/month, 5 members.
+- Professional: ₦150,000, 30 days, 750 analyses/month, 10 members.
+- Business (custom quote): ₦1,000,000 reference, 30 days, 1,500 analyses/month, 15 members.
+- Corporate (custom quote): ₦2,500,000 reference, 30 days, 4,000 analyses/month, 30 members.
+- Enterprise (custom quote): ₦5,000,000 reference, 30 days, 10,000 analyses/month, 75 members.
 - Enterprise Plus: temporarily unavailable for new purchases; retained only for existing legacy records until payment-provider limits are confirmed.
 
-Analysis allowances reset by calendar month even though the access terms above are shorter. The legacy Company Lifetime plan is retained only for historical records and is not offered for new purchases. Paid access activates only after an administrator verifies the transfer in the actual bank account.
+Analysis allowances reset by calendar month. Business, Corporate and Enterprise are arranged with the customer first and granted by an administrator. The legacy Company Lifetime plan is retained only for historical records and is not offered for new purchases. Paid access activates only after an administrator verifies the transfer in the actual bank account.
 
 ## Still deferred / external prerequisites
 

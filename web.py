@@ -1534,7 +1534,7 @@ def billing_status(company_id: int, user: dict = Depends(current_user)):
     result = db.get_plan_status(company_id)
     # Do not advertise temporarily unavailable plans; keep the current plan visible for existing subscribers.
     result["plans"] = {key: plan for key, plan in db.PLANS.items()
-                        if plan.get("available", True) or key == result.get("plan")}
+                        if (plan.get("available", True) and not plan.get("custom")) or key == result.get("plan")}
     # Two temporary receiving accounts; the details can be changed with environment variables.
     result["banks"] = receipts.bank_accounts()
     # Backward compatibility for any older frontend using the original single-account fields.
@@ -1549,6 +1549,8 @@ def billing_payment_request(body: PaymentRequestIn, user: dict = Depends(current
     if user.get("role") == "admin":
         raise HTTPException(400, "Admin accounts do not need customer subscriptions.")
     plan = db.PLANS.get(body.plan)
+    if plan and plan.get("custom"):
+        raise HTTPException(400, "Business and larger plans are arranged with us first. Open Support and tell us what you need. No payment request was created.")
     if not plan or int(plan.get("price_ngn", 0)) > 150000:
         raise HTTPException(400, "Plans above ₦150,000 require contacting the admin before payment. No payment request was created.")
     coupon, discount = None, 0
@@ -1946,8 +1948,8 @@ class ProformaIn(BaseModel):
 def billing_proforma(body: ProformaIn, user: dict = Depends(current_user)):
     """A pro-forma invoice (a request for payment with the bank details) for a plan the company is thinking of buying."""
     need_company(user, body.company_id)
-    if body.plan not in db.PAID_PLANS:
-        raise HTTPException(400, "Choose one of the currently offered paid plans.")
+    if body.plan not in db.SELF_SERVE_PLANS:
+        raise HTTPException(400, "Choose one of the currently offered plans. Business and larger plans are arranged with us first: open Support.")
     company = db.get_company(body.company_id)
     discount = 0
     if body.coupon_code:

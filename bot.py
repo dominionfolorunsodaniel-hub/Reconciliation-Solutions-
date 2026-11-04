@@ -388,7 +388,7 @@ async def cmd_plan(update: Update, context: ContextTypes.DEFAULT_TYPE):
             if os.getenv("BANK_NAME") and os.getenv("BANK_ACCOUNT") and os.getenv("BANK_OWNER") else "\nBank transfer details are not configured yet; contact the admin.")
     lines = []
     for key, plan in db.PLANS.items():
-        if not plan.get("available", True) or key == "expired":
+        if not plan.get("available", True) or plan.get("custom") or key == "expired":
             continue
         duration = db.duration_label(key)
         if key == "free":
