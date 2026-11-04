@@ -528,10 +528,16 @@
 .sample-out .sm-grid { display:grid; grid-template-columns:1fr 1fr; gap:14px; }
 .sample-out ul { margin:6px 0 0; padding-left:18px; color:#dbe3ff; font-size:14px; line-height:1.55; }
 .sample-out .sm-note { margin-top:12px; font-size:12.5px; color:#9fb0e6; }
+.plan .price small { font-size:14px; font-weight:600; color:#b8c2e0; letter-spacing:0; }
+.biz-plan { display:flex; justify-content:space-between; align-items:center; gap:18px; flex-wrap:wrap; padding:18px 22px; margin-top:14px; text-align:left; }
+.biz-plan h3 { margin:0 0 4px; font-size:18px; }
+.biz-plan p { margin:0; color:#b8c2e0; font-size:14px; max-width:620px; }
 .contact-form { max-width:560px; margin:0 auto; padding:20px; display:grid; gap:10px; text-align:left; position:relative; }
 .contact-form input, .contact-form textarea { width:100%; box-sizing:border-box; padding:11px 12px; border:0; border-radius:10px; font:inherit; background:rgba(255,255,255,.95); color:#151b2c; }
 .contact-form textarea { resize:vertical; min-height:96px; }
 .contact-form button { padding:12px; font-size:16px; }
+@media (max-width:900px) { .plans { grid-template-columns:1fr 1fr !important; } }
+@media (max-width:560px) { .plans { grid-template-columns:1fr !important; } }
 @media (max-width:900px) { #whofor .features { grid-template-columns:1fr 1fr !important; } }
 @media (max-width:560px) { #whofor .features { grid-template-columns:1fr !important; } .sample-out .sm-grid { grid-template-columns:1fr; } .sample-out { padding:14px; } }
 </style>
@@ -675,22 +681,26 @@
 
     <section class="sec" id="pricing">
       <h2>Simple, honest pricing</h2>
-      <p class="sub">Start free and upgrade when your team grows. For now you pay by bank transfer; card payments are coming soon.</p>
+      <p class="sub">Start free and upgrade when your team grows. Clear monthly prices in Naira, no hidden fees.</p>
       <div class="plans">
         <div class="glass plan"><h3>Free Trial</h3><div class="price">₦0</div><div class="per">2 days to try everything</div>
           <ul><li>5 analyses</li><li>1 team member</li><li>Reconciliation, charts, Excel and PDF exports</li></ul>
           <button type="button" onclick="document.querySelector('.login').scrollIntoView({behavior:'smooth',block:'center'})">Start free</button></div>
-        <div class="glass plan"><h3>Starter</h3><div class="price">₦25,000</div><div class="per">3 days of access</div>
+        <div class="glass plan"><h3>Starter</h3><div class="price">₦25,000<small> / month</small></div><div class="per">30 days of access</div>
           <ul><li>50 analyses per month</li><li>Up to 3 team members</li><li>Everything in the trial</li></ul>
           <button type="button" onclick="document.querySelector('.login').scrollIntoView({behavior:'smooth',block:'center'})">Get Starter</button></div>
-        <div class="glass plan hot"><span class="ribbon">Recommended</span><h3>Growth</h3><div class="price">₦100,000</div><div class="per">5 days of access</div>
+        <div class="glass plan hot"><span class="ribbon">Recommended</span><h3>Growth</h3><div class="price">₦60,000<small> / month</small></div><div class="per">30 days of access</div>
           <ul><li>200 analyses per month</li><li>Up to 5 team members</li><li>Everything in Starter</li></ul>
           <button type="button" onclick="document.querySelector('.login').scrollIntoView({behavior:'smooth',block:'center'})">Get Growth</button></div>
-        <div class="glass plan"><h3>Bigger teams</h3><div class="price">Let's talk</div><div class="per">Message us before you pay</div>
-          <ul><li>Professional · ₦350,000 · 750 analyses · 10 members</li><li>Business · ₦1,000,000 · 1,500 analyses · 15 members</li><li>Corporate · ₦2,500,000 · 4,000 analyses · 30 members</li><li>Enterprise · ₦5,000,000 · 10,000 analyses · 75 members</li></ul>
-          <button type="button" onclick="document.getElementById('contact').scrollIntoView({behavior:'smooth',block:'center'})">Contact us</button></div>
+        <div class="glass plan"><h3>Professional</h3><div class="price">₦150,000<small> / month</small></div><div class="per">30 days of access</div>
+          <ul><li>750 analyses per month</li><li>Up to 10 team members</li><li>Everything in Growth</li></ul>
+          <button type="button" onclick="document.querySelector('.login').scrollIntoView({behavior:'smooth',block:'center'})">Get Professional</button></div>
       </div>
-      <p class="plans-note">Access lasts for the period shown on each plan. Larger payments are arranged with us first so everything goes smoothly.</p>
+      <div class="glass biz-plan">
+        <div><h3>Business and above</h3><p>Need 1,500 or more analyses a month, 15 or more team members, or a setup built around your team? We agree the plan and price with you first.</p></div>
+        <button type="button" onclick="document.getElementById('contact').scrollIntoView({behavior:'smooth',block:'center'})">Get a custom quote</button>
+      </div>
+      <p class="plans-note">Each paid plan gives 30 days of access from the day we confirm your payment. Payment is by bank transfer for now; card payment is coming soon.</p>
     </section>
 
     <section class="sec">
@@ -1078,17 +1088,15 @@
     <div id="bankDetails" class="urow"></div>
     <div class="row" style="margin-top:8px">
       <select id="billingPlan">
-        <option value="starter">Starter — ₦25,000 · 3 days · 50 analyses/month · 3 members</option>
-        <option value="growth">Growth — ₦100,000 · 5 days · 200 analyses/month · 5 members</option>
-        <option value="professional">Professional — ₦350,000 · 7 days · 750 analyses/month · 10 members</option>
-        <option value="business">Business — ₦1,000,000 · 10.5 days · 1,500 analyses/month · 15 members</option>
-        <option value="corporate">Corporate — ₦2,500,000 · 14 days · 4,000 analyses/month · 30 members</option>
-        <option value="enterprise">Enterprise — ₦5,000,000 · 21 days · 10,000 analyses/month · 75 members</option>
+        <option value="starter">Starter — ₦25,000 · 30 days · 50 analyses/month · 3 members</option>
+        <option value="growth">Growth — ₦60,000 · 30 days · 200 analyses/month · 5 members</option>
+        <option value="professional">Professional — ₦150,000 · 30 days · 750 analyses/month · 10 members</option>
       </select>
       <input id="transferReference" placeholder="Bank transfer reference" maxlength="120">
       <button id="submitPayment">Submit transfer for review</button>
       <button type="button" class="ghost" id="proformaBtn">📄 Download invoice for this plan</button>
     </div>
+    <div class="mute" style="margin-top:6px">Need more than 750 analyses a month or more than 10 team members? Business and larger plans are arranged with us first. Open <b>Support</b> in the side menu and tell us what you need.</div>
     <div class="urow" style="margin-top:8px">
       <b>📸 Payment screenshot</b>
       <div class="mute">After paying, attach a screenshot of your transfer receipt. It goes straight to our team so we can confirm your payment faster.</div>
@@ -1304,7 +1312,7 @@
     <h3 style="margin-top:12px">Grant a paid plan for free (admin use)</h3>
     <div class="row">
       <select id="grantCompany"></select>
-      <select id="grantPlan"><option value="starter">Starter (3 days)</option><option value="growth">Growth (5 days)</option><option value="professional">Professional (7 days)</option><option value="business">Business (10.5 days)</option><option value="corporate">Corporate (14 days)</option><option value="enterprise">Enterprise (21 days)</option></select>
+      <select id="grantPlan"><option value="starter">Starter (30 days)</option><option value="growth">Growth (30 days)</option><option value="professional">Professional (30 days)</option><option value="business">Business (30 days)</option><option value="corporate">Corporate (30 days)</option><option value="enterprise">Enterprise (30 days)</option></select>
       <input type="number" id="grantDays" value="3" min="0.5" step="0.5" max="366" style="width:100px" placeholder="Days">
       <input id="grantNote" maxlength="300" placeholder="Reason (optional)">
       <button id="grantBtn">Grant plan</button>
@@ -1760,7 +1768,7 @@ $("submitPayment").onclick = async () => {
   const cid = Number($("company").value), plan = $("billingPlan").value, reference = $("transferReference").value.trim();
   $("billingMsg").textContent = "";
   if (!cid || !reference) { $("billingMsg").textContent = "Choose a company and enter the bank transfer reference."; return; }
-  const planPrices = {starter:25000, growth:100000, professional:350000, business:1000000, corporate:2500000, enterprise:5000000};
+  const planPrices = {starter:25000, growth:60000, professional:150000, business:1000000, corporate:2500000, enterprise:5000000};
   if ((planPrices[plan] || 0) > 150000) {
     $("billingMsg").textContent = "This plan costs more than ₦150,000. Please DM the admin before making any payment. No payment request has been submitted.";
     return;
@@ -1838,7 +1846,7 @@ function renderBillingSubscriptions(items) {
   if (!items.length) { host.appendChild(el("div", "No paid or granted subscriptions yet.", "mute")); return; }
   items.forEach(s => host.appendChild(el("div", `#${s.id} · ${s.company_name} · ${s.plan.toUpperCase()} · ${s.status} · expires ${s.expires_at} UTC · source: ${s.grant_source}${s.note ? " · " + s.note : ""}`, "urow")));
 }
-const grantDurations = {starter: 3, growth: 5, professional: 7, business: 10.5, corporate: 14, enterprise: 21};
+const grantDurations = {starter: 30, growth: 30, professional: 30, business: 30, corporate: 30, enterprise: 30};
 $("grantPlan").onchange = () => { $("grantDays").value = grantDurations[$("grantPlan").value] || 3; };
 $("grantBtn").onclick = async () => {
   const company_id = Number($("grantCompany").value), plan = $("grantPlan").value, days = Number($("grantDays").value), note = $("grantNote").value.trim();
@@ -2257,7 +2265,7 @@ api("/api/me").then(start).catch(showLanding);
     $("billingMsg").textContent = "";
     if (!cid || !reference) { $("billingMsg").textContent = "Choose a company and enter the bank transfer reference."; return; }
     if (!$("payProof").files[0]) { $("billingMsg").textContent = "Please attach a screenshot of your payment first (the box just below). Thank you 🙏"; return; }
-    const planPrices = { starter: 25000, growth: 100000, professional: 350000, business: 1000000, corporate: 2500000, enterprise: 5000000 };
+    const planPrices = { starter: 25000, growth: 60000, professional: 150000, business: 1000000, corporate: 2500000, enterprise: 5000000 };
     if ((planPrices[plan] || 0) > 150000) {
       $("billingMsg").textContent = "This plan costs more than ₦150,000. Please message the admin before making any payment. No payment request has been submitted.";
       return;
