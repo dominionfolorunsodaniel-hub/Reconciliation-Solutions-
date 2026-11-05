@@ -2,12 +2,12 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<meta name="theme-color" content="#070b1a">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#ffffff">
 <link rel="manifest" href="/manifest.webmanifest">
 <link rel="apple-touch-icon" href="/static/apple-touch-icon.png">
 <meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-title" content="Report Analyzer"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Report Analyzer"><meta name="apple-mobile-web-app-status-bar-style" content="default">
 <title>Report Analyzer - turn any report into answers</title>
 <meta name="description" content="Report Analyzer reconciles ATM, POS and bank reports in seconds, checks bank statements, and answers questions about your data in plain English. Built for finance and operations teams in Nigeria.">
 <link rel="canonical" href="__BASE__/">
@@ -541,202 +541,459 @@
 @media (max-width:900px) { #whofor .features { grid-template-columns:1fr 1fr !important; } }
 @media (max-width:560px) { #whofor .features { grid-template-columns:1fr !important; } .sample-out .sm-grid { grid-template-columns:1fr; } .sample-out { padding:14px; } }
 </style>
+<style id="lp-css">
+/* ============ LANDING (light, one brand colour) ============ */
+#landing.lp {
+  --lp-brand:#0b6b4b; --lp-brand-dark:#085a3f; --lp-tint:#e9f3ee;
+  --lp-ink:#17211c; --lp-mute:#56635c; --lp-line:#dde3df; --lp-bg:#ffffff; --lp-alt:#f5f7f6; --lp-err:#b42318;
+  min-height:0; background:var(--lp-bg); color:var(--lp-ink); overflow:visible; position:static;
+  font:16px/1.6 system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+  -webkit-text-size-adjust:100%; text-size-adjust:100%; -webkit-font-smoothing:antialiased;
+}
+html { scroll-behavior:smooth; scroll-padding-top:72px; }
+#landing.lp *, #landing.lp *::before, #landing.lp *::after { box-sizing:border-box; }
+#landing.lp.hidden { display:none !important; }
+#landing.lp h1, #landing.lp h2, #landing.lp h3, #landing.lp p, #landing.lp ul, #landing.lp ol { margin:0; padding:0; }
+#landing.lp ul, #landing.lp ol { list-style:none; }
+#landing.lp a { color:var(--lp-brand); text-underline-offset:2px; }
+#landing.lp .lp-wrap { max-width:1120px; margin:0 auto; padding:0 24px; }
+#landing.lp .lp-narrow { max-width:760px; }
+#landing.lp .lp-sr { position:absolute; width:1px; height:1px; overflow:hidden; clip:rect(0 0 0 0); white-space:nowrap; }
+#landing.lp .lp-ic { width:20px; height:20px; flex:0 0 20px; fill:none; stroke:currentColor; stroke-width:1.7; stroke-linecap:round; stroke-linejoin:round; }
+#landing.lp .lp-ic-l { width:28px; height:28px; color:var(--lp-brand); margin-bottom:14px; }
+#landing.lp .lp-logo-ic { width:26px; height:26px; flex-basis:26px; color:var(--lp-brand); stroke:none; }
+
+/* buttons: reset the app-wide gradient button style */
+#landing.lp button, #landing.lp .lp-btn {
+  -webkit-appearance:none; appearance:none; display:inline-flex; align-items:center; justify-content:center; gap:8px;
+  min-height:44px; padding:10px 18px; border-radius:8px; border:1px solid transparent; font:inherit; font-size:15px; font-weight:600; line-height:1.2;
+  text-decoration:none; cursor:pointer; box-shadow:none; transform:none; transition:background-color .15s, border-color .15s, color .15s;
+  background:var(--lp-brand); color:#fff;
+}
+#landing.lp button:hover, #landing.lp .lp-btn:hover { transform:none; box-shadow:none; background:var(--lp-brand-dark); }
+#landing.lp .lp-btn-primary { background:var(--lp-brand); color:#fff; }
+#landing.lp .lp-btn-outline, #landing.lp .lp-btn-quiet { background:#fff; color:var(--lp-ink); border-color:#c5cec9; }
+#landing.lp .lp-btn-outline:hover, #landing.lp .lp-btn-quiet:hover { background:var(--lp-alt); border-color:#9eaaa4; }
+#landing.lp .lp-btn-quiet { min-height:40px; padding:8px 16px; }
+#landing.lp .lp-full { width:100%; }
+#landing.lp button:disabled { opacity:.6; cursor:wait; }
+#landing.lp button:focus-visible, #landing.lp .lp-btn:focus-visible, #landing.lp a:focus-visible, #landing.lp summary:focus-visible, #landing.lp input:focus-visible, #landing.lp textarea:focus-visible { outline:2px solid var(--lp-brand); outline-offset:2px; }
+
+/* form fields: 16px stops iOS Safari zooming in on focus */
+#landing.lp input[type=text], #landing.lp input[type=password], #landing.lp input[type=email], #landing.lp input[type=number], #landing.lp textarea {
+  -webkit-appearance:none; appearance:none; width:100%; min-width:0; flex:none; min-height:46px; padding:11px 12px; font:inherit; font-size:16px; color:var(--lp-ink);
+  background:#fff; border:1px solid #c5cec9; border-radius:8px; box-shadow:none;
+}
+#landing.lp textarea { resize:vertical; min-height:110px; }
+#landing.lp input::placeholder, #landing.lp textarea::placeholder { color:#7a867f; opacity:1; }
+#landing.lp input:focus, #landing.lp textarea:focus { border-color:var(--lp-brand); outline:2px solid rgba(11,107,75,.25); outline-offset:0; }
+#landing.lp .hp-field { position:absolute !important; left:-9999px !important; width:1px !important; height:1px !important; opacity:0; }
+#landing.lp .password-field { display:flex; gap:6px; align-items:stretch; width:100%; flex:none; }
+#landing.lp .password-field input { flex:1 1 auto; width:auto; }
+#landing.lp .password-toggle { flex:0 0 auto; min-height:46px; padding:0 14px; background:#fff; color:var(--lp-ink); border:1px solid #c5cec9; font-size:14px; font-weight:600; }
+#landing.lp .password-toggle:hover { background:var(--lp-alt); }
+
+/* nav */
+#landing.lp .lp-nav { position:sticky; top:0; z-index:20; background:#fff; border-bottom:1px solid var(--lp-line); }
+#landing.lp .lp-nav-in { display:flex; align-items:center; gap:24px; height:64px; }
+#landing.lp .lp-brand { display:inline-flex; align-items:center; gap:10px; color:var(--lp-ink); font-weight:700; font-size:17px; text-decoration:none; }
+#landing.lp .lp-links { display:flex; gap:22px; margin-left:auto; }
+#landing.lp .lp-links a { color:var(--lp-mute); text-decoration:none; font-size:15px; }
+#landing.lp .lp-links a:hover { color:var(--lp-ink); }
+
+/* hero */
+#landing.lp .lp-hero { padding:56px 0 48px; }
+#landing.lp .lp-hero-in { display:grid; grid-template-columns:minmax(0,1.15fr) minmax(0,.85fr); gap:56px; align-items:start; }
+#landing.lp .lp-eyebrow { color:var(--lp-brand); font-weight:600; font-size:14px; margin-bottom:14px; }
+#landing.lp h1 { font-size:clamp(30px,4.4vw,46px); line-height:1.15; letter-spacing:-.02em; font-weight:700; margin-bottom:18px; }
+#landing.lp .lp-lead { font-size:18px; color:var(--lp-mute); max-width:560px; margin-bottom:26px; }
+#landing.lp .lp-actions { display:flex; flex-wrap:wrap; gap:12px; margin-bottom:28px; }
+#landing.lp .lp-facts { display:grid; gap:10px; color:var(--lp-mute); font-size:15px; }
+#landing.lp .lp-facts li { display:flex; align-items:center; gap:10px; }
+#landing.lp .lp-facts .lp-ic { color:var(--lp-brand); }
+
+/* sign-in card */
+#landing.lp .lp-login { display:grid; gap:12px; padding:28px; background:#fff; border:1px solid var(--lp-line); border-radius:12px; box-shadow:0 1px 2px rgba(20,32,27,.05); scroll-margin-top:84px; }
+#landing.lp .lp-login h2 { font-size:22px; line-height:1.2; font-weight:700; }
+#landing.lp .lp-login-sub { color:var(--lp-mute); font-size:15px; margin-top:-6px; }
+#landing.lp .lp-err, #landing.lp .err { color:var(--lp-err); font-size:14px; min-height:0; margin:0; }
+#landing.lp .lp-err:empty { display:none; }
+#landing.lp .lp-note { color:var(--lp-mute); font-size:13.5px; line-height:1.5; }
+#landing.lp .lp-details { border-top:1px solid var(--lp-line); padding-top:12px; }
+#landing.lp .lp-details summary { cursor:pointer; font-weight:600; font-size:15px; color:var(--lp-ink); list-style:none; display:flex; justify-content:space-between; align-items:center; min-height:28px; }
+#landing.lp .lp-details summary::-webkit-details-marker { display:none; }
+#landing.lp .lp-details summary::after, #landing.lp .lp-faq summary::after { content:""; width:8px; height:8px; margin-right:4px; border-right:2px solid var(--lp-mute); border-bottom:2px solid var(--lp-mute); transform:rotate(45deg); transition:transform .15s; flex:0 0 auto; }
+#landing.lp details[open] > summary::after { transform:rotate(-135deg); }
+#landing.lp .lp-stack { display:grid; gap:10px; margin-top:12px; }
+#landing.lp .lp-stack.hidden { display:none !important; }
+
+/* trust strip */
+#landing.lp .lp-strip { border-top:1px solid var(--lp-line); border-bottom:1px solid var(--lp-line); background:var(--lp-alt); }
+#landing.lp .lp-strip-in { display:flex; flex-wrap:wrap; gap:12px 32px; justify-content:center; padding-top:16px; padding-bottom:16px; color:var(--lp-mute); font-size:14.5px; }
+#landing.lp .lp-strip span { display:inline-flex; align-items:center; gap:8px; min-width:0; }
+#landing.lp .lp-strip .lp-ic { color:var(--lp-brand); }
+#landing.lp .lp-strip a { color:inherit; overflow-wrap:anywhere; }
+
+/* sections */
+#landing.lp .lp-sec { padding:72px 0; }
+#landing.lp .lp-alt { background:var(--lp-alt); border-top:1px solid var(--lp-line); border-bottom:1px solid var(--lp-line); }
+#landing.lp .lp-head { max-width:640px; margin:0 auto 40px; text-align:center; }
+#landing.lp .lp-head h2 { font-size:clamp(26px,3.4vw,34px); line-height:1.2; letter-spacing:-.015em; font-weight:700; margin-bottom:10px; }
+#landing.lp .lp-head p { color:var(--lp-mute); font-size:17px; }
+#landing.lp .lp-grid { display:grid; gap:20px; }
+#landing.lp .lp-grid-3 { grid-template-columns:repeat(3,minmax(0,1fr)); }
+#landing.lp .lp-grid-4 { grid-template-columns:repeat(4,minmax(0,1fr)); }
+#landing.lp .lp-card { background:#fff; border:1px solid var(--lp-line); border-radius:10px; padding:24px; }
+#landing.lp .lp-card h3 { font-size:17px; line-height:1.3; font-weight:650; margin-bottom:6px; }
+#landing.lp .lp-card p { color:var(--lp-mute); font-size:15px; }
+
+/* steps */
+#landing.lp .lp-steps { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:20px; }
+#landing.lp .lp-steps li { display:flex; gap:16px; align-items:flex-start; }
+#landing.lp .lp-num { flex:0 0 36px; width:36px; height:36px; border-radius:50%; background:var(--lp-tint); color:var(--lp-brand); font-weight:700; display:grid; place-items:center; }
+#landing.lp .lp-steps h3 { font-size:17px; margin-bottom:4px; font-weight:650; }
+#landing.lp .lp-steps p { color:var(--lp-mute); font-size:15px; }
+
+/* demo */
+#landing.lp .lp-demo { display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1.1fr); gap:24px; align-items:center; max-width:900px; margin:0 auto; }
+#landing.lp .lp-bubble { background:var(--lp-brand); color:#fff; padding:12px 16px; border-radius:12px 12px 2px 12px; margin-left:auto; max-width:92%; width:fit-content; overflow-wrap:anywhere; }
+#landing.lp .lp-file { display:flex; gap:8px; align-items:center; margin-top:12px; font-size:14px; color:var(--lp-mute); overflow-wrap:anywhere; }
+#landing.lp .lp-answer { background:#fff; border:1px solid var(--lp-line); border-radius:10px; padding:20px 22px; }
+#landing.lp .lp-label { font-size:12px; font-weight:700; letter-spacing:.06em; text-transform:uppercase; color:var(--lp-brand); margin-bottom:6px; }
+#landing.lp .lp-answer ul { margin-top:10px; padding-left:18px; list-style:disc; color:var(--lp-mute); font-size:15px; }
+#landing.lp .lp-tags { display:flex; flex-wrap:wrap; justify-content:center; gap:8px; margin-top:28px; }
+#landing.lp .lp-tags li { padding:5px 12px; border:1px solid var(--lp-line); border-radius:999px; background:#fff; font-size:14px; color:var(--lp-mute); }
+#landing.lp .lp-alt .lp-tags li { background:#fff; }
+#landing.lp .lp-banks-label { text-align:center; color:var(--lp-mute); font-size:14px; margin-top:32px; }
+#landing.lp .lp-banks-label + .lp-tags { margin-top:12px; }
+#landing.lp .lp-center { text-align:center; margin-top:28px; }
+
+/* sample result */
+#landing.lp .lp-sample { max-width:860px; margin:24px auto 0; padding:24px; background:#fff; border:1px solid var(--lp-line); border-radius:10px; color:var(--lp-ink); text-align:left; }
+#landing.lp .lp-sample.hidden { display:none !important; }
+#landing.lp .lp-sample h3 { margin:0 0 6px; font-size:16px; font-weight:650; }
+#landing.lp .lp-sample .sm-top { display:flex; gap:20px; align-items:center; flex-wrap:wrap; margin-bottom:16px; }
+#landing.lp .lp-sample .sm-score { font-size:44px; font-weight:700; line-height:1; color:var(--lp-ink); }
+#landing.lp .lp-sample .sm-score small { font-size:16px; color:var(--lp-mute); font-weight:500; }
+#landing.lp .lp-sample .sm-pill { display:inline-block; padding:2px 10px; border-radius:999px; background:var(--lp-tint); border:0; color:var(--lp-brand); font-weight:600; font-size:13px; margin-bottom:4px; }
+#landing.lp .lp-sample table { width:100%; border-collapse:collapse; font-size:14px; margin:8px 0 18px; display:table; }
+#landing.lp .lp-sample th, #landing.lp .lp-sample td { padding:9px 8px; text-align:right; border-bottom:1px solid var(--lp-line); background:transparent; color:var(--lp-ink); position:static; white-space:nowrap; }
+#landing.lp .lp-sample th:first-child, #landing.lp .lp-sample td:first-child { text-align:left; }
+#landing.lp .lp-sample th { color:var(--lp-mute); font-weight:600; font-size:13px; }
+#landing.lp .lp-sample .sm-grid { display:grid; grid-template-columns:1fr 1fr; gap:24px; }
+#landing.lp .lp-sample ul { margin:6px 0 0; padding-left:18px; list-style:disc; color:var(--lp-mute); font-size:14.5px; line-height:1.55; }
+#landing.lp .lp-sample .sm-note { margin-top:16px; font-size:13px; color:var(--lp-mute); }
+#landing.lp .lp-sample button { margin-top:14px; }
+
+/* pricing */
+#landing.lp .lp-plans { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:20px; align-items:stretch; }
+#landing.lp .lp-plan { position:relative; display:flex; flex-direction:column; background:#fff; border:1px solid var(--lp-line); border-radius:10px; padding:26px 22px 22px; }
+#landing.lp .lp-plan-hot { border:2px solid var(--lp-brand); padding:25px 21px 21px; }
+#landing.lp .lp-tag { position:absolute; top:-12px; left:20px; background:var(--lp-brand); color:#fff; font-size:12px; font-weight:600; padding:2px 10px; border-radius:999px; }
+#landing.lp .lp-plan h3 { font-size:17px; font-weight:650; }
+#landing.lp .lp-price { font-size:30px; font-weight:700; letter-spacing:-.02em; margin-top:10px; line-height:1.15; }
+#landing.lp .lp-price small { font-size:14px; font-weight:500; color:var(--lp-mute); letter-spacing:0; }
+#landing.lp .lp-per { color:var(--lp-mute); font-size:14px; margin-bottom:16px; }
+#landing.lp .lp-plan ul { flex:1; margin-bottom:20px; display:grid; gap:8px; font-size:15px; color:var(--lp-ink); }
+#landing.lp .lp-plan li { position:relative; padding-left:22px; }
+#landing.lp .lp-plan li::before { content:""; position:absolute; left:3px; top:.45em; width:6px; height:10px; border-right:2px solid var(--lp-brand); border-bottom:2px solid var(--lp-brand); transform:rotate(45deg); }
+#landing.lp .lp-biz { display:flex; gap:24px; align-items:center; justify-content:space-between; background:#fff; border:1px solid var(--lp-line); border-radius:10px; padding:22px 24px; margin-top:20px; }
+#landing.lp .lp-biz h3 { font-size:17px; font-weight:650; margin-bottom:4px; }
+#landing.lp .lp-biz p { color:var(--lp-mute); font-size:15px; max-width:640px; }
+#landing.lp .lp-biz .lp-btn { flex:0 0 auto; white-space:nowrap; }
+#landing.lp .lp-fine { text-align:center; color:var(--lp-mute); font-size:14px; margin-top:20px; }
+
+/* faq */
+#landing.lp .lp-faq { border-top:1px solid var(--lp-line); }
+#landing.lp .lp-faq details { border-bottom:1px solid var(--lp-line); padding:4px 0; }
+#landing.lp .lp-faq summary { display:flex; justify-content:space-between; gap:16px; align-items:center; cursor:pointer; list-style:none; font-weight:600; font-size:16px; padding:14px 0; min-height:48px; }
+#landing.lp .lp-faq summary::-webkit-details-marker { display:none; }
+#landing.lp .lp-faq p { color:var(--lp-mute); font-size:15px; padding:0 0 16px; max-width:640px; }
+
+/* contact */
+#landing.lp .lp-form { display:grid; gap:12px; background:#fff; border:1px solid var(--lp-line); border-radius:12px; padding:28px; }
+#landing.lp .lp-msg { font-size:14.5px; min-height:0; color:var(--lp-ink); }
+#landing.lp .lp-msg:empty { display:none; }
+
+/* footer */
+#landing.lp .lp-foot { padding:36px 0 44px; border-top:1px solid var(--lp-line); color:var(--lp-mute); font-size:14px; }
+#landing.lp .lp-foot-in { display:grid; gap:8px; justify-items:start; }
+#landing.lp .lp-foot .lp-brand { margin-bottom:4px; }
+#landing.lp .lp-foot a { overflow-wrap:anywhere; }
+
+/* the old floating support button is gone from the landing page (nav and footer carry contact links) */
+#landing:not(.hidden) ~ .support-contact { display:none !important; }
+
+@media (max-width:960px) {
+  #landing.lp .lp-hero-in { grid-template-columns:minmax(0,1fr); gap:36px; }
+  #landing.lp .lp-grid-3 { grid-template-columns:repeat(2,minmax(0,1fr)); }
+  #landing.lp .lp-grid-4 { grid-template-columns:repeat(2,minmax(0,1fr)); }
+  #landing.lp .lp-plans { grid-template-columns:repeat(2,minmax(0,1fr)); }
+  #landing.lp .lp-links { display:none; }
+  #landing.lp .lp-signin { margin-left:auto; }
+}
+@media (max-width:720px) {
+  #landing.lp .lp-sec { padding:52px 0; }
+  #landing.lp .lp-hero { padding:36px 0 36px; }
+  #landing.lp .lp-wrap { padding:0 max(16px, env(safe-area-inset-left)) 0 max(16px, env(safe-area-inset-right)); }
+  #landing.lp .lp-steps, #landing.lp .lp-demo { grid-template-columns:minmax(0,1fr); }
+  #landing.lp .lp-biz { flex-direction:column; align-items:stretch; text-align:left; }
+  #landing.lp .lp-biz .lp-btn { width:100%; }
+  #landing.lp .lp-sample .sm-grid { grid-template-columns:1fr; }
+  #landing.lp .lp-sample { padding:16px; overflow-x:auto; }
+  #landing.lp .lp-login, #landing.lp .lp-form { padding:20px; }
+  #landing.lp .lp-actions .lp-btn { flex:1 1 100%; }
+  #landing.lp .lp-head { margin-bottom:28px; }
+}
+@media (max-width:600px) {
+  #landing.lp .lp-grid-3, #landing.lp .lp-grid-4, #landing.lp .lp-plans { grid-template-columns:minmax(0,1fr); }
+  #landing.lp .lp-strip-in { justify-content:flex-start; }
+}
+@media (prefers-reduced-motion:reduce) { html { scroll-behavior:auto; } #landing.lp * { transition:none !important; } }
+</style>
+
 </head>
 <body>
 
 <!-- ======================= LANDING + LOGIN ======================= -->
-<div id="landing">
-  <span class="orb o1"></span><span class="orb o2"></span><span class="orb o3"></span>
-  <div class="wrap">
-    <div class="nav"><div class="logo">📊 Report<b>Analyzer</b></div></div>
+<div id="landing" class="lp">
+  <svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false">
+    <defs>
+      <symbol id="i-logo" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="4" fill="currentColor" stroke="none"/><path d="M8 15.5v-3M12 15.5V8.5M16 15.5v-5" stroke="#fff" stroke-width="2" stroke-linecap="round" fill="none"/></symbol>
+      <symbol id="i-file" viewBox="0 0 24 24"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5M9 13h6M9 17h6"/></symbol>
+      <symbol id="i-chat" viewBox="0 0 24 24"><path d="M21 12a8 8 0 0 1-11.6 7.1L4 20.5l1.4-4.6A8 8 0 1 1 21 12z"/></symbol>
+      <symbol id="i-scale" viewBox="0 0 24 24"><path d="M12 4v16M6 20h12M5 7h14M5 7l-3 7a3.5 3.5 0 0 0 6 0zM19 7l-3 7a3.5 3.5 0 0 0 6 0z"/></symbol>
+      <symbol id="i-trend" viewBox="0 0 24 24"><path d="M3 17l6-6 4 4 8-8M15 7h6v6"/></symbol>
+      <symbol id="i-bell" viewBox="0 0 24 24"><path d="M6 9a6 6 0 0 1 12 0c0 6 2 7 2 7H4s2-1 2-7zM10 20a2 2 0 0 0 4 0"/></symbol>
+      <symbol id="i-pdf" viewBox="0 0 24 24"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5M9 14h1.5a1.5 1.5 0 0 0 0-3H9v5M14 16v-5h1.5M14 13.5h1.5"/></symbol>
+      <symbol id="i-card" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 10h18M7 15h3"/></symbol>
+      <symbol id="i-receipt" viewBox="0 0 24 24"><path d="M6 3h12v18l-3-2-3 2-3-2-3 2zM9 8h6M9 12h6"/></symbol>
+      <symbol id="i-bank" viewBox="0 0 24 24"><path d="M3 10l9-6 9 6M5 10v8M9.5 10v8M14.5 10v8M19 10v8M3 20h18"/></symbol>
+      <symbol id="i-store" viewBox="0 0 24 24"><path d="M4 9l1.5-5h13L20 9M4 9v11h16V9M4 9a2.7 2.7 0 0 0 5.3 0 2.7 2.7 0 0 0 5.4 0A2.7 2.7 0 0 0 20 9M10 20v-5h4v5"/></symbol>
+      <symbol id="i-upload" viewBox="0 0 24 24"><path d="M12 16V4M7 9l5-5 5 5M4 16v3a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-3"/></symbol>
+      <symbol id="i-compare" viewBox="0 0 24 24"><path d="M7 4L3 8l4 4M3 8h14M17 20l4-4-4-4M21 16H7"/></symbol>
+      <symbol id="i-check" viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5"/></symbol>
+      <symbol id="i-lock" viewBox="0 0 24 24"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></symbol>
+      <symbol id="i-mail" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 7l9 6 9-6"/></symbol>
+      <symbol id="i-shield" viewBox="0 0 24 24"><path d="M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6z"/><path d="M9 12l2 2 4-4"/></symbol>
+      <symbol id="i-chart" viewBox="0 0 24 24"><path d="M4 20V4M4 20h16M8 16v-4M12 16V8M16 16v-6"/></symbol>
+      <symbol id="i-coin" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M9 8l3 4 3-4M9 13h6M9 16h6M12 12v6"/></symbol>
+    </defs>
+  </svg>
 
-    <section class="hero">
-      <div>
-        <span class="badge">✨ AI report analysis for ATM, POS &amp; finance teams</span>
-        <h1>Find the missing money in <span class="grad">seconds</span>.</h1>
-        <p class="lead">Upload your ATM, POS or ledger reports and see exactly what does not match. Ask in plain English and get exact tables, alerts and a branded PDF.</p>
-        <div class="pills"><span>📄 CSV · Excel · PDF</span><span>💬 Ask in plain English</span><span>🔒 Encrypted &amp; audited</span><span>⚖️ Reconciliation</span><span>📈 ATM cash forecast</span></div>
+  <header class="lp-nav">
+    <div class="lp-wrap lp-nav-in">
+      <a class="lp-brand" href="#top" aria-label="Report Analyzer home"><svg class="lp-ic lp-logo-ic"><use href="#i-logo"/></svg><span>Report Analyzer</span></a>
+      <nav class="lp-links" aria-label="Page sections">
+        <a href="#features">Features</a><a href="#statement">Statement check</a><a href="#pricing">Pricing</a><a href="#faq">FAQ</a><a href="#contact">Contact</a>
+      </nav>
+      <a class="lp-btn lp-btn-quiet lp-signin" href="#lpLogin" data-goto-login>Sign in</a>
+    </div>
+  </header>
 
-        <div class="preview glass" aria-hidden="true">
-          <div class="pv-head"><span class="dot r"></span><span class="dot y"></span><span class="dot g"></span><span class="pv-title">Total amount by branch · last 6 months</span></div>
-          <svg viewBox="0 0 420 170" class="pv-chart">
-            <defs><linearGradient id="g1" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#60a5fa"/><stop offset="1" stop-color="#7c3aed"/></linearGradient></defs>
-            <g class="bars">
-              <rect x="14"  y="96"  width="44" height="64"  rx="7" style="--d:.1s"/>
-              <rect x="82"  y="70"  width="44" height="90"  rx="7" style="--d:.25s"/>
-              <rect x="150" y="84"  width="44" height="76"  rx="7" style="--d:.4s"/>
-              <rect x="218" y="42"  width="44" height="118" rx="7" style="--d:.55s"/>
-              <rect x="286" y="58"  width="44" height="102" rx="7" style="--d:.7s"/>
-              <rect x="354" y="22"  width="44" height="138" rx="7" style="--d:.85s"/>
-            </g>
-            <polyline class="trend" points="36,84 104,58 172,72 240,32 308,46 376,12"/>
-          </svg>
-          <div class="pv-rows"><div>Transactions<b>48,210</b></div><div>Success rate<b>97.4%</b></div><div>Open alerts<b>3</b></div></div>
-          <span class="fchip c1">🔴 ATM 114 · 38% failures</span>
-          <span class="fchip c2">✅ 4,821 matched · 3 mismatches</span>
-          <span class="fchip c3">📈 Cash lasts 4 more days</span>
+  <main id="top">
+  <section class="lp-hero">
+    <div class="lp-wrap lp-hero-in">
+      <div class="lp-hero-copy">
+        <p class="lp-eyebrow">For ATM, POS and finance teams</p>
+        <h1>Match your reports and find what is missing.</h1>
+        <p class="lp-lead">Upload ATM, POS, ledger or bank statement files. Report Analyzer compares them, shows what does not match, and answers your questions in plain English. Every number is calculated from your data.</p>
+        <div class="lp-actions">
+          <a class="lp-btn lp-btn-primary" href="#lpLogin" data-goto-login>Request an account</a>
+          <a class="lp-btn lp-btn-outline" href="#statement">See a sample check</a>
         </div>
+        <ul class="lp-facts">
+          <li><svg class="lp-ic"><use href="#i-file"/></svg>CSV, Excel and PDF files</li>
+          <li><svg class="lp-ic"><use href="#i-lock"/></svg>Encrypted, every action logged</li>
+          <li><svg class="lp-ic"><use href="#i-shield"/></svg>Two-factor sign-in available</li>
+        </ul>
       </div>
 
-      <div class="glass login">
-        <h2>Welcome back 👋</h2>
-        <p>Sign in to your workspace.</p>
-        <input type="text" id="lUser" placeholder="Username" autocomplete="username">
+      <div class="lp-login" id="lpLogin">
+        <h2>Sign in</h2>
+        <p class="lp-login-sub">Open your workspace.</p>
+        <label class="lp-sr" for="lUser">Username</label>
+        <input type="text" id="lUser" placeholder="Username" autocomplete="username" autocapitalize="none" autocorrect="off" spellcheck="false">
+        <label class="lp-sr" for="lPass">Password</label>
         <input type="password" id="lPass" placeholder="Password" autocomplete="current-password">
-        <div id="codeRow" class="hidden"><input type="text" id="lCode" placeholder="6-digit code from your authenticator app" inputmode="numeric" autocomplete="one-time-code" style="width:100%"></div>
-        <button id="lBtn">Open my dashboard →</button>
-        <div class="err" id="lErr"></div>
-        <details class="fp-box" style="text-align:left;margin-top:4px">
-          <summary style="cursor:pointer;color:#c9d4ff">Forgot your password?</summary>
-          <div style="display:grid;gap:9px;margin-top:12px">
-            <input type="text" id="fpUser" placeholder="Your username" maxlength="40" autocomplete="off">
-            <button id="fpSend" type="button">Send me a code</button>
-            <div id="fpStep2" class="hidden" style="display:grid;gap:9px">
+        <div id="codeRow" class="hidden"><label class="lp-sr" for="lCode">Authenticator code</label><input type="text" id="lCode" placeholder="6-digit code from your authenticator app" inputmode="numeric" autocomplete="one-time-code" style="width:100%"></div>
+        <button id="lBtn" class="lp-btn lp-btn-primary lp-full">Sign in</button>
+        <div class="err lp-err" id="lErr" role="alert"></div>
+        <details class="fp-box lp-details">
+          <summary>Forgot your password?</summary>
+          <div class="lp-stack">
+            <input type="text" id="fpUser" placeholder="Your username" maxlength="40" autocomplete="off" autocapitalize="none">
+            <button id="fpSend" type="button" class="lp-btn lp-btn-outline lp-full">Send me a code</button>
+            <div id="fpStep2" class="hidden lp-stack">
               <input type="text" id="fpCode" placeholder="6-digit code we sent you" inputmode="numeric" maxlength="6" autocomplete="off">
               <input type="password" id="fpNew" placeholder="New password (at least 10 characters)" autocomplete="new-password">
-              <button id="fpConfirm" type="button">Set new password</button>
+              <button id="fpConfirm" type="button" class="lp-btn lp-btn-primary lp-full">Set new password</button>
             </div>
-            <div class="mute" id="fpMsg" style="color:#c9d4ff"></div>
+            <div class="lp-note" id="fpMsg"></div>
           </div>
         </details>
-        <details style="text-align:left;margin-top:4px">
-          <summary style="cursor:pointer;color:#c9d4ff">New customer? Request an account</summary>
-          <div style="display:grid;gap:9px;margin-top:12px">
-            <input type="text" id="regCompany" placeholder="Company / business name" maxlength="120">
-            <input type="text" id="regUsername" placeholder="Choose a username" maxlength="40" autocomplete="username">
+        <details class="lp-details">
+          <summary>New customer? Request an account</summary>
+          <div class="lp-stack">
+            <input type="text" id="regCompany" placeholder="Company or business name" maxlength="120" autocomplete="organization">
+            <input type="text" id="regUsername" placeholder="Choose a username" maxlength="40" autocomplete="username" autocapitalize="none" autocorrect="off">
             <input type="password" id="regPassword" placeholder="Password (at least 10 characters)" autocomplete="new-password">
             <input type="email" id="regEmail" placeholder="Email address (for password reset and updates)" maxlength="160" autocomplete="email">
             <input type="text" id="regReferral" placeholder="Referral code (optional)" maxlength="20" autocomplete="off">
             <input type="number" id="regTelegram" placeholder="Telegram ID (optional)" class="hidden">
             <input type="text" id="regWebsite" tabindex="-1" autocomplete="off" aria-hidden="true" class="hp-field">
-            <button id="regBtn" type="button">Request access</button>
-            <div class="mute" style="font-size:12px;color:#aebbe0">By requesting access you agree to our <a href="#" data-legal="terms" style="color:#dbe6ff">Terms</a> and <a href="#" data-legal="privacy" style="color:#dbe6ff">Privacy Policy</a>.</div>
-            <div class="err" id="regMsg" aria-live="polite"></div>
-            <div class="secure">Requests are reviewed by an administrator. You cannot sign in until approved.</div>
+            <button id="regBtn" type="button" class="lp-btn lp-btn-primary lp-full">Request access</button>
+            <div class="lp-note">By requesting access you agree to our <a href="#" data-legal="terms">Terms</a> and <a href="#" data-legal="privacy">Privacy Policy</a>.</div>
+            <div class="err lp-err" id="regMsg" aria-live="polite"></div>
+            <div class="lp-note">An administrator reviews each request. You can sign in once it is approved.</div>
           </div>
         </details>
-        <div class="secure">🔐 Encrypted storage · optional two-factor · every action is logged</div>
       </div>
-    </section>
+    </div>
+  </section>
 
-    <div class="trust">🔐 Encrypted &nbsp;·&nbsp; ✅ Two-factor ready &nbsp;·&nbsp; 📊 Built for ATM &amp; POS teams &nbsp;·&nbsp; 💬 In-app support &nbsp;·&nbsp; ✉️ <a href="mailto:reconciliationsolutionsupport@gmail.com" style="color:inherit">reconciliationsolutionsupport@gmail.com</a></div>
+  <section class="lp-strip" aria-label="Summary">
+    <div class="lp-wrap lp-strip-in">
+      <span><svg class="lp-ic"><use href="#i-lock"/></svg>Encrypted storage</span>
+      <span><svg class="lp-ic"><use href="#i-shield"/></svg>Two-factor sign-in</span>
+      <span><svg class="lp-ic"><use href="#i-card"/></svg>Built for ATM and POS teams</span>
+      <span><svg class="lp-ic"><use href="#i-mail"/></svg><a href="mailto:reconciliationsolutionsupport@gmail.com">reconciliationsolutionsupport@gmail.com</a></span>
+    </div>
+  </section>
 
-    <section class="features">
-      <div class="glass feat"><div class="ic">🧠</div><h3>Understands any report</h3><p>It tells you what the report is, the period it covers and what looks wrong - the moment you upload it.</p></div>
-      <div class="glass feat"><div class="ic">💬</div><h3>Ask in plain English</h3><p>"Failed transactions per ATM, top 10." Exact numbers from your data - never guessed.</p></div>
-      <div class="glass feat"><div class="ic">⚖️</div><h3>Reconcile in one click</h3><p>Match a switch log against the ledger and see exactly what is missing or different.</p></div>
-      <div class="glass feat"><div class="ic">📈</div><h3>ATM cash forecast</h3><p>How much cash each ATM will need, and the day it will run out.</p></div>
-      <div class="glass feat"><div class="ic">🔔</div><h3>Alerts and reminders</h3><p>Scheduled reconciliation results, usage warnings and renewal reminders reach your email.</p></div>
-      <div class="glass feat"><div class="ic">📄</div><h3>Branded PDF reports</h3><p>Share a clean summary with your own logo and colours.</p></div>
-    </section>
-    <section class="sec" id="whofor">
-      <h2>Built for teams that live in spreadsheets</h2>
-      <p class="sub">If you match reports, check statements or answer for the numbers, this saves you hours.</p>
-      <div class="features" style="grid-template-columns:repeat(4,1fr)">
-        <div class="glass feat"><div class="ic">🏧</div><h3>ATM and POS operations</h3><p>Match switch logs against ledgers and find missing or different transactions fast.</p></div>
-        <div class="glass feat"><div class="ic">🧾</div><h3>Finance and accounting</h3><p>Month-end checks, discrepancy cases and branded PDF or Excel reports.</p></div>
-        <div class="glass feat"><div class="ic">🏦</div><h3>Lenders and loan officers</h3><p>Check a customer's bank statement and get a clear loan-readiness view.</p></div>
-        <div class="glass feat"><div class="ic">💼</div><h3>Small businesses</h3><p>Ask questions about your own statements and see where the money went.</p></div>
+  <section class="lp-sec" id="features">
+    <div class="lp-wrap">
+      <div class="lp-head"><h2>What you can do</h2><p>Everything in one place, from the first upload to the finished report.</p></div>
+      <div class="lp-grid lp-grid-3">
+        <article class="lp-card"><svg class="lp-ic lp-ic-l"><use href="#i-file"/></svg><h3>Understands your report</h3><p>It tells you what the report is, the period it covers and what looks wrong, as soon as you upload it.</p></article>
+        <article class="lp-card"><svg class="lp-ic lp-ic-l"><use href="#i-chat"/></svg><h3>Ask in plain English</h3><p>Ask "failed transactions per ATM, top 10". You get exact numbers from your data, never guesses.</p></article>
+        <article class="lp-card"><svg class="lp-ic lp-ic-l"><use href="#i-scale"/></svg><h3>Reconcile two reports</h3><p>Match a switch log against the ledger and see what is missing or different.</p></article>
+        <article class="lp-card"><svg class="lp-ic lp-ic-l"><use href="#i-trend"/></svg><h3>ATM cash forecast</h3><p>See how much cash each ATM will need and the day it is likely to run out.</p></article>
+        <article class="lp-card"><svg class="lp-ic lp-ic-l"><use href="#i-bell"/></svg><h3>Alerts and reminders</h3><p>Scheduled reconciliation results, usage warnings and renewal reminders reach your email.</p></article>
+        <article class="lp-card"><svg class="lp-ic lp-ic-l"><use href="#i-pdf"/></svg><h3>PDF and Excel reports</h3><p>Share a clean summary with your own logo and colours.</p></article>
       </div>
-    </section>
+    </div>
+  </section>
 
-    <section class="sec">
-      <h2>Reconcile in 3 simple steps</h2>
-      <p class="sub">No spreadsheets. No headaches.</p>
-      <div class="steps3">
-        <div class="glass step"><div class="n">1</div><b>📤 Upload</b><span class="d">Drop your two reports: CSV, Excel or PDF.</span></div>
-        <div class="glass step"><div class="n">2</div><b>⚡ Compare</b><span class="d">Every row is matched in seconds.</span></div>
-        <div class="glass step"><div class="n">3</div><b>✅ Fix</b><span class="d">See exactly what is missing or different.</span></div>
+  <section class="lp-sec lp-alt" id="whofor">
+    <div class="lp-wrap">
+      <div class="lp-head"><h2>Who it is for</h2><p>If you match reports, check statements or answer for the numbers, this saves you hours.</p></div>
+      <div class="lp-grid lp-grid-4">
+        <article class="lp-card"><svg class="lp-ic lp-ic-l"><use href="#i-card"/></svg><h3>ATM and POS operations</h3><p>Match switch logs against ledgers and find missing or different transactions quickly.</p></article>
+        <article class="lp-card"><svg class="lp-ic lp-ic-l"><use href="#i-receipt"/></svg><h3>Finance and accounting</h3><p>Month-end checks, discrepancy cases, and PDF or Excel reports.</p></article>
+        <article class="lp-card"><svg class="lp-ic lp-ic-l"><use href="#i-bank"/></svg><h3>Lenders and loan officers</h3><p>Check a customer's bank statement and get a clear view of loan readiness.</p></article>
+        <article class="lp-card"><svg class="lp-ic lp-ic-l"><use href="#i-store"/></svg><h3>Small businesses</h3><p>Ask questions about your own statements and see where the money went.</p></article>
       </div>
-    </section>
+    </div>
+  </section>
 
-    <section class="sec" id="demo">
-      <h2>Ask in your own words</h2>
-      <p class="sub">Spelling mistakes, slang and Pidgin are fine. You get the answer, the working and a plain explanation.</p>
-      <div class="demo">
-        <div>
-          <div class="bubble me">hw much be my credit and debit total abeg</div>
-          <div class="bubble">📎 GTBank_statement_Sep_Oct.xlsx · 40 transactions</div>
+  <section class="lp-sec" id="how">
+    <div class="lp-wrap">
+      <div class="lp-head"><h2>How reconciliation works</h2><p>Three steps, no spreadsheet formulas.</p></div>
+      <ol class="lp-steps">
+        <li><span class="lp-num">1</span><div><h3>Upload</h3><p>Add your two reports as CSV, Excel or PDF.</p></div></li>
+        <li><span class="lp-num">2</span><div><h3>Compare</h3><p>Every row is matched against the other report in seconds.</p></div></li>
+        <li><span class="lp-num">3</span><div><h3>Resolve</h3><p>See exactly what is missing or different, then export the result.</p></div></li>
+      </ol>
+    </div>
+  </section>
+
+  <section class="lp-sec lp-alt" id="demo">
+    <div class="lp-wrap">
+      <div class="lp-head"><h2>Ask in your own words</h2><p>Spelling mistakes, slang and Pidgin are fine. You get the answer, the working and a plain explanation.</p></div>
+      <div class="lp-demo">
+        <div class="lp-q">
+          <div class="lp-bubble lp-me">hw much be my credit and debit total abeg</div>
+          <div class="lp-file"><svg class="lp-ic"><use href="#i-file"/></svg>GTBank_statement_Sep_Oct.xlsx &middot; 40 transactions</div>
         </div>
-        <div class="bubble ans">
-          <b>ANSWER:</b> You received <b>₦2,050,000</b> (credits) and spent <b>₦836,736</b> (debits).
-          <ul><li>17 credits (money in) and 23 debits (money out)</li><li>Biggest credit: salary, ₦350,000</li><li>✅ Cross-check passed: the groups add up exactly</li></ul>
+        <div class="lp-answer">
+          <p class="lp-label">Answer</p>
+          <p>You received <b>₦2,050,000</b> in credits and spent <b>₦836,736</b> in debits.</p>
+          <ul><li>17 credits (money in) and 23 debits (money out)</li><li>Biggest credit: salary, ₦350,000</li><li>Cross-check passed: the groups add up exactly</li></ul>
         </div>
       </div>
-      <div class="works-with"><span>📊 Excel</span><span>📄 CSV</span><span>📕 PDF</span><span>📝 Word</span><span>🧾 JSON / XML</span><span>🌐 HTML</span><span>📷 Photos &amp; screenshots</span></div>
-    </section>
+      <ul class="lp-tags" aria-label="Supported files"><li>Excel</li><li>CSV</li><li>PDF</li><li>Word</li><li>JSON / XML</li><li>HTML</li><li>Photos and screenshots</li></ul>
+    </div>
+  </section>
 
-    <section class="sec" id="loancheck">
-      <h2>Check any bank statement in seconds</h2>
-      <p class="sub">Upload a statement and see how the account really looks, month by month.</p>
-      <div class="steps3">
-        <div class="glass step"><div class="n">📊</div><b>Income vs spending</b><span class="d">Every credit and debit sorted for you, month by month.</span></div>
-        <div class="glass step"><div class="n">💰</div><b>What is left each month</b><span class="d">Income, spending and the balance for February, March and every month you choose.</span></div>
-        <div class="glass step"><div class="n">🏦</div><b>Loan-readiness score</b><span class="d">A clear score out of 100, what lenders may like or worry about, and how to improve.</span></div>
+  <section class="lp-sec" id="statement">
+    <div class="lp-wrap">
+      <div class="lp-head"><h2>Check a bank statement</h2><p>Upload a statement and see how the account looks, month by month.</p></div>
+      <div class="lp-grid lp-grid-3">
+        <article class="lp-card"><svg class="lp-ic lp-ic-l"><use href="#i-chart"/></svg><h3>Income and spending</h3><p>Every credit and debit sorted for you, month by month.</p></article>
+        <article class="lp-card"><svg class="lp-ic lp-ic-l"><use href="#i-coin"/></svg><h3>What is left each month</h3><p>Income, spending and the balance for every month you choose.</p></article>
+        <article class="lp-card"><svg class="lp-ic lp-ic-l"><use href="#i-bank"/></svg><h3>Loan-readiness score</h3><p>A score out of 100, what lenders may like or worry about, and how to improve.</p></article>
       </div>
-      <div class="works-with" style="margin-top:6px"><span>GTBank</span><span>Access</span><span>Zenith</span><span>UBA</span><span>First Bank</span><span>OPay</span><span>Moniepoint</span><span>Kuda</span><span>PalmPay</span><span>and other common layouts</span></div>
-      <div style="text-align:center;margin-top:20px"><button type="button" id="sampleBtn">▶ See a sample check (no sign-up)</button></div>
-      <div id="sampleOut" class="glass sample-out hidden" aria-live="polite"></div>
-    </section>
+      <p class="lp-banks-label">Works with common layouts from</p>
+      <ul class="lp-tags"><li>GTBank</li><li>Access</li><li>Zenith</li><li>UBA</li><li>First Bank</li><li>OPay</li><li>Moniepoint</li><li>Kuda</li><li>PalmPay</li><li>and other common layouts</li></ul>
+      <div class="lp-center"><button type="button" id="sampleBtn" class="lp-btn lp-btn-primary">See a sample check (no sign-up)</button></div>
+      <div id="sampleOut" class="sample-out lp-sample hidden" aria-live="polite"></div>
+    </div>
+  </section>
 
-    <section class="sec" id="pricing">
-      <h2>Simple, honest pricing</h2>
-      <p class="sub">Start free and upgrade when your team grows. Clear monthly prices in Naira, no hidden fees.</p>
-      <div class="plans">
-        <div class="glass plan"><h3>Free Trial</h3><div class="price">₦0</div><div class="per">2 days to try everything</div>
+  <section class="lp-sec lp-alt" id="pricing">
+    <div class="lp-wrap">
+      <div class="lp-head"><h2>Pricing</h2><p>Start free and upgrade when your team grows. Monthly prices in Naira, no hidden fees.</p></div>
+      <div class="lp-plans">
+        <article class="lp-plan"><h3>Free Trial</h3><p class="lp-price">₦0</p><p class="lp-per">2 days to try everything</p>
           <ul><li>5 analyses</li><li>1 team member</li><li>Reconciliation, charts, Excel and PDF exports</li></ul>
-          <button type="button" onclick="document.querySelector('.login').scrollIntoView({behavior:'smooth',block:'center'})">Start free</button></div>
-        <div class="glass plan"><h3>Starter</h3><div class="price">₦25,000<small> / month</small></div><div class="per">30 days of access</div>
+          <button type="button" class="lp-btn lp-btn-outline lp-full" data-goto-login>Start free</button></article>
+        <article class="lp-plan"><h3>Starter</h3><p class="lp-price">₦25,000<small> / month</small></p><p class="lp-per">30 days of access</p>
           <ul><li>50 analyses per month</li><li>Up to 3 team members</li><li>Everything in the trial</li></ul>
-          <button type="button" onclick="document.querySelector('.login').scrollIntoView({behavior:'smooth',block:'center'})">Get Starter</button></div>
-        <div class="glass plan hot"><span class="ribbon">Recommended</span><h3>Growth</h3><div class="price">₦60,000<small> / month</small></div><div class="per">30 days of access</div>
+          <button type="button" class="lp-btn lp-btn-outline lp-full" data-goto-login>Get Starter</button></article>
+        <article class="lp-plan lp-plan-hot"><p class="lp-tag">Recommended</p><h3>Growth</h3><p class="lp-price">₦60,000<small> / month</small></p><p class="lp-per">30 days of access</p>
           <ul><li>200 analyses per month</li><li>Up to 5 team members</li><li>Everything in Starter</li></ul>
-          <button type="button" onclick="document.querySelector('.login').scrollIntoView({behavior:'smooth',block:'center'})">Get Growth</button></div>
-        <div class="glass plan"><h3>Professional</h3><div class="price">₦150,000<small> / month</small></div><div class="per">30 days of access</div>
+          <button type="button" class="lp-btn lp-btn-primary lp-full" data-goto-login>Get Growth</button></article>
+        <article class="lp-plan"><h3>Professional</h3><p class="lp-price">₦150,000<small> / month</small></p><p class="lp-per">30 days of access</p>
           <ul><li>750 analyses per month</li><li>Up to 10 team members</li><li>Everything in Growth</li></ul>
-          <button type="button" onclick="document.querySelector('.login').scrollIntoView({behavior:'smooth',block:'center'})">Get Professional</button></div>
+          <button type="button" class="lp-btn lp-btn-outline lp-full" data-goto-login>Get Professional</button></article>
       </div>
-      <div class="glass biz-plan">
+      <div class="lp-biz">
         <div><h3>Business and above</h3><p>Need 1,500 or more analyses a month, 15 or more team members, or a setup built around your team? We agree the plan and price with you first.</p></div>
-        <button type="button" onclick="document.getElementById('contact').scrollIntoView({behavior:'smooth',block:'center'})">Get a custom quote</button>
+        <a class="lp-btn lp-btn-outline" href="#contact">Get a custom quote</a>
       </div>
-      <p class="plans-note">Each paid plan gives 30 days of access from the day we confirm your payment. Payment is by bank transfer for now; card payment is coming soon.</p>
-    </section>
+      <p class="lp-fine">Each paid plan gives 30 days of access from the day we confirm your payment. Payment is by bank transfer for now. Card payment is coming soon.</p>
+    </div>
+  </section>
 
-    <section class="sec">
-      <h2>Questions? Answered.</h2>
-      <div class="faq">
-        <details class="glass"><summary>Is my data safe?</summary><p>Yes. Data is encrypted, two-factor login is available, and every action is logged.</p></details>
-        <details class="glass"><summary>Can I use it on my phone?</summary><p>Yes. The site works in your phone's browser, so there is nothing to install.</p></details>
-        <details class="glass"><summary>Which bank statements and files work?</summary><p>Statements and reports as CSV, Excel or PDF, including GTBank, Access, Zenith, UBA, First Bank, OPay, Moniepoint, Kuda and PalmPay layouts, plus other common formats. Scanned PDFs are read too.</p></details>
-        <details class="glass"><summary>How do I pay?</summary><p>For now by bank transfer to the account shown on the Plan &amp; Billing page. Your plan starts once we confirm the payment. Card payment is coming soon.</p></details>
-        <details class="glass"><summary>Can I talk to someone before I sign up?</summary><p>Yes. Use the contact form on this page or email <a href="mailto:reconciliationsolutionsupport@gmail.com" style="color:inherit">reconciliationsolutionsupport@gmail.com</a> and we will reply.</p></details>
-        <details class="glass"><summary>How do I get started?</summary><p>Tap "Request an account" in the login box. Once an administrator approves it, you can sign in.</p></details>
+  <section class="lp-sec" id="faq">
+    <div class="lp-wrap lp-narrow">
+      <div class="lp-head"><h2>Common questions</h2></div>
+      <div class="lp-faq">
+        <details><summary>Is my data safe?</summary><p>Yes. Data is encrypted, two-factor sign-in is available, and every action is logged.</p></details>
+        <details><summary>Can I use it on my phone?</summary><p>Yes. The site works in the browser on phones, tablets and computers, so there is nothing to install.</p></details>
+        <details><summary>Which bank statements and files work?</summary><p>Statements and reports as CSV, Excel or PDF, including GTBank, Access, Zenith, UBA, First Bank, OPay, Moniepoint, Kuda and PalmPay layouts, plus other common formats. Scanned PDFs are read too.</p></details>
+        <details><summary>How do I pay?</summary><p>For now by bank transfer to the account shown on the Plan &amp; Billing page. Your plan starts once we confirm the payment. Card payment is coming soon.</p></details>
+        <details><summary>Can I talk to someone before I sign up?</summary><p>Yes. Use the contact form on this page or email <a href="mailto:reconciliationsolutionsupport@gmail.com">reconciliationsolutionsupport@gmail.com</a> and we will reply.</p></details>
+        <details><summary>How do I get started?</summary><p>Choose "Request an account" in the sign-in box. Once an administrator approves it, you can sign in.</p></details>
       </div>
-    </section>
+    </div>
+  </section>
 
-    <section class="sec" id="contact">
-      <h2>Talk to us</h2>
-      <p class="sub">A question, a demo or a bigger plan? Send a message and we will reply by email.</p>
-      <form id="contactForm" class="glass contact-form" novalidate>
-        <input type="text" id="ctName" placeholder="Your name" maxlength="80" autocomplete="name">
-        <input type="email" id="ctEmail" placeholder="Your email" maxlength="160" autocomplete="email">
-        <input type="text" id="ctCompany" placeholder="Company (optional)" maxlength="120" autocomplete="organization">
-        <textarea id="ctMessage" rows="4" maxlength="2000" placeholder="How can we help?"></textarea>
+  <section class="lp-sec lp-alt" id="contact">
+    <div class="lp-wrap lp-narrow">
+      <div class="lp-head"><h2>Contact us</h2><p>A question, a demo or a bigger plan? Send a message and we will reply by email.</p></div>
+      <form id="contactForm" class="lp-form" novalidate>
+        <label class="lp-sr" for="ctName">Your name</label><input type="text" id="ctName" placeholder="Your name" maxlength="80" autocomplete="name">
+        <label class="lp-sr" for="ctEmail">Your email</label><input type="email" id="ctEmail" placeholder="Your email" maxlength="160" autocomplete="email">
+        <label class="lp-sr" for="ctCompany">Company</label><input type="text" id="ctCompany" placeholder="Company (optional)" maxlength="120" autocomplete="organization">
+        <label class="lp-sr" for="ctMessage">Message</label><textarea id="ctMessage" rows="4" maxlength="2000" placeholder="How can we help?"></textarea>
         <input type="text" id="ctWebsite" tabindex="-1" autocomplete="off" aria-hidden="true" class="hp-field">
-        <button type="submit" id="ctSend">Send message</button>
-        <div class="mute" id="ctMsg" aria-live="polite" style="min-height:20px"></div>
-        <div class="secure">Or email <a href="mailto:reconciliationsolutionsupport@gmail.com" style="color:inherit">reconciliationsolutionsupport@gmail.com</a></div>
+        <button type="submit" id="ctSend" class="lp-btn lp-btn-primary lp-full">Send message</button>
+        <div class="lp-msg" id="ctMsg" aria-live="polite"></div>
+        <div class="lp-note">Or email <a href="mailto:reconciliationsolutionsupport@gmail.com">reconciliationsolutionsupport@gmail.com</a></div>
       </form>
-    </section>
+    </div>
+  </section>
+  </main>
 
-    <section class="cta">
-      <h2>Ready to stop chasing mismatches?</h2>
-      <p>Join teams who reconcile faster and sleep better.</p>
-      <button type="button" onclick="document.querySelector('.login').scrollIntoView({behavior:'smooth',block:'center'})">Get started →</button>
-    </section>
-    <div class="foot">Built for teams that handle sensitive financial data. · Contact: <a href="mailto:reconciliationsolutionsupport@gmail.com">reconciliationsolutionsupport@gmail.com</a> · <a href="#" data-legal="terms">Terms</a> · <a href="#" data-legal="privacy">Privacy</a></div>
-  </div>
+  <footer class="lp-foot">
+    <div class="lp-wrap lp-foot-in">
+      <a class="lp-brand" href="#top"><svg class="lp-ic lp-logo-ic"><use href="#i-logo"/></svg><span>Report Analyzer</span></a>
+      <p>Built for teams that handle sensitive financial data.</p>
+      <p><a href="mailto:reconciliationsolutionsupport@gmail.com">reconciliationsolutionsupport@gmail.com</a> &middot; <a href="#" data-legal="terms">Terms</a> &middot; <a href="#" data-legal="privacy">Privacy</a></p>
+    </div>
+  </footer>
 </div>
 
 <!-- ======================= APP ======================= -->
@@ -1487,13 +1744,13 @@ $("regBtn").onclick = async () => {
     const result = await jpost("/api/register", payload);
     msg.textContent = result.message; $("regCompany").value = ""; $("regUsername").value = "";
     $("regPassword").value = ""; $("regTelegram").value = ""; $("regEmail").value = "";
-  } catch (e) { msg.textContent = "❌ " + e.message; }
+  } catch (e) { msg.textContent = e.message; }
   finally { btn.disabled = false; }
 };
 $("refreshRegs").onclick = async () => {
   $("regAdminMsg").textContent = "";
   try { await loadRegistrationRequests(); $("regAdminMsg").textContent = "Updated."; }
-  catch (e) { $("regAdminMsg").textContent = "❌ " + e.message; }
+  catch (e) { $("regAdminMsg").textContent = e.message; }
 };
 
 /* ---------- landing / login ---------- */
@@ -1598,7 +1855,7 @@ $("upload").onclick = async () => {
     const r = await api(`/api/companies/${$("company").value}/reports`, { method: "POST", body: fd });
     $("uploadMsg").textContent = `Saved: ${r.rows} rows, ${r.columns.length} columns. ${r.notes.join(" ")}`;
     $("file").value = ""; const cid = $("company").value; await loadCompanies(cid); await loadReports(r.id);
-  } catch (e) { $("uploadMsg").textContent = "❌ " + e.message; }
+  } catch (e) { $("uploadMsg").textContent = e.message; }
   $("upload").disabled = false;
 };
 $("delReport").onclick = async () => { const id = $("report").value; if (id === "all" || !confirm("Delete this report permanently?")) return; try { await api(`/api/reports/${id}`, { method: "DELETE" }); const cid = $("company").value; await loadCompanies(cid); } catch (e) { $("error").textContent = e.message; } };
@@ -1612,7 +1869,7 @@ $("ask").onclick = async () => {
     const rid = $("report").value;
     const r = await jpost("/api/analyze", { company_id: Number($("company").value), report_id: rid === "all" ? null : Number(rid), question: q, prev_plan: $("followup").checked ? S.plan : null });
     if (r.clarify) $("error").textContent = "🤔 " + r.clarify; else { S.plan = r.plan; renderResult(r); loadHistory(); }
-  } catch (e) { $("error").textContent = "❌ " + e.message; }
+  } catch (e) { $("error").textContent = e.message; }
   $("ask").disabled = false; $("ask").textContent = "Analyze";
 };
 $("fBtn").onclick = async () => {
@@ -1620,7 +1877,7 @@ $("fBtn").onclick = async () => {
   try {
     const rid = $("report").value;
     renderResult(await jpost("/api/forecast", { company_id: Number($("company").value), report_id: rid === "all" ? null : Number(rid), days: Number($("fDays").value) || 7, cash: $("fCash").value ? Number($("fCash").value) : null }));
-  } catch (e) { $("error").textContent = "❌ " + e.message; }
+  } catch (e) { $("error").textContent = e.message; }
   $("fBtn").disabled = false;
 };
 function renderResult(r) {
@@ -1647,7 +1904,7 @@ $("rBtn").onclick = async () => {
       fillTable($("rTable"), r.columns, r.rows);
       $("rInfo").textContent = r.total_problem_rows ? `${r.total_problem_rows} unmatched/mismatched row(s)` + (r.total_problem_rows > r.rows.length ? ` - showing ${r.rows.length}, download Excel for all.` : "") : "✅ Everything matched.";
     }
-  } catch (e) { $("rErr").textContent = "❌ " + e.message; }
+  } catch (e) { $("rErr").textContent = e.message; }
   $("rBtn").disabled = false; $("rBtn").textContent = "Reconcile";
 };
 
@@ -1778,7 +2035,7 @@ $("submitPayment").onclick = async () => {
     const r = await jpost("/api/billing/payment-requests", { company_id: cid, plan, transfer_reference: reference, coupon_code: ($("payCoupon") && $("payCoupon").value.trim()) || null });
     $("billingMsg").textContent = `Request #${r.id} submitted for ₦${Number(r.amount_ngn).toLocaleString()}. Access remains on your current plan until an admin verifies payment.`;
     $("transferReference").value = ""; await loadBilling();
-  } catch (e) { $("billingMsg").textContent = "❌ " + e.message; }
+  } catch (e) { $("billingMsg").textContent = e.message; }
   finally { btn.disabled = false; }
 };
 
@@ -1834,7 +2091,7 @@ function renderBillingPayments(items) {
     async function decide(decision) {
       approve.disabled = reject.disabled = true;
       try { await jpost(`/api/admin/billing/payments/${p.id}/decision`, { decision, note: note.value }); msg.textContent = decision === "approve" ? "Approved; plan activated ✓ for the selected plan's fixed term." : "Rejected."; await loadAdmin(); }
-      catch (e) { msg.textContent = "❌ " + e.message; approve.disabled = reject.disabled = false; }
+      catch (e) { msg.textContent = e.message; approve.disabled = reject.disabled = false; }
     }
     approve.onclick = () => { if (confirm("Have you verified this transfer in your actual bank account?")) decide("approve"); };
     reject.onclick = () => decide("reject");
@@ -1854,7 +2111,7 @@ $("grantBtn").onclick = async () => {
   if (!company_id || !Number.isFinite(days) || days < 0.5 || days > 366) { $("grantMsg").textContent = "Choose a company and enter 0.5-366 days."; return; }
   const btn = $("grantBtn"); btn.disabled = true;
   try { const r = await jpost("/api/admin/billing/grant", { company_id, plan, days, note }); $("grantMsg").textContent = `Granted ${r.plan.toUpperCase()} until ${r.expires_at} UTC.`; $("grantNote").value = ""; await loadAdmin(); }
-  catch (e) { $("grantMsg").textContent = "❌ " + e.message; }
+  catch (e) { $("grantMsg").textContent = e.message; }
   finally { btn.disabled = false; }
 };
 
@@ -1873,12 +2130,12 @@ async function loadRegistrationRequests() {
     approve.onclick = async () => {
       approve.disabled = reject.disabled = true;
       try { await jpost(`/api/admin/registrations/${r.id}/decision`, {decision:"approve", note:"Approved by admin"}); msg.textContent = "Approved ✓"; await loadCompanies(); await loadAdmin(); }
-      catch (e) { msg.textContent = "❌ " + e.message; approve.disabled = reject.disabled = false; }
+      catch (e) { msg.textContent = e.message; approve.disabled = reject.disabled = false; }
     };
     reject.onclick = async () => {
       approve.disabled = reject.disabled = true;
       try { await jpost(`/api/admin/registrations/${r.id}/decision`, {decision:"reject", note:"Not approved"}); msg.textContent = "Rejected."; await loadAdmin(); }
-      catch (e) { msg.textContent = "❌ " + e.message; approve.disabled = reject.disabled = false; }
+      catch (e) { msg.textContent = e.message; approve.disabled = reject.disabled = false; }
     };
     row.append(approve, reject, msg); card.appendChild(row); host.appendChild(card);
   });
@@ -1895,7 +2152,7 @@ function userRow(u) {
     const body = { role: role.value, alerts: alerts.checked, telegram_id: tg.value ? Number(tg.value) : null, company_ids: cos.map(l => l.firstChild).filter(c => c.checked).map(c => Number(c.value)) };
     if (!isMe) body.active = active.checked; else delete body.role;
     if (pw.value) body.password = pw.value; if (reset2.checked) body.reset_2fa = true;
-    try { await jsend("PATCH", `/api/users/${u.id}`, body); msg.textContent = "Saved ✓"; pw.value = ""; reset2.checked = false; } catch (e) { msg.textContent = "❌ " + e.message; }
+    try { await jsend("PATCH", `/api/users/${u.id}`, body); msg.textContent = "Saved ✓"; pw.value = ""; reset2.checked = false; } catch (e) { msg.textContent = e.message; }
   };
   const r1 = el("div", "", "row"); r1.append(el("b", u.username + (u.totp_enabled ? "  🔐" : "")), role, labeled("active", active), labeled("Telegram alerts", alerts), tg);
   const r2 = el("div", "", "row"); r2.append(...cos);
@@ -1916,9 +2173,9 @@ $("bCo").onchange = loadBranding;
 $("bBtn").onclick = async () => {
   const fd = new FormData(); fd.append("display_name", $("bName").value); fd.append("color", $("bColor").value);
   if ($("bLogo").files[0]) fd.append("logo", $("bLogo").files[0]);
-  try { await api(`/api/companies/${$("bCo").value}/branding`, { method: "PUT", body: fd }); $("bMsg").textContent = "Saved ✓"; $("bLogo").value = ""; } catch (e) { $("bMsg").textContent = "❌ " + e.message; }
+  try { await api(`/api/companies/${$("bCo").value}/branding`, { method: "PUT", body: fd }); $("bMsg").textContent = "Saved ✓"; $("bLogo").value = ""; } catch (e) { $("bMsg").textContent = e.message; }
 };
-$("backupBtn").onclick = async () => { $("backupBtn").disabled = true; try { const r = await api("/api/backup", { method: "POST" }); $("backupMsg").textContent = `Saved ${r.file} (${(r.size / 1024).toFixed(0)} KB) in ${r.folder}/ - copy it off the server too.`; } catch (e) { $("backupMsg").textContent = "❌ " + e.message; } $("backupBtn").disabled = false; };
+$("backupBtn").onclick = async () => { $("backupBtn").disabled = true; try { const r = await api("/api/backup", { method: "POST" }); $("backupMsg").textContent = `Saved ${r.file} (${(r.size / 1024).toFixed(0)} KB) in ${r.folder}/ - copy it off the server too.`; } catch (e) { $("backupMsg").textContent = e.message; } $("backupBtn").disabled = false; };
 
 api("/api/me").then(start).catch(showLanding);
 
@@ -2257,7 +2514,7 @@ api("/api/me").then(start).catch(showLanding);
     const cid = Number($("company").value);
     if (!$("payProof").files[0]) { $("proofMsg").textContent = "Choose your screenshot first."; return; }
     $("attachProof").disabled = true; $("proofMsg").textContent = "Sending…";
-    try { $("proofMsg").textContent = "✅ " + await sendProof(cid); } catch (e) { $("proofMsg").textContent = "❌ " + e.message; }
+    try { $("proofMsg").textContent = "✅ " + await sendProof(cid); } catch (e) { $("proofMsg").textContent = e.message; }
     $("attachProof").disabled = false;
   };
   $("submitPayment").onclick = async () => {
@@ -2278,7 +2535,7 @@ api("/api/me").then(start).catch(showLanding);
       catch (e) { extra = " ⚠️ Your request is saved, but the screenshot could not be sent (" + e.message + "). Please use the “Send screenshot” button below to try again."; }
       $("billingMsg").textContent = `Request #${r.id} submitted for ₦${Number(r.amount_ngn).toLocaleString()}. Access stays on your current plan until we verify your payment.` + extra;
       $("transferReference").value = ""; await loadBilling();
-    } catch (e) { $("billingMsg").textContent = "❌ " + e.message; }
+    } catch (e) { $("billingMsg").textContent = e.message; }
     finally { btn.disabled = false; }
   };
 
@@ -2301,7 +2558,7 @@ api("/api/me").then(start).catch(showLanding);
     const u = $("fpUser").value.trim(); if (!u) { $("fpMsg").textContent = "Enter your username first."; return; }
     $("fpSend").disabled = true; $("fpMsg").textContent = "Sending…";
     try { const r = await jpost("/api/password-reset/request", { username: u }); $("fpMsg").textContent = r.message; $("fpStep2").classList.remove("hidden"); }
-    catch (e) { $("fpMsg").textContent = "❌ " + e.message; }
+    catch (e) { $("fpMsg").textContent = e.message; }
     $("fpSend").disabled = false;
   };
   $("fpConfirm").onclick = async () => {
@@ -2309,7 +2566,7 @@ api("/api/me").then(start).catch(showLanding);
     try {
       const r = await jpost("/api/password-reset/confirm", { username: $("fpUser").value.trim(), code: $("fpCode").value.trim(), new_password: $("fpNew").value });
       $("fpMsg").textContent = "✅ " + r.message; $("fpCode").value = ""; $("fpNew").value = ""; $("fpStep2").classList.add("hidden");
-    } catch (e) { $("fpMsg").textContent = "❌ " + e.message; }
+    } catch (e) { $("fpMsg").textContent = e.message; }
     $("fpConfirm").disabled = false;
   };
 
@@ -2464,13 +2721,13 @@ api("/api/me").then(start).catch(showLanding);
           w.onclick = async () => {
             if (!confirm("Remove this announcement from every customer's Notifications?")) return;
             try { await api("/api/admin/broadcasts/" + b.id, { method: "DELETE" }); await loadBroadcasts(); refreshBell(); }
-            catch (e) { meta.textContent = "❌ " + e.message; }
+            catch (e) { meta.textContent = e.message; }
           };
           card.append(w);
         }
         host.append(card);
       });
-    } catch (e) { host.textContent = "❌ " + e.message; }
+    } catch (e) { host.textContent = e.message; }
   }
   $("bcSend").onclick = async () => {
     const title = $("bcTitle").value.trim(), message = $("bcBody").value.trim();
@@ -2483,7 +2740,7 @@ api("/api/me").then(start).catch(showLanding);
       $("bcTitle").value = ""; $("bcBody").value = ""; bcPreview();
       $("bcMsg").textContent = "✅ Sent. Customers will see it under Notifications.";
       await loadBroadcasts(); refreshBell();
-    } catch (e) { $("bcMsg").textContent = "❌ " + e.message; }
+    } catch (e) { $("bcMsg").textContent = e.message; }
     $("bcSend").disabled = false;
   };
 
@@ -2572,7 +2829,7 @@ api("/api/me").then(start).catch(showLanding);
       ssRender(await jpost("/api/statement-score", { company_id: Number($("company").value), report_id: v === "all" ? null : Number(v),
         report_ids: combo.length >= 2 ? combo : null, from_month: $("ssFrom").value || null, to_month: $("ssTo").value || null }));
       $("ssOut").scrollIntoView({ behavior: "smooth", block: "start" });
-    } catch (e) { $("ssErr").textContent = "❌ " + e.message; }
+    } catch (e) { $("ssErr").textContent = e.message; }
     $("ssRun").disabled = false; $("ssRun").textContent = "🔍 Check statement";
   };
   $("ssReport").addEventListener("change", () => { $("ssFrom").value = ""; $("ssTo").value = ""; });
@@ -2598,7 +2855,7 @@ api("/api/me").then(start).catch(showLanding);
       const url = location.origin + r.url_path; $("ssShareUrl").value = url; $("ssShareOut").classList.remove("hidden");
       $("ssShareWa").href = "https://wa.me/?text=" + encodeURIComponent("Here is my bank statement check (private link, works until " + when(r.expires_at) + " UTC): " + url);
       ssLoadShares();
-    } catch (e) { $("ssShareErr").textContent = "❌ " + e.message; }
+    } catch (e) { $("ssShareErr").textContent = e.message; }
   };
   $("ssShareCopy").onclick = async () => { try { await navigator.clipboard.writeText($("ssShareUrl").value); $("ssShareCopy").textContent = "Copied ✓"; } catch (e) { $("ssShareUrl").select(); } setTimeout(() => { $("ssShareCopy").textContent = "Copy link"; }, 1800); };
 
@@ -2621,7 +2878,7 @@ api("/api/me").then(start).catch(showLanding);
         tr.append(td); }); tbl.append(tr); });
       $("btTable").replaceChildren(tbl); $("btXlsx").href = `/api/download/${r.result_id}`; $("btPdf").href = `/api/download/${r.result_id}/pdf`;
       if (typeof loadBilling === "function") loadBilling();
-    } catch (e) { $("btErr").textContent = "❌ " + e.message; }
+    } catch (e) { $("btErr").textContent = e.message; }
     $("btRun").disabled = false; $("btRun").textContent = "🔍 Score all";
   };
 
@@ -2655,16 +2912,16 @@ api("/api/me").then(start).catch(showLanding);
         return row; }));
     } catch (e) {}
   }
-  $("wkOn").onchange = async () => { try { await jpost("/api/me/weekly-email", { enabled: $("wkOn").checked }); $("wkMsg").textContent = $("wkOn").checked ? "✅ Turned on. You will get it on Monday mornings." : "Turned off."; } catch (e) { $("wkOn").checked = false; $("wkMsg").textContent = "❌ " + e.message; } };
-  $("wkTest").onclick = async () => { $("wkMsg").textContent = "Sending…"; try { const r = await jpost("/api/me/weekly-email/test", {}); $("wkMsg").textContent = "✅ Sample sent to " + r.sent_to; } catch (e) { $("wkMsg").textContent = "❌ " + e.message; } };
-  $("devOthers").onclick = async () => { try { const r = await jpost("/api/me/sessions/revoke-others", {}); $("devMsg").textContent = `✅ Signed out ${r.signed_out} other device(s).`; } catch (e) { $("devMsg").textContent = "❌ " + e.message; } loadSecurity(); };
+  $("wkOn").onchange = async () => { try { await jpost("/api/me/weekly-email", { enabled: $("wkOn").checked }); $("wkMsg").textContent = $("wkOn").checked ? "✅ Turned on. You will get it on Monday mornings." : "Turned off."; } catch (e) { $("wkOn").checked = false; $("wkMsg").textContent = e.message; } };
+  $("wkTest").onclick = async () => { $("wkMsg").textContent = "Sending…"; try { const r = await jpost("/api/me/weekly-email/test", {}); $("wkMsg").textContent = "✅ Sample sent to " + r.sent_to; } catch (e) { $("wkMsg").textContent = e.message; } };
+  $("devOthers").onclick = async () => { try { const r = await jpost("/api/me/sessions/revoke-others", {}); $("devMsg").textContent = `✅ Signed out ${r.signed_out} other device(s).`; } catch (e) { $("devMsg").textContent = e.message; } loadSecurity(); };
   $("delSend").onclick = async () => {
     $("delMsg").textContent = ""; if (!$("delPw").value) { $("delMsg").textContent = "Enter your password to confirm."; return; }
     if (!confirm("Ask us to delete your account? This removes your access and personal details.")) return;
-    try { await jpost("/api/me/deletion-request", { password: $("delPw").value, note: $("delNote").value }); $("delPw").value = ""; $("delMsg").textContent = "✅ Request sent."; } catch (e) { $("delMsg").textContent = "❌ " + e.message; }
+    try { await jpost("/api/me/deletion-request", { password: $("delPw").value, note: $("delNote").value }); $("delPw").value = ""; $("delMsg").textContent = "✅ Request sent."; } catch (e) { $("delMsg").textContent = e.message; }
     loadSecurity();
   };
-  $("delCancel").onclick = async () => { try { await api("/api/me/deletion-request", { method: "DELETE" }); $("delMsg").textContent = "Request cancelled."; } catch (e) { $("delMsg").textContent = "❌ " + e.message; } loadSecurity(); };
+  $("delCancel").onclick = async () => { try { await api("/api/me/deletion-request", { method: "DELETE" }); $("delMsg").textContent = "Request cancelled."; } catch (e) { $("delMsg").textContent = e.message; } loadSecurity(); };
 
   /* ---------- "ask about this" (any wording) ---------- */
   function mountAsk(hostId, kind, payloadFn, examples, title) {
@@ -2679,7 +2936,7 @@ api("/api/me").then(start).catch(showLanding);
       const payload = payloadFn(); if (!payload) { err.textContent = "Run it first, then ask about the result."; return; }
       btn.disabled = true; btn.textContent = "Thinking…";
       try { const r = await jpost("/api/explain", Object.assign({ kind, question: q }, payload)); const a = el("div", r.answer, "ask-ans" + (r.source === "built-in" ? " builtin" : "")); out.replaceChildren(a); }
-      catch (e) { err.textContent = "❌ " + e.message; }
+      catch (e) { err.textContent = e.message; }
       btn.disabled = false; btn.textContent = "Ask";
     };
     btn.onclick = go; inp.addEventListener("keydown", e => { if (e.key === "Enter") go(); });
@@ -2736,7 +2993,7 @@ api("/api/me").then(start).catch(showLanding);
   }
   $("proformaBtn").onclick = async () => {
     try { await downloadPost("/api/billing/proforma", { company_id: Number($("company").value), plan: $("billingPlan").value, coupon_code: ($("payCoupon").value || "").trim() || null }, "invoice.pdf"); $("billingMsg").textContent = "✅ Invoice downloaded. Pay with the bank details on it, then submit your transfer reference."; }
-    catch (e) { $("billingMsg").textContent = "❌ " + e.message; }
+    catch (e) { $("billingMsg").textContent = e.message; }
   };
 
   /* ---------- support tickets ---------- */
@@ -2759,17 +3016,17 @@ api("/api/me").then(start).catch(showLanding);
       $("tkThread").replaceChildren(...t.messages.map(m => { const d = el("div", "", "tk-msg" + (m.staff ? " staff" : "")); d.append(el("small", `${m.from} · ${when(m.at)} UTC`), document.createTextNode(m.body)); return d; }));
       $("tkReplyBox").classList.toggle("hidden", t.status === "closed" && S.user.role !== "admin"); $("tkErr").textContent = "";
       $("tkView").scrollIntoView({ behavior: "smooth", block: "nearest" });
-    } catch (e) { $("tkErr").textContent = "❌ " + e.message; }
+    } catch (e) { $("tkErr").textContent = e.message; }
   }
   $("tkSend").onclick = async () => {
     $("tkMsg").textContent = "";
     try { await jpost("/api/tickets", { company_id: Number($("company").value), subject: $("tkSubject").value, body: $("tkBody").value }); $("tkSubject").value = ""; $("tkBody").value = ""; $("tkMsg").textContent = "✅ Sent. We will reply here."; loadTickets(); }
-    catch (e) { $("tkMsg").textContent = "❌ " + e.message; }
+    catch (e) { $("tkMsg").textContent = e.message; }
   };
   $("tkReplySend").onclick = async () => {
-    try { await jpost(`/api/tickets/${tkOpen}/reply`, { body: $("tkReply").value }); $("tkReply").value = ""; await openTicket(tkOpen); loadTickets(); } catch (e) { $("tkErr").textContent = "❌ " + e.message; }
+    try { await jpost(`/api/tickets/${tkOpen}/reply`, { body: $("tkReply").value }); $("tkReply").value = ""; await openTicket(tkOpen); loadTickets(); } catch (e) { $("tkErr").textContent = e.message; }
   };
-  $("tkClose").onclick = async () => { try { await jpost(`/api/tickets/${tkOpen}/close`, {}); await openTicket(tkOpen); loadTickets(); } catch (e) { $("tkErr").textContent = "❌ " + e.message; } };
+  $("tkClose").onclick = async () => { try { await jpost(`/api/tickets/${tkOpen}/close`, {}); await openTicket(tkOpen); loadTickets(); } catch (e) { $("tkErr").textContent = e.message; } };
   $("tkAll").onchange = loadTickets;
 
   /* ---------- API keys ---------- */
@@ -2788,7 +3045,7 @@ api("/api/me").then(start).catch(showLanding);
   $("akMake").onclick = async () => {
     $("akErr").textContent = "";
     try { const r = await jpost("/api/api-keys", { company_id: Number($("company").value), label: $("akLabel").value }); $("akKey").textContent = r.key; $("akNew").classList.remove("hidden"); $("akLabel").value = ""; loadApiKeys(); }
-    catch (e) { $("akErr").textContent = "❌ " + e.message; }
+    catch (e) { $("akErr").textContent = e.message; }
   };
   $("akCopy").onclick = async () => { try { await navigator.clipboard.writeText($("akKey").textContent); $("akCopy").textContent = "Copied ✓"; } catch (e) {} setTimeout(() => { $("akCopy").textContent = "Copy key"; }, 1800); };
 
@@ -2820,7 +3077,7 @@ api("/api/me").then(start).catch(showLanding);
       const r = await jsend("PUT", "/api/me/email", { email: $("acctEmail").value.trim() });
       S.user.email = r.email;
       $("acctMsg").textContent = r.email ? "✅ Saved. We will use it for password resets and plan reminders." : "Email removed.";
-    } catch (e) { $("acctMsg").textContent = "❌ " + e.message; }
+    } catch (e) { $("acctMsg").textContent = e.message; }
   };
   $("refCopy").onclick = async () => {
     try { await navigator.clipboard.writeText($("refLink").value); $("refCopy").textContent = "Copied ✓"; }
@@ -2836,7 +3093,7 @@ api("/api/me").then(start).catch(showLanding);
       const r = await jpost("/api/billing/redeem", { company_id: Number($("company").value), code });
       $("couponMsg").textContent = `✅ ${r.days} free day(s) added. Your plan now runs until ${r.expires_at} UTC.`;
       $("couponCode").value = ""; if (typeof loadBilling === "function") loadBilling();
-    } catch (e) { $("couponMsg").textContent = "❌ " + e.message; }
+    } catch (e) { $("couponMsg").textContent = e.message; }
   };
 
   /* ---------- saved questions ---------- */
@@ -2864,7 +3121,7 @@ api("/api/me").then(start).catch(showLanding);
   $("saveQ").onclick = async () => {
     const q = lastQ || $("question").value.trim(); if (!q) return;
     try { await jpost(`/api/companies/${Number($("company").value)}/saved-questions`, { question: q }); $("fbMsg").textContent = "⭐ Saved. Find it under your question box."; loadSaved(); }
-    catch (e) { $("fbMsg").textContent = "❌ " + e.message; }
+    catch (e) { $("fbMsg").textContent = e.message; }
   };
   async function sendFeedback(rating) {
     let comment = "";
@@ -2873,7 +3130,7 @@ api("/api/me").then(start).catch(showLanding);
       await jpost("/api/feedback", { company_id: Number($("company").value), rating, question: lastQ || $("question").value.trim(), comment });
       $("fbMsg").textContent = rating > 0 ? "Thank you! 💙" : "Thanks, we will use this to improve.";
       $("fbUp").disabled = $("fbDown").disabled = true;
-    } catch (e) { $("fbMsg").textContent = "❌ " + e.message; }
+    } catch (e) { $("fbMsg").textContent = e.message; }
   }
   $("fbUp").onclick = () => sendFeedback(1);
   $("fbDown").onclick = () => sendFeedback(-1);
@@ -2915,7 +3172,7 @@ api("/api/me").then(start).catch(showLanding);
       host.append(listBox("⏰ Plans ending within 3 days", o.expiring_soon.map(x => `${x.company}: ${x.plan} ends ${x.expires_at} UTC`), "No plans ending soon."));
       host.append(listBox("🕒 In grace period (plan ended, still working)", o.in_grace.map(x => `${x.company}: ${x.plan}, grace ends ${x.grace_ends_at} UTC`), "Nobody."));
       host.append(listBox("👍 / 👎 answer ratings (30 days)", [`👍 ${o.feedback_up_30d}   👎 ${o.feedback_down_30d}`], ""));
-    } catch (e) { host.textContent = "❌ " + e.message; }
+    } catch (e) { host.textContent = e.message; }
     loadFeedbackAdmin(); loadContactAdmin(); loadCoupons();
   }
   async function loadFeedbackAdmin() {
@@ -2952,7 +3209,7 @@ api("/api/me").then(start).catch(showLanding);
         if (c.active) { const d = el("button", "Disable", "danger"); d.type = "button"; d.style.marginLeft = "10px"; d.onclick = async () => { try { await api("/api/admin/coupons/" + encodeURIComponent(c.code), { method: "DELETE" }); } catch (e) {} loadCoupons(); }; row.append(d); }
         host.append(row);
       });
-    } catch (e) { host.textContent = "❌ " + e.message; }
+    } catch (e) { host.textContent = e.message; }
   }
   $("cpCreate").onclick = async () => {
     $("cpMsg").textContent = "";
@@ -2960,7 +3217,7 @@ api("/api/me").then(start).catch(showLanding);
       const r = await jpost("/api/admin/coupons", { kind: $("cpKind").value, value: Number($("cpValue").value), max_uses: Number($("cpUses").value) || 1,
                                                     days_valid: Number($("cpDays").value) || null, code: $("cpCode").value.trim() || null });
       $("cpMsg").textContent = "✅ Created: " + r.code + "  (send this code to your customer)"; $("cpCode").value = ""; loadCoupons();
-    } catch (e) { $("cpMsg").textContent = "❌ " + e.message; }
+    } catch (e) { $("cpMsg").textContent = e.message; }
   };
 
   /* extend the view hook from the Notifications code */
@@ -3006,7 +3263,7 @@ api("/api/me").then(start).catch(showLanding);
         await api("/api/companies/" + cid + "/reports", { method: "POST", body: fd });
       }
       await loadCompanies(cid);
-    } catch (e) { btn.textContent = "❌ " + e.message; btn.disabled = false; }
+    } catch (e) { btn.textContent = e.message; btn.disabled = false; }
   }
   window.renderChecklist = function () {
     const box = $("dCheck"); if (!box || !S.user) return;
@@ -3049,14 +3306,14 @@ api("/api/me").then(start).catch(showLanding);
   const sampleBtn = document.getElementById("sampleBtn");
   if (sampleBtn) sampleBtn.onclick = async () => {
     const out = document.getElementById("sampleOut"); sampleBtn.disabled = true;
-    out.classList.remove("hidden"); out.textContent = "Checking the sample statement…";
+    out.classList.remove("hidden"); out.textContent = "Checking the sample statement...";
     try {
       const r = await (await fetch("/api/public/sample-statement")).json();
       if (!r || r.score === undefined) throw new Error("The sample is not available right now.");
       out.replaceChildren();
       const top = mk("div", "", "sm-top");
       const sc = mk("div", String(r.score), "sm-score"); sc.append(mk("small", " / 100"));
-      const side = mk("div"); side.append(mk("span", r.verdict, "sm-pill"), mk("div", "Period: " + r.period), mk("div", "Balance check: " + (r.integrity.status === "passed" ? "passed ✅" : r.integrity.status)));
+      const side = mk("div"); side.append(mk("span", r.verdict, "sm-pill"), mk("div", "Period: " + r.period), mk("div", "Balance check: " + (r.integrity.status === "passed" ? "passed" : r.integrity.status)));
       top.append(sc, side); out.append(top);
       out.append(mk("h3", "Month by month"));
       const t = mk("table"), head = mk("tr");
@@ -3065,13 +3322,13 @@ api("/api/me").then(start).catch(showLanding);
       out.append(t);
       const grid = mk("div", "", "sm-grid");
       const a = mk("div"); a.append(mk("h3", "Where the money went"), list((r.spending || []).map(c => `${c.category}: ${ngn(c.amount)} (${c.share_pct}%)`)));
-      const b = mk("div"); b.append(mk("h3", "What a lender may notice"), list([...(r.strengths || []).map(x => "✅ " + x), ...((r.concerns || []).length ? r.concerns.map(x => "⚠️ " + x) : ["No major worries found."])]));
+      const b = mk("div"); b.append(mk("h3", "What a lender may notice"), list([...(r.strengths || []).map(x => x), ...((r.concerns || []).length ? r.concerns.map(x => x) : ["No major worries found."])]));
       grid.append(a, b); out.append(grid);
       out.append(mk("div", r.note, "sm-note"));
       const go = mk("button", "Request an account to check your own statement"); go.type = "button"; go.style.marginTop = "12px";
-      go.onclick = () => { const l = document.querySelector(".login"); if (l) l.scrollIntoView({ behavior: "smooth", block: "center" }); };
+      go.onclick = () => { const l = document.getElementById("lpLogin"); if (l) l.scrollIntoView({ behavior: "smooth", block: "center" }); };
       out.append(go);
-    } catch (e) { out.textContent = "❌ " + (e.message || "Could not load the sample."); }
+    } catch (e) { out.textContent = (e.message || "Could not load the sample."); }
     finally { sampleBtn.disabled = false; }
   };
 
@@ -3084,9 +3341,9 @@ api("/api/me").then(start).catch(showLanding);
       await fetch("/api/public/contact", { method: "POST", headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ name: v("ctName"), email: v("ctEmail"), company: v("ctCompany"), message: v("ctMessage"), website: document.getElementById("ctWebsite").value }) })
         .then(async r => { if (!r.ok) { let m = "Something went wrong. Please try again or email us."; try { const d = await r.json(); if (typeof d.detail === "string") m = d.detail; } catch (e) {} throw new Error(m); } });
-      msg.textContent = "✅ Thank you. We received your message and will reply to " + v("ctEmail") + ".";
+      msg.textContent = "Thank you. We received your message and will reply to " + v("ctEmail") + ".";
       ["ctName", "ctEmail", "ctCompany", "ctMessage"].forEach(id => { document.getElementById(id).value = ""; });
-    } catch (e) { msg.textContent = "❌ " + e.message; }
+    } catch (e) { msg.textContent = e.message; }
     finally { btn.disabled = false; }
   });
 
@@ -3097,6 +3354,17 @@ api("/api/me").then(start).catch(showLanding);
     const nav = document.querySelector('[data-nav="support"]'); if (nav) { ev.preventDefault(); nav.click(); }
   });
 })();
+</script>
+<script>
+/* landing: any element marked data-goto-login scrolls to the sign-in card */
+document.addEventListener("click", function (ev) {
+  var t = ev.target.closest ? ev.target.closest("[data-goto-login]") : null;
+  if (!t) return;
+  ev.preventDefault();
+  var box = document.getElementById("lpLogin"); if (!box) return;
+  box.scrollIntoView({ behavior: "smooth", block: "start" });
+  var u = document.getElementById("lUser"); if (u) { try { u.focus({ preventScroll: true }); } catch (e) { u.focus(); } }
+});
 </script>
 </body>
 </html>
