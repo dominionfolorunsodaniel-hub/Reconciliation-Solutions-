@@ -65,7 +65,7 @@ def create(user: dict, company_id: int, subject: str, body: str) -> dict:
                     (company_id, user["id"], subject, "open", now, now))
         tid = con.execute("SELECT MAX(id) AS i FROM tickets WHERE user_id = ?", (user["id"],)).fetchone()["i"]
         con.execute("INSERT INTO ticket_messages(ticket_id, user_id, is_staff, body, created_at) VALUES (?,?,?,?,?)", (tid, user["id"], 0, body, now))
-    _tell_admins(f"💬 New support message from {user['username']}", f"{subject}\n\n{body[:500]}")
+    _tell_admins(f"New support message from {user['username']}", f"{subject}\n\n{body[:500]}")
     return {"id": tid}
 
 
@@ -106,9 +106,9 @@ def reply(ticket_id: int, user: dict, body: str) -> dict:
         con.execute("UPDATE tickets SET status = ?, updated_at = ? WHERE id = ?", (status, now, ticket_id))
         owner_id, subject, uname = t["user_id"], t["subject"], t["username"]
     if staff:
-        extras.tell_user(owner_id, f"💬 Reply to: {subject[:60]}", body[:600] + "\n\nOpen Support to continue the conversation.", "info")
+        extras.tell_user(owner_id, f"Reply to: {subject[:60]}", body[:600] + "\n\nOpen Support to continue the conversation.", "info")
     else:
-        _tell_admins(f"💬 {uname} replied: {subject[:60]}", body[:500])
+        _tell_admins(f"{uname} replied: {subject[:60]}", body[:500])
     return {"status": status}
 
 

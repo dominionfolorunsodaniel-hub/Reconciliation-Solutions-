@@ -169,10 +169,10 @@ def reward_referral_on_payment(company_id: int) -> None:
                             (m["id"], ref, _now()))
                 rc = con.execute("SELECT company_id FROM user_companies WHERE user_id = ? LIMIT 1", (ref,)).fetchone()
             extend_subscription(company_id, REFERRAL_BONUS_DAYS, "Referral bonus")
-            tell_user(m["id"], "🎁 Referral bonus", f"Thanks for joining through a friend. We added {REFERRAL_BONUS_DAYS:g} bonus day(s) to your plan.", "success")
+            tell_user(m["id"], "Referral bonus", f"Thanks for joining through a friend. We added {REFERRAL_BONUS_DAYS:g} bonus day(s) to your plan.", "success")
             if rc:
                 extend_subscription(int(rc["company_id"]), REFERRAL_BONUS_DAYS, "Referral bonus")
-                tell_user(ref, "🎁 Your referral paid off", f"Someone you referred just subscribed. We added {REFERRAL_BONUS_DAYS:g} bonus day(s) to your plan. Thank you!", "success")
+                tell_user(ref, "Your referral paid off", f"Someone you referred just subscribed. We added {REFERRAL_BONUS_DAYS:g} bonus day(s) to your plan. Thank you!", "success")
     except Exception:  # noqa: BLE001
         log.exception("referral reward failed")
 
@@ -269,7 +269,7 @@ def use_coupon(code: str, company_id: int, user_id: int) -> None:
 # ------------------------------------------------------------------ feedback + saved questions
 def add_feedback(user_id: int, company_id: int, rating: int, question: str = "", comment: str = "") -> None:
     if rating not in (1, -1):
-        raise ValueError("Rating must be 👍 or 👎.")
+        raise ValueError("Rating must be 1 (helpful) or -1 (not helpful).")
     with db._db() as con:
         con.execute("INSERT INTO feedback(company_id,user_id,rating,question,comment,created_at) VALUES (?,?,?,?,?,?)",
                     (company_id, user_id, rating, db._enc_text((question or "")[:500]), db._enc_text((comment or "")[:1000]), _now()))

@@ -81,7 +81,7 @@ async def answer(kind: str, question: str, context: str) -> dict:
             raise ValueError("empty answer")
         bad = core.unverified_figures(text, context)
         if bad:
-            text += "\n\n⚠️ Please double-check these figures, I could not find them in your data: " + ", ".join(bad) + "."
+            text += "\n\nPlease double-check these figures, I could not find them in your data: " + ", ".join(bad) + "."
         return {"answer": text, "source": "ai"}
     except core.LimitReached:
         raise

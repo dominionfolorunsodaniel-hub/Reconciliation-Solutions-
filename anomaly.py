@@ -108,5 +108,5 @@ def push_text(company: str, filename: str, alerts: list[dict]) -> str | None:
     high = [a for a in alerts if a["severity"] == "high"]
     if not high:
         return None
-    lines = [f"🚨 {company} - new report {filename}"] + [f"• {a['text']}" for a in high[:5]]
+    lines = [f"{company} - new report {filename}"] + [f"• {a['text']}" for a in high[:5]]
     return "\n".join(lines)

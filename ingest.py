@@ -23,7 +23,7 @@ async def ingest(company_id: int, filename: str, data: bytes, source: str, sende
              + (f" from {sender}" if sender else ""), source)
 
     company = db.get_company(company_id)["name"]
-    lines = [f"📥 {company}: new report received by {source}", f"{filename} - {desc['what_it_is']}"]
+    lines = [f"{company}: new report received by {source}", f"{filename} - {desc['what_it_is']}"]
     lines += [f"• {a['text']}" for a in desc.get("alerts", []) if a["severity"] in ("high", "medium")][:5]
     await asyncio.to_thread(notify.alert_company, company_id, "\n".join(lines), None)
     return {"report_id": rid, "rows": len(df), "notes": notes}

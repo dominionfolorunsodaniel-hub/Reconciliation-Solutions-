@@ -65,7 +65,7 @@ async def backup_loop():
                 _alerted.discard("backup_failed")
         except Exception as e:  # noqa: BLE001
             log.exception("backup failed")
-            await _admin_alert("backup_failed", f"🔴 The nightly backup FAILED: {e}")
+            await _admin_alert("backup_failed", f"The nightly backup FAILED: {e}")
         await asyncio.sleep(3600)
 
 
@@ -81,7 +81,7 @@ async def intake_loop():
             _alerted.discard("intake_failed")
         except Exception as e:  # noqa: BLE001
             log.exception("intake failed")
-            await _admin_alert("intake_failed", f"🔴 Automatic report intake is failing: {e}")
+            await _admin_alert("intake_failed", f"Automatic report intake is failing: {e}")
         await asyncio.sleep(minutes * 60)
 
 
@@ -100,7 +100,7 @@ async def run_digest(d: dict) -> None:
         return
     res = out["res"]
     table = res.head(15).to_string(index=False, max_colwidth=22, float_format=lambda x: f"{x:,.2f}")
-    text = f"🗓 {company['name']} - {out['title']}\n\n{table}" + (f"\n\n{out['insight']}" if out["insight"] else "")
+    text = f"{company['name']} - {out['title']}\n\n{table}" + (f"\n\n{out['insight']}" if out["insight"] else "")
     chart = await asyncio.to_thread(core.make_chart_png, res, out["keys"], out["metric"],
                                     out["plan"].get("chart", "bar"), out["title"])
     pdf = await asyncio.to_thread(report_pdf.build_pdf, company["name"], out["title"], d["question"], out["insight"],
@@ -137,10 +137,10 @@ async def watchdog_loop():
                 continue
             age = (dt.datetime.now(dt.timezone.utc) - beat).total_seconds()
             if age > 300:
-                await _admin_alert("bot_down", "🔴 The Telegram bot seems to be DOWN (no heartbeat for 5+ minutes).")
+                await _admin_alert("bot_down", "The Telegram bot seems to be DOWN (no heartbeat for 5+ minutes).")
             elif age < 120 and "bot_down" in _alerted:
                 _alerted.discard("bot_down")
-                await asyncio.to_thread(notify.alert_admins, "🟢 The Telegram bot is back online.")
+                await asyncio.to_thread(notify.alert_admins, "The Telegram bot is back online.")
         except Exception:  # noqa: BLE001
             log.exception("watchdog error")
 
@@ -174,7 +174,7 @@ async def scheduled_reconciliation_loop():
                     summary = result.get("summary")
                     problem_count = int((result["detail"]["Status"] != "Matched").sum())
                     company = db.get_company(job["company_id"])
-                    message = f"🗓 Scheduled reconciliation complete for {company['name'] if company else 'company'}\nRun #{run_id}: {problem_count} discrepancy row(s), {cases} case(s) created."
+                    message = f"Scheduled reconciliation complete for {company['name'] if company else 'company'}\nRun #{run_id}: {problem_count} discrepancy row(s), {cases} case(s) created."
                     await asyncio.to_thread(notify.alert_company, job["company_id"], message)
                     await asyncio.to_thread(notify.email_company, job["company_id"], "Report Analyzer scheduled reconciliation", message)
                     await asyncio.to_thread(db.audit, None, "scheduled_reconcile", job["company_id"], f"job={job['id']}; run={run_id}", "scheduler")
@@ -184,7 +184,7 @@ async def scheduled_reconciliation_loop():
                         await asyncio.to_thread(db.finish_monthly_usage, reservation, False)
                     log.exception("scheduled reconciliation job %s failed", job["id"])
                     await asyncio.to_thread(ef.finish_schedule, job["id"], "failed", str(e))
-                    await asyncio.to_thread(notify.alert_company, job["company_id"], f"⚠️ Scheduled reconciliation job #{job['id']} failed: {str(e)[:300]}")
+                    await asyncio.to_thread(notify.alert_company, job["company_id"], f"Scheduled reconciliation job #{job['id']} failed: {str(e)[:300]}")
                     await asyncio.to_thread(db.audit, None, "scheduled_reconcile_error", job["company_id"], f"job={job['id']}: {str(e)[:300]}", "scheduler")
         except Exception:  # noqa: BLE001
             log.exception("scheduled reconciliation loop error")

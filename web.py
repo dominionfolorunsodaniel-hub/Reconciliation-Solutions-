@@ -1467,7 +1467,7 @@ def admin_registration_decision(request_id: int, body: RegistrationDecisionIn,
     db.audit(user, f"registration_{result['status']}", result.get("company_id"),
              f"request={request_id}; username={result.get('username')}")
     if result.get("status") == "approved" and result.get("user_id"):
-        extras.tell_user(result["user_id"], "🎉 Welcome to Report Analyzer",
+        extras.tell_user(result["user_id"], "Welcome to Report Analyzer",
                          "Your account is approved. Upload your first report to get started. Your free trial is already running.", "success")
     return result
 
@@ -1565,7 +1565,7 @@ def billing_payment_request(body: PaymentRequestIn, user: dict = Depends(current
     db.audit(user, "payment_request", body.company_id, f"request={row['id']}; plan={body.plan}")
     company = db.get_company(body.company_id)
     notify.alert_payment_admins(
-        f"💳 New payment request #{row['id']}\nCompany: {company['name'] if company else body.company_id}\n"
+        f"New payment request #{row['id']}\nCompany: {company['name'] if company else body.company_id}\n"
         f"User: {user['username']}\nPlan: {body.plan.upper()} · ₦{row['amount_ngn']:,}" + (f" (coupon {coupon}: -₦{discount:,})" if coupon else "") + f"\nReference: {row['transfer_reference']}\n"
         "Check your bank, then approve it under Plan & Billing.")
     return {"id": row["id"], "status": row["status"], "amount_ngn": row["amount_ngn"], "discount_ngn": discount}
@@ -1602,7 +1602,7 @@ def billing_payment_proof(company_id: int = Form(...), file: UploadFile = File(.
     if not row:
         raise HTTPException(400, "Submit your payment request first, then attach the screenshot.")
     db.audit(user, "payment_proof", company_id, f"request={row['id']}")
-    caption = (f"📸 Payment screenshot for request #{row['id']}\nCompany: {row['company_name']}\nUser: {user['username']}\n"
+    caption = (f"Payment screenshot for request #{row['id']}\nCompany: {row['company_name']}\nUser: {user['username']}\n"
                f"Plan: {row['plan'].upper()} · ₦{int(row['amount_ngn']):,}\nReference: {row['transfer_reference']}\n"
                "Verify it in your bank, then approve under Plan & Billing.")
     sent = notify.alert_admins_photo(data, f"payment_{row['id']}.{kind[1]}", caption)
@@ -1687,7 +1687,7 @@ def password_reset_request(body: ResetRequestIn, request: Request):
         if result["user"].get("email"):
             extras._mail_async(result["user"]["email"], "Your Report Analyzer reset code", text)
         if result["user"].get("telegram_id"):
-            notify.send_telegram(result["user"]["telegram_id"], "🔑 " + text)
+            notify.send_telegram(result["user"]["telegram_id"], "" + text)
         db.audit(result["user"], "password_reset_requested")
     # Same answer either way, so nobody can discover which usernames exist.
     return {"message": "If that account has an email address (or Telegram) on file, a 6-digit code has been sent there. "
@@ -1736,7 +1736,7 @@ def admin_billing_payment_decision(request_id: int, body: PaymentDecisionIn,
         message = f"Payment verified for {company['name'] if company else 'company'}. Plan {row['plan'].upper()} is active. Invoice: {invoice['invoice_number']} for ₦{row['amount_ngn']:,}."
         notify.alert_company(row["company_id"], message)
         notify.email_company(row["company_id"], "Report Analyzer payment approved", message)
-        extras.tell_company(row["company_id"], "✅ Payment approved",
+        extras.tell_company(row["company_id"], "Payment approved",
                             f"Your {row['plan'].title()} plan is now active. Thank you! Your invoice is under Plan & Billing.", "success")
         extras.reward_referral_on_payment(row["company_id"])
     elif row["status"] == "rejected":

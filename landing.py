@@ -137,7 +137,7 @@ def submit_contact(name: str, email: str, company: str, message: str, honeypot: 
     try:
         for u in db.list_users():
             if u.get("role") == "admin" and u.get("active", 1):
-                extras.notice(u["id"], "📩 New contact message", f"{name} ({email}) wrote from the website: {message[:300]}")
+                extras.notice(u["id"], "New contact message", f"{name} ({email}) wrote from the website: {message[:300]}")
         extras._mail_async(SUPPORT_EMAIL, f"Website contact: {name}",
                            f"From: {name} <{email}>\nCompany: {company or '-'}\n\n{message}\n\nReply to {email}.")
     except Exception:  # noqa: BLE001  (telling the owner must never lose the message that is already saved)

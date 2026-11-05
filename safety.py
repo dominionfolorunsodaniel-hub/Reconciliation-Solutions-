@@ -88,7 +88,7 @@ def note_login(user: dict, ua: str, ip: str) -> bool:
             con.execute("INSERT INTO known_devices(user_id, fp, label, ip, first_seen) VALUES (?,?,?,?,?)",
                         (user["id"], fp, label, (ip or "")[:64], _now()))
         if others:
-            extras.tell_user(user["id"], "🔐 New sign-in to your account",
+            extras.tell_user(user["id"], "New sign-in to your account",
                              f"Someone signed in from a device we have not seen before: {label} (network address {ip or 'unknown'}) "
                              f"at {_now()} UTC.\n\nIf this was you, you can ignore this message. If it was not you, go to "
                              f"Settings, choose \"Sign out all other devices\", and change your password.", "warning")
@@ -203,8 +203,8 @@ def request_deletion(user: dict, note: str) -> dict:
     try:
         for u in db.list_users():
             if u["role"] == "admin":
-                extras.notice(u["id"], "🗑️ Account deletion request", msg, "warning")
-        notify.alert_admins("🗑️ " + msg)
+                extras.notice(u["id"], "Account deletion request", msg, "warning")
+        notify.alert_admins("" + msg)
         support = os.getenv("SUPPORT_EMAIL", "reconciliationsolutionsupport@gmail.com")
         extras._mail_async(support, "Account deletion request", msg)
     except Exception:  # noqa: BLE001

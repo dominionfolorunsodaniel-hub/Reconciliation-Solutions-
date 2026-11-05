@@ -310,7 +310,7 @@ def check_quota_warning(company_id: int) -> bool:
     if not log_notification_once(company_id, key):
         return False
     company = db.get_company(company_id)
-    message = (f"⚠️ Report Analyzer usage warning for {company['name'] if company else 'your company'}: "
+    message = (f"Report Analyzer usage warning for {company['name'] if company else 'your company'}: "
                f"{status['used']}/{limit} analyses used ({percent}%). {status['remaining']} remain this month.")
     import notify
     notify.alert_company(company_id, message)

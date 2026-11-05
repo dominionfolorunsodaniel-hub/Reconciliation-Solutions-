@@ -300,11 +300,11 @@ def load_report(data: bytes, filename: str, sheet: str | None = None):
 
     if kind == "pdf":
         raw, ocr = _pdf_to_raw(data)
-        notes.append("🔎 Scanned PDF read with OCR - double-check the numbers against the original."
+        notes.append("Scanned PDF read with OCR - double-check the numbers against the original."
                      if ocr else "PDF tables are extracted on a best-effort basis - check the preview.")
     elif kind == "image":
         raw = _rows_to_raw(_ocr_image(data))
-        notes.append("🔎 Picture read with OCR - please double-check the numbers against the original.")
+        notes.append("Picture read with OCR - please double-check the numbers against the original.")
     elif kind in ("xlsx", "xls", "ods"):
         try:
             xl = pd.ExcelFile(io.BytesIO(data), engine="odf" if kind == "ods" else None)
@@ -1387,14 +1387,14 @@ async def describe_report(df: pd.DataFrame, filename: str) -> dict:
 
 
 def description_text(d: dict) -> str:
-    parts = [f"📄 {d['what_it_is']}"]
+    parts = [f"{d['what_it_is']}"]
     if d.get("period"):
-        parts.append(f"🗓 {d['period']}")
+        parts.append(f"{d['period']}")
     if d.get("key_points"):
         parts.append("\n".join("• " + p for p in d["key_points"]))
     if d.get("alerts"):
-        icon = {"high": "🔴", "medium": "🟠", "info": "ℹ️"}
-        parts.append("🚨 Alerts:\n" + "\n".join(f"{icon.get(a['severity'], '•')} {a['text']}" for a in d["alerts"]))
+        icon = {"high": "[High]", "medium": "[Medium]", "info": "[Info]"}
+        parts.append("Alerts:\n" + "\n".join(f"{icon.get(a['severity'], '•')} {a['text']}" for a in d["alerts"]))
     if d.get("flags"):
-        parts.append("⚠️ Worth checking:\n" + "\n".join("• " + f for f in d["flags"]))
+        parts.append("Worth checking:\n" + "\n".join("• " + f for f in d["flags"]))
     return "\n\n".join(parts)
