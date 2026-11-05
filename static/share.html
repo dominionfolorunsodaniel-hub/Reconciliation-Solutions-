@@ -2,21 +2,22 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#ffffff">
 <meta name="robots" content="noindex, nofollow, noarchive">
 <title>Shared statement check</title>
 <style>
-  :root { --bg:#f3f6fd; --card:#fff; --ink:#0f1b36; --mute:#68758e; --line:#dfe6f5; --brand:#1769ff; --ok:#10b981; --warn:#f59e0b; --bad:#ef4444; }
-  @media (prefers-color-scheme: dark) { :root { --bg:#0b1220; --card:#121b2e; --ink:#eaf0ff; --mute:#9aa8c4; --line:#26354f; } }
+  :root { --bg:#f5f7f6; --card:#fff; --ink:#17211c; --mute:#5b6760; --line:#dde3df; --brand:#0b6b4b; --ok:#0b6b4b; --warn:#b54708; --bad:#b42318; }
+  @media (prefers-color-scheme: dark) { :root { --bg:#0f1512; --card:#16201c; --ink:#e6ece9; --mute:#9aa8a1; --line:#2a3732; --brand:#4cc19a; --ok:#4cc19a; --warn:#f0b36b; --bad:#f2877b; } }
   * { box-sizing:border-box; }
   body { margin:0; background:var(--bg); color:var(--ink); font:15px/1.5 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif; }
   .wrap { max-width:900px; margin:0 auto; padding:16px; }
   header { display:flex; justify-content:space-between; align-items:center; gap:10px; flex-wrap:wrap; margin:6px 0 14px; }
   header b { font-size:18px; } header small { color:var(--mute); }
-  .card { background:var(--card); border:1px solid var(--line); border-radius:16px; padding:16px; margin-bottom:14px; min-width:0; }
+  .card { background:var(--card); border:1px solid var(--line); border-radius:10px; padding:16px; margin-bottom:14px; min-width:0; }
   h2 { margin:0 0 6px; font-size:19px; } h3 { margin:14px 0 6px; font-size:16px; }
   .hero { display:flex; gap:18px; align-items:center; flex-wrap:wrap; }
-  .gauge { --p:0; --c:#10b981; width:128px; height:128px; border-radius:50%; display:grid; place-items:center; position:relative; flex:0 0 auto; background:conic-gradient(var(--c) calc(var(--p) * 1%), var(--line) 0); }
+  .gauge { --p:0; --c:#0b6b4b; width:128px; height:128px; border-radius:50%; display:grid; place-items:center; position:relative; flex:0 0 auto; background:conic-gradient(var(--c) calc(var(--p) * 1%), var(--line) 0); }
   .gauge::before { content:""; position:absolute; inset:12px; border-radius:50%; background:var(--card); }
   .gauge div { position:relative; text-align:center; line-height:1.05; } .gauge b { font-size:36px; display:block; } .gauge small { color:var(--mute); font-size:12px; }
   .verdict { display:inline-block; padding:4px 14px; border-radius:99px; font-weight:800; font-size:14px; color:#fff; }
@@ -25,20 +26,20 @@
   .scroll { overflow-x:auto; max-width:100%; -webkit-overflow-scrolling:touch; }
   table { width:100%; border-collapse:collapse; font-size:13.5px; } th, td { padding:8px 10px; border-bottom:1px solid var(--line); text-align:right; white-space:nowrap; }
   th:first-child, td:first-child { text-align:left; } .neg { color:var(--bad); font-weight:700; }
-  .banner { border-radius:12px; padding:10px 14px; margin:10px 0; border-left:5px solid var(--ok); background:rgba(16,185,129,.1); }
-  .banner.warning { border-color:var(--warn); background:rgba(245,158,11,.12); } .banner.failed { border-color:var(--bad); background:rgba(239,68,68,.12); } .banner.unavailable { border-color:var(--mute); background:rgba(120,130,150,.1); }
+  .banner { border-radius:12px; padding:10px 14px; margin:10px 0; border-left:5px solid var(--ok); background:rgba(11,107,75,.08); }
+  .banner.warning { border-color:var(--warn); background:rgba(181,71,8,.08); } .banner.failed { border-color:var(--bad); background:rgba(180,35,24,.08); } .banner.unavailable { border-color:var(--mute); background:rgba(120,130,150,.1); }
   ul { margin:4px 0; padding-left:20px; } .mute { color:var(--mute); } .small { font-size:12.5px; }
   .bar { display:grid; grid-template-columns:minmax(110px,1.2fr) 2fr auto; gap:10px; align-items:center; margin:5px 0; font-size:13.5px; }
-  .track { height:9px; border-radius:99px; background:var(--line); overflow:hidden; } .track i { display:block; height:100%; background:linear-gradient(90deg,#1769ff,#22d3ee); }
+  .track { height:9px; border-radius:99px; background:var(--line); overflow:hidden; } .track i { display:block; height:100%; background:var(--brand); }
   .two { display:grid; grid-template-columns:1fr 1fr; gap:14px; }
-  a.btn { display:inline-block; background:var(--brand); color:#fff; text-decoration:none; padding:9px 16px; border-radius:10px; font-weight:700; }
+  a.btn { display:inline-block; background:var(--brand); color:#fff; text-decoration:none; padding:9px 16px; border-radius:8px; font-weight:600; }
   @media (max-width:700px) { .kpis { grid-template-columns:repeat(2,minmax(0,1fr)); } .two { grid-template-columns:1fr; } .bar { grid-template-columns:1fr; gap:2px; } }
 </style>
 </head>
 <body>
 <div class="wrap">
   <header><div><b>Report Analyzer</b><br><small>Shared statement check</small></div><small id="exp"></small></header>
-  <div id="msg" class="card">Loading…</div>
+  <div id="msg" class="card">Loading...</div>
   <div id="out" hidden></div>
 </div>
 <script>
@@ -57,7 +58,7 @@
   function render(d) {
     $("msg").hidden = true; $("out").hidden = false;
     $("exp").textContent = "Link works until " + d.expires_at.replace("T", " ").slice(0, 16) + " UTC";
-    var col = d.score >= 75 ? "#10b981" : d.score >= 60 ? "#22a6b3" : d.score >= 45 ? "#f59e0b" : "#ef4444";
+    var col = d.score >= 75 ? "#0b6b4b" : d.score >= 60 ? "#3f8f73" : d.score >= 45 ? "#b54708" : "#b42318";
     var c = box(), hero = el("div", "", "hero"), g = el("div", "", "gauge"), gi = el("div");
     g.style.setProperty("--p", d.score); g.style.setProperty("--c", col); gi.append(el("b", d.score), el("small", "out of 100")); g.append(gi);
     var side = el("div"); var v = el("span", d.verdict, "verdict"); v.style.background = col;
@@ -69,7 +70,7 @@
 
     if (d.integrity && d.integrity.status) {
       var b = el("div", "", "banner " + (d.integrity.status === "passed" ? "" : d.integrity.status));
-      var t = { passed: "✅ Statement looks genuine", warning: "⚠️ Some balances do not add up", failed: "🚩 Balances do not add up: may have been edited", unavailable: "ℹ️ Authenticity check not possible" }[d.integrity.status] || "";
+      var t = { passed: "Statement looks genuine", warning: "Some balances do not add up", failed: "Balances do not add up: may have been edited", unavailable: "Authenticity check not possible" }[d.integrity.status] || "";
       b.append(el("b", t), el("div", d.integrity.message || "", "small")); c.append(b);
     }
     if (d.flags && d.flags.length) { var f = box("Unusual patterns"), ul = el("ul"); d.flags.forEach(function (x) { ul.append(el("li", "[" + x.severity + "] " + x.title + ": " + x.detail)); }); f.append(ul); }
@@ -89,14 +90,14 @@
       cb.append(two);
     }
     var w = box("Summary"), t3 = el("div", "", "two"), a = el("div"), bb = el("div");
-    a.append(el("h3", "✅ Good signs")); var u1 = el("ul"); (d.strengths.length ? d.strengths : ["Nothing stands out yet."]).forEach(function (x) { u1.append(el("li", x)); }); a.append(u1);
-    bb.append(el("h3", "⚠️ Concerns")); var u2 = el("ul"); (d.concerns.length ? d.concerns : ["No big worries found."]).forEach(function (x) { u2.append(el("li", x)); }); bb.append(u2);
+    a.append(el("h3", "Good signs")); var u1 = el("ul"); (d.strengths.length ? d.strengths : ["Nothing stands out yet."]).forEach(function (x) { u1.append(el("li", x)); }); a.append(u1);
+    bb.append(el("h3", "Concerns")); var u2 = el("ul"); (d.concerns.length ? d.concerns : ["No big worries found."]).forEach(function (x) { u2.append(el("li", x)); }); bb.append(u2);
     t3.append(a, bb); w.append(t3);
-    if (d.loan_guide) { var lg = d.loan_guide; w.append(el("h3", "💰 Rough loan guide"), el("p", "Comfortable monthly repayment up to " + ngn(lg.max_monthly_repayment) + ". Roughly " + ngn(lg.rough_loan_6_months) + " over 6 months or " + ngn(lg.rough_loan_12_months) + " over 12 months, before interest."), el("small", lg.how, "mute")); }
+    if (d.loan_guide) { var lg = d.loan_guide; w.append(el("h3", "Rough loan guide"), el("p", "Comfortable monthly repayment up to " + ngn(lg.max_monthly_repayment) + ". Roughly " + ngn(lg.rough_loan_6_months) + " over 6 months or " + ngn(lg.rough_loan_12_months) + " over 12 months, before interest."), el("small", lg.how, "mute")); }
     var fc = box("How the score is built");
     d.factors.forEach(function (x) { var row = el("div", "", "bar"), tr = el("div", "", "track"), i = el("i"); i.style.width = (x.max ? x.score / x.max * 100 : 0) + "%"; tr.append(i); var lab = el("div"); lab.append(el("b", x.name), el("div", x.detail, "mute small")); row.append(lab, tr, el("b", x.score + " / " + x.max)); fc.append(row); });
     var end = box(); end.append(el("p", d.disclaimer, "mute small"));
-    var p = el("a", "⬇ Download PDF", "btn"); p.href = "/api/shared/" + encodeURIComponent(token) + "/pdf"; end.append(p);
+    var p = el("a", "Download PDF", "btn"); p.href = "/api/shared/" + encodeURIComponent(token) + "/pdf"; end.append(p);
     end.append(el("p", "This page shows a frozen copy of one result that its owner chose to share. It contains no files and no login.", "mute small"));
   }
 })();

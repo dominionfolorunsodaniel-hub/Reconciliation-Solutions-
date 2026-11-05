@@ -752,12 +752,204 @@ html { scroll-behavior:smooth; scroll-padding-top:72px; }
 @media (prefers-reduced-motion:reduce) { html { scroll-behavior:auto; } #landing.lp * { transition:none !important; } }
 </style>
 
+<style id="app-theme">
+/* ============ DASHBOARD THEME (light, one brand colour; replaces the older dark-blue styling) ============ */
+html { --a-brand:#0b6b4b; --a-brand-dark:#085a3f; --a-tint:#e9f3ee; --a-ink:#17211c; --a-mute:#5b6760; --a-line:#dde3df; --a-bg:#f5f7f6; --a-card:#ffffff; --a-soft:#f1f4f2; --a-err:#b42318; --a-warn:#b54708; --a-field:#ffffff; --a-fieldline:#c5cec9; }
+html[data-theme=dark] { --a-brand:#4cc19a; --a-brand-dark:#6fd2b2; --a-tint:#16322a; --a-ink:#e6ece9; --a-mute:#9aa8a1; --a-line:#2a3732; --a-bg:#0f1512; --a-card:#16201c; --a-soft:#1b2722; --a-err:#f2877b; --a-warn:#f0b36b; --a-field:#101a16; --a-fieldline:#33423b; }
+:root { --brand:#0b6b4b; --brand2:#0b6b4b; --ink:var(--a-ink); --mute:var(--a-mute); --line:var(--a-line); --card:var(--a-card); --bg:var(--a-bg); }
+body { background:var(--a-bg); color:var(--a-ink); -webkit-text-size-adjust:100%; text-size-adjust:100%; }
+#app { font-size:15px; color:var(--a-ink); }
+#app .svg-ic, .svg-ic { width:18px; height:18px; flex:0 0 18px; fill:none; stroke:currentColor; stroke-width:1.7; stroke-linecap:round; stroke-linejoin:round; }
+
+/* buttons */
+#app button, .legal button, .v2-tour-card button, .bell-panel button { -webkit-appearance:none; appearance:none; border:1px solid transparent; border-radius:8px; background:var(--a-brand); color:#fff; box-shadow:none; font-weight:600; min-height:38px; transform:none; }
+html[data-theme=dark] #app button:not(.ghost):not(.danger):not(.chip):not(.d-chip):not(.d-link):not(.sb-item):not(.sb-q) { color:#0b1511; }
+#app button:hover, .legal button:hover { transform:none; box-shadow:none; background:var(--a-brand-dark); }
+#app button.ghost, #app .ghost { background:var(--a-card); color:var(--a-ink); border:1px solid var(--a-fieldline); }
+#app button.ghost:hover { background:var(--a-soft); }
+#app button.danger { background:var(--a-card); color:var(--a-err); border:1px solid var(--a-fieldline); }
+#app button.chip { background:var(--a-card); color:var(--a-ink); border:1px solid var(--a-line); border-radius:999px; }
+#app button.chip:hover { border-color:var(--a-brand); color:var(--a-brand); background:var(--a-card); }
+#app button:disabled { opacity:.55; }
+#app button:focus-visible, #app a:focus-visible, #app summary:focus-visible, .legal button:focus-visible { outline:2px solid var(--a-brand); outline-offset:2px; }
+#app .d-link { background:none !important; color:var(--a-brand) !important; border:0 !important; min-height:0; padding:4px 2px !important; }
+
+/* fields: 16px so iPhone Safari does not zoom when a field is tapped */
+#app select, #app input[type=text], #app input[type=password], #app input[type=number], #app input[type=email], #app input[type=search], #app input[type=file], #app textarea, .legal input, .bc-box textarea {
+  -webkit-appearance:none; appearance:none; font-size:16px; min-height:42px; padding:9px 12px; border:1px solid var(--a-fieldline); border-radius:8px; background:var(--a-field) !important; color:var(--a-ink) !important; box-shadow:none; }
+#app select { background-image:none; padding-right:12px; }
+#app input[type=checkbox], #app input[type=radio] { accent-color:var(--a-brand); }
+#app input:focus, #app select:focus, #app textarea:focus { outline:2px solid rgba(11,107,75,.28); border-color:var(--a-brand) !important; }
+#app input::placeholder, #app textarea::placeholder { color:#7a867f; opacity:1; }
+#app .password-toggle { background:var(--a-card) !important; color:var(--a-ink) !important; border:1px solid var(--a-fieldline) !important; min-height:42px; }
+
+/* sidebar */
+#v2Sidebar.sb { background:var(--a-card); color:var(--a-ink); border-right:1px solid var(--a-line); box-shadow:none; }
+#v2Sidebar .sb-brand { display:flex; align-items:center; gap:10px; padding:6px 8px 16px; }
+#v2Sidebar .sb-brand b { font-size:16px; color:var(--a-ink); }
+#v2Sidebar .sb-brand small { display:block; color:var(--a-mute); font-size:12px; }
+#v2Sidebar .sb-logo { width:34px; height:34px; border-radius:8px; background:var(--a-brand); color:#fff; display:grid; place-items:center; font-size:0; }
+#v2Sidebar .sb-logo svg { width:20px; height:20px; stroke:#fff; }
+#v2Sidebar .sb-item, #v2Sidebar .sb-q { min-height:40px; background:transparent; color:var(--a-mute); border:0; border-radius:8px; box-shadow:none; font-weight:500; font-size:14.5px; }
+#v2Sidebar .sb-item .ic { width:20px; height:20px; display:inline-grid; place-items:center; font-size:0; flex:0 0 20px; }
+#v2Sidebar .sb-item .ic svg { width:18px; height:18px; }
+#v2Sidebar .sb-item:hover, #v2Sidebar .sb-q:hover { background:var(--a-soft); color:var(--a-ink); }
+#v2Sidebar .sb-item.active { background:var(--a-tint); color:var(--a-brand); box-shadow:none; font-weight:600; }
+#v2Sidebar .sb-label { color:var(--a-mute); font-size:11.5px; letter-spacing:.06em; text-transform:uppercase; }
+#v2Sidebar .sb-q { color:var(--a-ink); }
+#v2Sidebar .sb-q i { color:var(--a-mute); font-style:normal; }
+#v2Sidebar .sb-card { background:var(--a-soft); color:var(--a-ink); border:1px solid var(--a-line); border-radius:10px; box-shadow:none; }
+#v2Sidebar .sb-card p, #v2Sidebar .sb-card small { color:var(--a-mute); }
+#v2Sidebar .sb-btn { all:unset; box-sizing:border-box; display:inline-flex; align-items:center; justify-content:center; min-height:36px; padding:0 16px; border-radius:8px; background:var(--a-card); color:var(--a-ink); border:1px solid var(--a-fieldline); font-weight:600; font-size:14px; cursor:pointer; }
+#v2Sidebar .sb-btn:hover { background:var(--a-soft); }
+#v2Sidebar .sb-plan .sb-btn { background:var(--a-brand); color:#fff; border-color:transparent; }
+html[data-theme=dark] #v2Sidebar .sb-plan .sb-btn { color:#0b1511; }
+#v2Sidebar .sb-bar { background:var(--a-line); } #v2Sidebar .sb-bar i { background:var(--a-brand); }
+#v2Sidebar .sb-ver, #v2Sidebar .sb-ver a { color:var(--a-mute); }
+.sb-count, .bell-badge, .news-new { background:var(--a-brand) !important; color:#fff !important; }
+html[data-theme=dark] .sb-count, html[data-theme=dark] .bell-badge, html[data-theme=dark] .news-new { color:#0b1511 !important; }
+
+/* top bar */
+#app header.app { background:var(--a-card); color:var(--a-ink); border-bottom:1px solid var(--a-line); box-shadow:none; }
+#app header.app .hdr-brand, .hdr-brand { color:var(--a-ink); font-weight:700; display:inline-flex; align-items:center; gap:8px; }
+.hdr-brand b { color:inherit; }
+.hdr-brand svg { width:22px; height:22px; color:var(--a-brand); stroke:none; }
+#app header.app .who, .who-chip .who { color:var(--a-ink); }
+.who-chip { background:var(--a-soft) !important; border:1px solid var(--a-line) !important; }
+.avatar { background:var(--a-brand) !important; color:#fff; }
+html[data-theme=dark] .avatar { color:#0b1511; }
+.app-search { background:var(--a-field); border:1px solid var(--a-fieldline); border-radius:8px; color:var(--a-mute); }
+.app-search input { border:0 !important; background:transparent !important; min-height:36px; }
+.app-search svg { width:18px; height:18px; margin-left:10px; color:var(--a-mute); }
+#app .sb-burger { background:var(--a-card) !important; color:var(--a-ink) !important; border:1px solid var(--a-fieldline) !important; font-size:0; }
+#app .sb-burger svg { width:20px; height:20px; }
+#app header.app .bell svg { width:18px; height:18px; }
+#app header.app .bell { display:inline-flex; align-items:center; gap:6px; }
+
+/* main surfaces */
+.card, .d-panel, .analytics-panel, .metric-card, .urow { background:var(--a-card); border:1px solid var(--a-line); border-radius:10px; box-shadow:none !important; transition:none; }
+.card:hover, .analytics-panel:hover, .d-panel:hover { box-shadow:none !important; }
+.metric-card { background:var(--a-card); } .metric-card:after { display:none; }
+.metric-card strong, .card h2, .analytics-panel h3, .d-panel h3 { color:var(--a-ink); }
+.card h2 { font-size:17px; }
+.d-sub, .mute, small, .metric-card span, .metric-card small { color:var(--a-mute); }
+#app main a { color:var(--a-brand); }
+.insight, .ask-ans, .how-box, .api-key-box, .ss-loan { background:var(--a-tint) !important; border:1px solid var(--a-line); border-left:3px solid var(--a-brand); border-radius:8px; }
+.how-box, .api-key-box, .ss-loan { border-style:solid; }
+.tablewrap { border:1px solid var(--a-line); border-radius:8px; }
+th { background:var(--a-soft); color:var(--a-mute); font-weight:600; }
+th, td { border-bottom:1px solid var(--a-line); }
+.error, .err { color:var(--a-err); }
+pre.recon { background:var(--a-soft); color:var(--a-ink); }
+code.secret { background:var(--a-soft); color:var(--a-ink); }
+pre.api-ex { background:#14201b; color:#dbe7e1; }
+.pill.ok { background:var(--a-tint); color:var(--a-brand); }
+.pill { border-radius:999px; }
+
+/* dashboard home */
+.d-hero { background:var(--a-card) !important; color:var(--a-ink); border:1px solid var(--a-line); border-radius:12px; box-shadow:none; padding:24px; }
+.d-greet { color:var(--a-ink); font-size:clamp(22px,3vw,28px); letter-spacing:-.01em; }
+.d-greet-sub { color:var(--a-mute); }
+.d-chip { background:var(--a-card) !important; color:var(--a-ink) !important; border:1px solid var(--a-fieldline) !important; border-radius:999px !important; min-height:36px; }
+.d-chip:hover { background:var(--a-soft) !important; }
+.d-hero-card { background:var(--a-tint); color:var(--a-ink); border:1px solid var(--a-line); border-radius:10px; box-shadow:none; }
+.d-hero-card p, .d-hero-card small { color:var(--a-mute); }
+.d-hero-card svg { display:none; }
+.d-kpi { background:var(--a-card) !important; color:var(--a-ink); border:1px solid var(--a-line); border-radius:10px; box-shadow:none; }
+.d-kpi .ico { background:var(--a-tint); color:var(--a-brand); font-size:0; }
+.d-kpi .ico svg { width:20px; height:20px; }
+.d-kpi small, .d-kpi em { color:var(--a-mute); opacity:1; }
+.d-kpi b { color:var(--a-ink); }
+.d-kpi .sp { opacity:.9; }
+.d-donut-c b, .d-legend b { color:var(--a-ink); }
+.d-upgrade { background:var(--a-tint) !important; color:var(--a-ink); border:1px solid var(--a-line); border-radius:10px; box-shadow:none; }
+.d-upgrade .txt span { color:var(--a-mute); opacity:1; }
+.d-upgrade button { background:var(--a-brand) !important; color:#fff !important; }
+.d-btn { background:var(--a-brand); border-radius:8px; }
+.chk-bar { background:var(--a-line); } .chk-bar i, .ov-bar i, .ss-bar i { background:var(--a-brand) !important; }
+.chk-row .chk-tx { color:var(--a-ink); }
+.chk-ic { color:var(--a-brand); font-weight:700; }
+.ss-bar { background:var(--a-line); }
+
+/* notices, banners, bell */
+.news-banner, .news-item, .bell-item { background:var(--a-soft); color:var(--a-ink); border:1px solid var(--a-line); border-radius:8px; }
+.news-item { border-left:3px solid var(--a-brand); } .news-item.success { background:var(--a-tint); border-left-color:var(--a-brand); }
+.news-item.warning, .news-banner.warning, .pay-notice { background:#fff7ed; color:#7a2e0e; border-color:#f3d2b0; }
+.news-item.warning { border-left-color:var(--a-warn); }
+html[data-theme=dark] .news-item.warning, html[data-theme=dark] .news-banner.warning, html[data-theme=dark] #app .pay-notice { background:#2a2114 !important; color:#f0d9b8; }
+.news-banner.success { background:var(--a-tint); color:var(--a-ink); border-color:var(--a-line); }
+.bell-panel { background:var(--a-card); color:var(--a-ink); border:1px solid var(--a-line); box-shadow:0 8px 24px rgba(20,32,27,.12); border-radius:10px; }
+.bell-item:hover { background:var(--a-tint); }
+.bank-card { background:var(--a-soft); border:1px solid var(--a-line); }
+.bank-num { color:var(--a-ink); }
+
+/* statement score, tickets */
+.ss-gauge { background:conic-gradient(var(--c) calc(var(--p) * 1%), var(--a-line) 0); }
+.ss-banner { background:var(--a-tint); border-left-color:var(--a-brand); }
+.tk-msg.staff { background:var(--a-tint); border-left-color:var(--a-brand); }
+.tk-badge { border-radius:999px; }
+.ss-box.good { border-left-color:var(--a-brand); }
+
+/* modals */
+.v2-tour-backdrop, .legal { background:rgba(20,32,27,.55) !important; }
+.v2-tour-card, .legal .box { background:var(--a-card); color:var(--a-ink); border:1px solid var(--a-line); border-radius:12px; box-shadow:0 12px 40px rgba(20,32,27,.2); }
+.v2-tour-card p, .legal p, .legal li { color:var(--a-mute); }
+.legal h3, .v2-tour-card h2 { color:var(--a-ink); }
+.v2-tour-progress { color:var(--a-brand); }
+.v2-tour-actions .secondary, .legal .tabs button { background:var(--a-card) !important; color:var(--a-ink) !important; border:1px solid var(--a-fieldline) !important; }
+.legal .tabs button.on { background:var(--a-brand) !important; color:#fff !important; border-color:transparent !important; }
+.sb-scrim { background:rgba(20,32,27,.45); }
+
+/* floating support button */
+.support-contact { background:var(--a-brand) !important; color:#fff !important; border:0; border-radius:999px; box-shadow:0 2px 8px rgba(20,32,27,.2); }
+.support-contact:hover { transform:none; box-shadow:0 2px 8px rgba(20,32,27,.25); background:var(--a-brand-dark) !important; }
+.support-contact .wa-icon { background:rgba(255,255,255,.18); font-size:0; } .support-contact .wa-icon svg { width:16px; height:16px; stroke:#fff; fill:none; }
+
+@media (max-width:900px) {
+  #v2Sidebar.sb { box-shadow:0 0 40px rgba(20,32,27,.25); }
+  .hdr-brand { color:var(--a-ink); }
+}
+/* fixes after first visual check */
+#app header.app button.ghost, #app header.app .ghost, #app header.app #logout, #app header.app #adminBtn { background:var(--a-card) !important; color:var(--a-ink) !important; border:1px solid var(--a-fieldline) !important; }
+#app header.app button.ghost:hover { background:var(--a-soft) !important; }
+#app header.app .bell-label { color:inherit; }
+#v2Sidebar .sb-logo { background:none; color:var(--a-brand); width:auto; height:auto; }
+#v2Sidebar .sb-logo svg { width:32px; height:32px; stroke:none; fill:currentColor; }
+.hdr-brand svg, .sb-logo svg { fill:currentColor; stroke:none; }
+.support-contact small { opacity:1; color:rgba(255,255,255,.88); }
+/* fixes after first visual check */
+#app header.app button.ghost, #app header.app .ghost, #app header.app #logout, #app header.app #adminBtn { background:var(--a-card) !important; color:var(--a-ink) !important; border:1px solid var(--a-fieldline) !important; }
+#app header.app button.ghost:hover { background:var(--a-soft) !important; }
+#app header.app .bell-label { color:inherit; }
+#v2Sidebar .sb-logo { background:none; color:var(--a-brand); width:auto; height:auto; }
+#v2Sidebar .sb-logo svg { width:32px; height:32px; stroke:none; fill:currentColor; }
+.hdr-brand svg, .sb-logo svg { fill:currentColor; stroke:none; }
+.support-contact small { opacity:1; color:rgba(255,255,255,.88); }
+/* second visual pass */
+#app input:not([type=checkbox]):not([type=radio]):not([type=file]):not([type=color]):not([type=range]):not([type=button]):not([type=submit]), #app select, #app textarea { -webkit-appearance:none; appearance:none; font-size:16px; min-height:42px; padding:9px 12px; border:1px solid var(--a-fieldline); border-radius:8px; background:var(--a-field) !important; color:var(--a-ink) !important; box-shadow:none; }
+.sb-mobile-only { display:none; }
+@media (max-width:900px) {
+  .sb-mobile-only { display:flex; }
+  #v2Sidebar .sb-label.sb-mobile-only { display:block; }
+  #app header.app #themeBtn, #app header.app #installBtn, #app header.app #logout, #app header.app #adminBtn, #app header.app #v2TourLaunch, #app header.app #twofaBtn, #app header.app .bell-label, #app header.app .who-chip .who { display:none !important; }
+  #app header.app { overflow-x:visible; }
+  .hdr-brand { min-width:0; }
+}
+/* keep wide controls inside their card on phones */
+#app main > * { min-width:0; max-width:100%; }
+#app input[type=file] { width:100%; max-width:100%; min-width:0; font-size:14px; padding:8px; }
+#app .row > input[type=text], #app .row > input[type=password], #app .row > input[type=email], #app .row > select { min-width:0; max-width:100%; }
+/* dark mode: one palette */
+html[data-theme=dark] { --bg:var(--a-bg); --card:var(--a-card); --ink:var(--a-ink); --mute:var(--a-mute); --line:var(--a-line); }
+html[data-theme=dark] body { background:var(--a-bg) !important; color:var(--a-ink); }
+html[data-theme=dark] #app input, html[data-theme=dark] #app select, html[data-theme=dark] #app textarea { background:var(--a-field) !important; }
+html[data-theme=dark] .d-legend, html[data-theme=dark] .d-legend span { color:var(--a-ink); }
+html[data-theme=dark] #app .ghost { background:var(--a-card); color:var(--a-ink); }
+#app { background:var(--a-bg); min-height:100vh; min-height:100dvh; }
+</style>
 </head>
 <body>
-
-<!-- ======================= LANDING + LOGIN ======================= -->
-<div id="landing" class="lp">
-  <svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false">
+<svg width="0" height="0" style="position:absolute;overflow:hidden" aria-hidden="true" focusable="false">
     <defs>
       <symbol id="i-logo" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="4" fill="currentColor" stroke="none"/><path d="M8 15.5v-3M12 15.5V8.5M16 15.5v-5" stroke="#fff" stroke-width="2" stroke-linecap="round" fill="none"/></symbol>
       <symbol id="i-file" viewBox="0 0 24 24"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5M9 13h6M9 17h6"/></symbol>
@@ -778,8 +970,23 @@ html { scroll-behavior:smooth; scroll-padding-top:72px; }
       <symbol id="i-shield" viewBox="0 0 24 24"><path d="M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6z"/><path d="M9 12l2 2 4-4"/></symbol>
       <symbol id="i-chart" viewBox="0 0 24 24"><path d="M4 20V4M4 20h16M8 16v-4M12 16V8M16 16v-6"/></symbol>
       <symbol id="i-coin" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M9 8l3 4 3-4M9 13h6M9 16h6M12 12v6"/></symbol>
+      <symbol id="i-home" viewBox="0 0 24 24"><path d="M3 11l9-7 9 7M5 10v10h5v-6h4v6h5V10"/></symbol>
+      <symbol id="i-alert" viewBox="0 0 24 24"><path d="M12 3l10 18H2zM12 10v5M12 18v.5"/></symbol>
+      <symbol id="i-users" viewBox="0 0 24 24"><circle cx="9" cy="8" r="3.2"/><path d="M3 20a6 6 0 0 1 12 0M16 5.2a3.2 3.2 0 0 1 0 5.6M18 14.5a6 6 0 0 1 3 5.5"/></symbol>
+      <symbol id="i-megaphone" viewBox="0 0 24 24"><path d="M3 10v4h3l8 4V6L6 10zM18 9a4 4 0 0 1 0 6"/></symbol>
+      <symbol id="i-heart" viewBox="0 0 24 24"><path d="M12 20s-8-5-8-10.5A4.5 4.5 0 0 1 12 7a4.5 4.5 0 0 1 8 2.5C20 15 12 20 12 20z"/></symbol>
+      <symbol id="i-gear" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M12 3v2.5M12 18.5V21M3 12h2.5M18.5 12H21M5.6 5.6l1.8 1.8M16.6 16.6l1.8 1.8M5.6 18.4l1.8-1.8M16.6 7.4l1.8-1.8"/></symbol>
+      <symbol id="i-book" viewBox="0 0 24 24"><path d="M4 5a2 2 0 0 1 2-2h13v16H6a2 2 0 0 0-2 2zM4 19V5M8 7h7"/></symbol>
+      <symbol id="i-layers" viewBox="0 0 24 24"><path d="M12 3l9 5-9 5-9-5zM3 13l9 5 9-5M3 17.5l9 5 9-5" transform="translate(0 -1)"/></symbol>
+      <symbol id="i-search" viewBox="0 0 24 24"><circle cx="11" cy="11" r="6.5"/><path d="M16 16l4.5 4.5"/></symbol>
+      <symbol id="i-menu" viewBox="0 0 24 24"><path d="M4 7h16M4 12h16M4 17h16"/></symbol>
+      <symbol id="i-help" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M9.5 9.5a2.5 2.5 0 1 1 3.5 2.3c-.7.4-1 .9-1 1.7M12 17v.5"/></symbol>
+      <symbol id="i-support" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="3.5"/><path d="M5.6 5.6l3.9 3.9M14.5 14.5l3.9 3.9M18.4 5.6l-3.9 3.9M9.5 14.5l-3.9 3.9"/></symbol>
     </defs>
   </svg>
+
+<!-- ======================= LANDING + LOGIN ======================= -->
+<div id="landing" class="lp">
 
   <header class="lp-nav">
     <div class="lp-wrap lp-nav-in">
@@ -999,33 +1206,33 @@ html { scroll-behavior:smooth; scroll-padding-top:72px; }
 <!-- ======================= APP ======================= -->
 <div id="app" class="hidden" data-view="dashboard">
 <aside id="v2Sidebar" class="sb" aria-label="App sections">
-  <div class="sb-brand"><span class="sb-logo">📊</span><div><b>Report Analyzer</b><small>Smarter Reports. Better Decisions.</small></div></div>
+  <div class="sb-brand"><span class="sb-logo"><svg class="svg-ic" aria-hidden="true"><use href="#i-logo"/></svg></span><div><b>Report Analyzer</b><small>Smarter Reports. Better Decisions.</small></div></div>
   <nav class="sb-nav">
-    <button type="button" class="sb-item" data-nav="dashboard"><span class="ic">🏠</span><span>Dashboard</span></button>
-    <button type="button" class="sb-item admin-only hidden" data-nav="overview"><span class="ic">📈</span><span>Owner Overview</span></button>
-    <button type="button" class="sb-item analyst-up hidden" data-nav="upload"><span class="ic">⬆️</span><span>Upload Report</span></button>
-    <button type="button" class="sb-item" data-nav="reports"><span class="ic">📄</span><span>My Reports</span></button>
-    <button type="button" class="sb-item" data-nav="analytics"><span class="ic">💬</span><span>Ask &amp; Analytics</span></button>
-    <button type="button" class="sb-item" data-nav="statement"><span class="ic">🏦</span><span>Statement Score</span></button>
-    <button type="button" class="sb-item analyst-up hidden" data-nav="batch"><span class="ic">🗂️</span><span>Batch Check</span></button>
-    <button type="button" class="sb-item" data-nav="insights"><span class="ic">📊</span><span>Company Insights</span></button>
-    <button type="button" class="sb-item" data-nav="reconciliation"><span class="ic">⚖️</span><span>Reconciliation</span></button>
-    <button type="button" class="sb-item" data-nav="discrepancies"><span class="ic">🚨</span><span>Discrepancies</span></button>
-    <button type="button" class="sb-item" data-nav="notifications"><span class="ic">🔔</span><span>Notifications</span><span class="sb-count hidden" id="sbNotifCount">0</span></button>
-    <button type="button" class="sb-item admin-only hidden" data-nav="team"><span class="ic">👥</span><span>Team &amp; Access</span></button>
-    <button type="button" class="sb-item admin-only hidden" data-nav="broadcast"><span class="ic">📣</span><span>Broadcast</span></button>
-    <button type="button" class="sb-item" data-nav="plan"><span class="ic">💳</span><span>Plan &amp; Billing</span></button>
-    <button type="button" class="sb-item" data-nav="donations"><span class="ic">❤️</span><span>Donations</span></button>
-    <button type="button" class="sb-item" data-nav="support"><span class="ic">💬</span><span>Support</span></button>
-    <button type="button" class="sb-item" data-nav="settings"><span class="ic">⚙️</span><span>Settings</span></button>
-    <button type="button" class="sb-item" data-nav="guide"><span class="ic">📘</span><span>Help &amp; Guide</span></button>
+    <button type="button" class="sb-item" data-nav="dashboard"><span class="ic"><svg class="svg-ic" aria-hidden="true"><use href="#i-home"/></svg></span><span>Dashboard</span></button>
+    <button type="button" class="sb-item admin-only hidden" data-nav="overview"><span class="ic"><svg class="svg-ic" aria-hidden="true"><use href="#i-chart"/></svg></span><span>Owner Overview</span></button>
+    <button type="button" class="sb-item analyst-up hidden" data-nav="upload"><span class="ic"><svg class="svg-ic" aria-hidden="true"><use href="#i-upload"/></svg></span><span>Upload Report</span></button>
+    <button type="button" class="sb-item" data-nav="reports"><span class="ic"><svg class="svg-ic" aria-hidden="true"><use href="#i-file"/></svg></span><span>My Reports</span></button>
+    <button type="button" class="sb-item" data-nav="analytics"><span class="ic"><svg class="svg-ic" aria-hidden="true"><use href="#i-chat"/></svg></span><span>Ask &amp; Analytics</span></button>
+    <button type="button" class="sb-item" data-nav="statement"><span class="ic"><svg class="svg-ic" aria-hidden="true"><use href="#i-bank"/></svg></span><span>Statement Score</span></button>
+    <button type="button" class="sb-item analyst-up hidden" data-nav="batch"><span class="ic"><svg class="svg-ic" aria-hidden="true"><use href="#i-layers"/></svg></span><span>Batch Check</span></button>
+    <button type="button" class="sb-item" data-nav="insights"><span class="ic"><svg class="svg-ic" aria-hidden="true"><use href="#i-chart"/></svg></span><span>Company Insights</span></button>
+    <button type="button" class="sb-item" data-nav="reconciliation"><span class="ic"><svg class="svg-ic" aria-hidden="true"><use href="#i-scale"/></svg></span><span>Reconciliation</span></button>
+    <button type="button" class="sb-item" data-nav="discrepancies"><span class="ic"><svg class="svg-ic" aria-hidden="true"><use href="#i-alert"/></svg></span><span>Discrepancies</span></button>
+    <button type="button" class="sb-item" data-nav="notifications"><span class="ic"><svg class="svg-ic" aria-hidden="true"><use href="#i-bell"/></svg></span><span>Notifications</span><span class="sb-count hidden" id="sbNotifCount">0</span></button>
+    <button type="button" class="sb-item admin-only hidden" data-nav="team"><span class="ic"><svg class="svg-ic" aria-hidden="true"><use href="#i-users"/></svg></span><span>Team &amp; Access</span></button>
+    <button type="button" class="sb-item admin-only hidden" data-nav="broadcast"><span class="ic"><svg class="svg-ic" aria-hidden="true"><use href="#i-megaphone"/></svg></span><span>Broadcast</span></button>
+    <button type="button" class="sb-item" data-nav="plan"><span class="ic"><svg class="svg-ic" aria-hidden="true"><use href="#i-card"/></svg></span><span>Plan &amp; Billing</span></button>
+    <button type="button" class="sb-item" data-nav="donations"><span class="ic"><svg class="svg-ic" aria-hidden="true"><use href="#i-heart"/></svg></span><span>Donations</span></button>
+    <button type="button" class="sb-item" data-nav="support"><span class="ic"><svg class="svg-ic" aria-hidden="true"><use href="#i-support"/></svg></span><span>Support</span></button>
+    <button type="button" class="sb-item" data-nav="settings"><span class="ic"><svg class="svg-ic" aria-hidden="true"><use href="#i-gear"/></svg></span><span>Settings</span></button>
+    <button type="button" class="sb-item" data-nav="guide"><span class="ic"><svg class="svg-ic" aria-hidden="true"><use href="#i-book"/></svg></span><span>Help &amp; Guide</span></button>
   </nav>
   <div class="sb-label">Quick actions</div>
-  <button type="button" class="sb-q analyst-up hidden" data-nav="upload"><span>⬆️ Upload a Report</span><i>›</i></button>
-  <button type="button" class="sb-q" data-nav="analytics"><span>📈 View Analytics</span><i>›</i></button>
-  <a class="sb-q" href="mailto:reconciliationsolutionsupport@gmail.com?subject=Report%20Analyzer%20support"><span>✉️ Email support</span><i>›</i></a>
+  <button type="button" class="sb-q analyst-up hidden" data-nav="upload"><span>Upload a Report</span><i>›</i></button>
+  <button type="button" class="sb-q" data-nav="analytics"><span>View Analytics</span><i>›</i></button>
+  <a class="sb-q" href="mailto:reconciliationsolutionsupport@gmail.com?subject=Report%20Analyzer%20support"><span>Email support</span><i>›</i></a>
   <div class="sb-card">
-    <div class="sb-heart">❤️</div><b>Support Our Mission</b>
+    <b>Support Our Mission</b>
     <p>Help us keep Report Analyzer running and improving.</p>
     <button type="button" class="sb-btn" data-nav="donations">Donate Now</button>
   </div>
@@ -1034,21 +1241,24 @@ html { scroll-behavior:smooth; scroll-padding-top:72px; }
     <div class="sb-bar"><i id="sbPlanBar"></i></div><small id="sbPlanUse"></small>
     <button type="button" class="sb-btn" data-nav="plan">View Plans</button>
   </div>
+  <div class="sb-label sb-mobile-only">Account</div>
+  <button type="button" class="sb-q sb-mobile-only" id="sbTheme"><span>Switch light / dark mode</span><i>›</i></button>
+  <button type="button" class="sb-q sb-mobile-only" id="sbLogout"><span>Log out</span><i>›</i></button>
   <div class="sb-ver">Report Analyzer · V2<br><a data-legal="terms">Terms</a> · <a data-legal="privacy">Privacy</a></div>
 </aside>
 <div class="sb-scrim" id="sbScrim"></div>
 <div class="shell">
 <header class="app">
-  <button type="button" class="sb-burger" id="sbToggle" aria-label="Open menu">☰</button>
-  <span class="hdr-brand">📊 Report<b>Analyzer</b></span>
-  <div class="app-search"><span aria-hidden="true">🔍</span><input type="text" id="dSearch" placeholder="Search your reports…" autocomplete="off" aria-label="Search reports"></div>
+  <button type="button" class="sb-burger" id="sbToggle" aria-label="Open menu"><svg class="svg-ic" aria-hidden="true"><use href="#i-menu"/></svg></button>
+  <span class="hdr-brand"><svg class="svg-ic" aria-hidden="true"><use href="#i-logo"/></svg><span>Report Analyzer</span></span>
+  <div class="app-search"><svg class="svg-ic" aria-hidden="true"><use href="#i-search"/></svg><input type="text" id="dSearch" placeholder="Search your reports…" autocomplete="off" aria-label="Search reports"></div>
   <span class="hdr-spacer"></span>
   <button class="ghost admin-only hidden" id="adminBtn">Admin</button>
-  <button class="ghost v2-help-link v2-tour-launch" id="v2TourLaunch" type="button">❔ Help</button>
-  <button type="button" class="ghost hidden" id="installBtn" title="Install Report Analyzer on this device">📲 Install app</button>
-  <button class="ghost" id="twofaBtn">🔐 2FA</button>
-  <button type="button" class="ghost" id="themeBtn" aria-label="Dark mode" title="Switch to dark mode">🌙</button>
-  <div class="bell-wrap"><button type="button" class="ghost bell" id="bellBtn" aria-label="Notifications" title="Notifications">🔔<span class="bell-label">Notifications</span><span id="bellBadge" class="bell-badge hidden">0</span></button><div id="bellPanel" class="bell-panel hidden"></div></div>
+  <button class="ghost v2-help-link v2-tour-launch" id="v2TourLaunch" type="button">Help</button>
+  <button type="button" class="ghost hidden" id="installBtn" title="Install Report Analyzer on this device">Install app</button>
+  <button class="ghost" id="twofaBtn"> 2FA</button>
+  <button type="button" class="ghost" id="themeBtn" aria-label="Dark mode" title="Switch to dark mode">Dark</button>
+  <div class="bell-wrap"><button type="button" class="ghost bell" id="bellBtn" aria-label="Notifications" title="Notifications"><svg class="svg-ic" aria-hidden="true"><use href="#i-bell"/></svg><span class="bell-label">Notifications</span><span id="bellBadge" class="bell-badge hidden">0</span></button><div id="bellPanel" class="bell-panel hidden"></div></div>
   <div class="who-chip"><span class="avatar" id="avatar">U</span><span id="who" class="who"></span></div>
   <button class="ghost" id="logout">Log out</button>
 </header>
@@ -1056,29 +1266,29 @@ html { scroll-behavior:smooth; scroll-padding-top:72px; }
   <div id="newsBanner" class="news-banner hidden"></div>
   <section class="d-hero" data-views="dashboard">
     <div>
-      <div class="d-greet" id="dGreet">Welcome 👋</div>
+      <div class="d-greet" id="dGreet">Welcome </div>
       <div class="d-greet-sub">Here's what's happening with your reports today.</div>
       <div class="d-chips">
-        <button type="button" class="d-chip" data-nav="analytics">📈 Analyze</button>
-        <button type="button" class="d-chip" data-nav="statement">🏦 Loan check</button>
-        <button type="button" class="d-chip" data-nav="reconciliation">⚖️ Reconcile</button>
-        <button type="button" class="d-chip" data-nav="discrepancies">🔎 Track</button>
-        <button type="button" class="d-chip" data-nav="insights">🌱 Grow</button>
+        <button type="button" class="d-chip" data-nav="analytics">Analyze</button>
+        <button type="button" class="d-chip" data-nav="statement">Loan check</button>
+        <button type="button" class="d-chip" data-nav="reconciliation">Reconcile</button>
+        <button type="button" class="d-chip" data-nav="discrepancies">Track</button>
+        <button type="button" class="d-chip" data-nav="insights">Grow</button>
       </div>
     </div>
     <div class="d-hero-card">
       <div><b>Turning data into financial clarity.</b><p>Better insights. Stronger decisions. A healthier financial future.</p><small id="dCompany"></small></div>
-      <svg viewBox="0 0 150 90" aria-hidden="true"><defs><linearGradient id="hg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#34d399"/><stop offset="1" stop-color="#2563eb"/></linearGradient></defs><rect x="8" y="58" width="20" height="26" rx="4" fill="url(#hg)"/><rect x="38" y="44" width="20" height="40" rx="4" fill="url(#hg)"/><rect x="68" y="50" width="20" height="34" rx="4" fill="url(#hg)"/><rect x="98" y="26" width="20" height="58" rx="4" fill="url(#hg)"/><rect x="126" y="10" width="20" height="74" rx="4" fill="url(#hg)"/><polyline points="12,50 44,36 76,42 108,18 138,4" fill="none" stroke="#fbbf24" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      
     </div>
   </section>
 
   <section class="d-panel d-check hidden" id="dCheck" data-views="dashboard"></section>
 
   <section class="d-kpis" data-views="dashboard">
-    <div class="d-kpi k1"><div class="ico">📄</div><div class="body"><small>Total Reports Processed</small><b id="kv1">-</b><em id="ks1"></em></div><div class="sp" id="sp1"></div></div>
-    <div class="d-kpi k2"><div class="ico">✅</div><div class="body"><small>Reconciliation Success Rate</small><b id="kv2">-</b><em id="ks2"></em></div><div class="sp" id="sp2"></div></div>
-    <div class="d-kpi k3"><div class="ico">⚠️</div><div class="body"><small>Open Discrepancies</small><b id="kv3">-</b><em id="ks3"></em></div><div class="sp" id="sp3"></div></div>
-    <div class="d-kpi k4"><div class="ico">💰</div><div class="body"><small>Net Difference Found</small><b id="kv4">-</b><em id="ks4"></em></div><div class="sp" id="sp4"></div></div>
+    <div class="d-kpi k1"><div class="ico"><svg class="svg-ic" aria-hidden="true"><use href="#i-file"/></svg></div><div class="body"><small>Total Reports Processed</small><b id="kv1">-</b><em id="ks1"></em></div><div class="sp" id="sp1"></div></div>
+    <div class="d-kpi k2"><div class="ico"><svg class="svg-ic" aria-hidden="true"><use href="#i-check"/></svg></div><div class="body"><small>Reconciliation Success Rate</small><b id="kv2">-</b><em id="ks2"></em></div><div class="sp" id="sp2"></div></div>
+    <div class="d-kpi k3"><div class="ico"><svg class="svg-ic" aria-hidden="true"><use href="#i-alert"/></svg></div><div class="body"><small>Open Discrepancies</small><b id="kv3">-</b><em id="ks3"></em></div><div class="sp" id="sp3"></div></div>
+    <div class="d-kpi k4"><div class="ico"><svg class="svg-ic" aria-hidden="true"><use href="#i-coin"/></svg></div><div class="body"><small>Net Difference Found</small><b id="kv4">-</b><em id="ks4"></em></div><div class="sp" id="sp4"></div></div>
   </section>
 
   <section class="d-grid2" data-views="dashboard">
@@ -1090,7 +1300,7 @@ html { scroll-behavior:smooth; scroll-padding-top:72px; }
 
   <section class="d-grid2" data-views="dashboard">
     <div class="d-panel"><h3>Discrepancies by Category</h3><p class="d-sub">Where your differences come from</p>
-      <div class="d-chartbox"><canvas id="catChart"></canvas><div class="d-empty" id="catEmpty">No discrepancy cases yet. 🎉</div></div></div>
+      <div class="d-chartbox"><canvas id="catChart"></canvas><div class="d-empty" id="catEmpty">No discrepancy cases yet. </div></div></div>
     <div class="d-panel"><h3>Reconciliation Activity</h3><p class="d-sub">Reconciliation runs per day (last 90 days)</p>
       <div class="d-chartbox"><canvas id="actChart"></canvas><div class="d-empty" id="actEmpty">No reconciliation runs yet.</div></div></div>
   </section>
@@ -1103,24 +1313,24 @@ html { scroll-behavior:smooth; scroll-padding-top:72px; }
   </section>
 
   <section class="d-upgrade" id="dUpgrade" data-views="dashboard">
-    <div class="rocket">🚀</div><div class="txt"><b>Ready to unlock more features?</b><span>Upgrade your plan for more analyses, team members and automated reports.</span></div>
+    <div class="txt"><b>Ready to unlock more features?</b><span>Upgrade your plan for more analyses, team members and automated reports.</span></div>
     <button type="button" data-nav="plan">View Plans →</button>
   </section>
 
   <section class="d-panel" data-views="reports">
-    <div class="d-head"><div><h3>My Reports</h3><p class="d-sub" id="rptCount"></p></div><button type="button" class="analyst-up hidden" data-nav="upload">⬆️ Upload report</button></div>
+    <div class="d-head"><div><h3>My Reports</h3><p class="d-sub" id="rptCount"></p></div><button type="button" class="analyst-up hidden" data-nav="upload">Upload report</button></div>
     <div class="tablewrap"><table id="reportsTable"></table></div>
     <div class="mute" id="reportsEmpty"></div>
   </section>
 
   <section class="d-panel admin-only hidden" data-views="overview">
-    <h3>📈 Owner overview</h3>
+    <h3>Owner overview</h3>
     <p class="d-sub">How your business is doing right now. Only you can see this page.</p>
     <div id="ovBody">Loading…</div>
   </section>
 
   <section class="d-panel admin-only hidden" data-views="overview">
-    <h3>🎟️ Coupon codes</h3>
+    <h3>Coupon codes</h3>
     <p class="d-sub">Give a customer free days, or a percentage off one payment. Each code can be used once per company.</p>
     <div class="row">
       <select id="cpKind"><option value="percent">% off a payment</option><option value="days">Free days</option></select>
@@ -1136,26 +1346,26 @@ html { scroll-behavior:smooth; scroll-padding-top:72px; }
   </section>
 
   <section class="d-panel admin-only hidden" data-views="overview">
-    <h3>👎 Answers customers marked wrong</h3>
+    <h3>Answers customers marked wrong</h3>
     <div id="fbList" style="display:grid;gap:6px"></div>
   </section>
 
   <section class="d-panel admin-only hidden" data-views="overview">
-    <h3>📩 Messages from the website</h3>
+    <h3>Messages from the website</h3>
     <p class="d-sub">People who used the contact form on the home page. Reply to their email, then mark it handled.</p>
     <div id="ctList" style="display:grid;gap:8px"></div>
   </section>
 
   <section class="card" data-views="statement" id="ssCard">
-    <h2>🏦 Statement Score</h2>
+    <h2>Statement Score</h2>
     <p class="d-sub">Upload a bank statement under <b>Upload Report</b>, pick it below, and get income, spending and what is left for every month, plus a loan-readiness score.</p>
     <div class="row">
       <select id="ssReport"></select>
       <select id="ssFrom" title="First month"><option value="">From: first month</option></select>
       <select id="ssTo" title="Last month"><option value="">To: last month</option></select>
-      <button type="button" id="ssRun">🔍 Check statement</button>
+      <button type="button" id="ssRun">Check statement</button>
     </div>
-    <details class="ss-combo"><summary>➕ Combine several accounts (for example a salary account and a business account)</summary>
+    <details class="ss-combo"><summary>Combine several accounts (for example a salary account and a business account)</summary>
       <div class="mute" style="font-size:13px">Tick two or more statements to add them together. Money moved between your own accounts can look like extra income and spending.</div>
       <div id="ssCombo"></div>
     </details>
@@ -1172,14 +1382,14 @@ html { scroll-behavior:smooth; scroll-padding-top:72px; }
       <h3 style="margin:16px 0 6px">Month by month</h3>
       <div class="ss-wrap" id="ssTableWrap"></div>
       <div id="ssCatsBox" class="hidden"><h3 style="margin:16px 0 6px">Where the money goes and comes from</h3><div class="ss-cats"><div id="ssCatSpend"></div><div id="ssCatIn"></div></div></div>
-      <div id="ssFcBox" class="hidden"><h3 style="margin:16px 0 6px">🔮 What the next months may look like</h3><div class="ss-wrap" id="ssFcTable"></div><div id="ssFcWarn"></div><small class="mute" id="ssFcNote"></small></div>
+      <div id="ssFcBox" class="hidden"><h3 style="margin:16px 0 6px">What the next months may look like</h3><div class="ss-wrap" id="ssFcTable"></div><div id="ssFcWarn"></div><small class="mute" id="ssFcNote"></small></div>
       <div class="ss-loan hidden" id="ssLoan"></div>
-      <div class="ss-three"><div class="ss-box good"><h4>✅ Good signs</h4><ul id="ssGood"></ul></div><div class="ss-box bad"><h4>⚠️ What lenders may worry about</h4><ul id="ssBad"></ul></div><div class="ss-box tip"><h4>💡 How to improve</h4><ul id="ssTips"></ul></div></div>
+      <div class="ss-three"><div class="ss-box good"><h4>Good signs</h4><ul id="ssGood"></ul></div><div class="ss-box bad"><h4>What lenders may worry about</h4><ul id="ssBad"></ul></div><div class="ss-box tip"><h4>How to improve</h4><ul id="ssTips"></ul></div></div>
       <h3 style="margin:16px 0 6px">How the score is built</h3>
       <div id="ssFactors"></div>
       <div class="insight" id="ssSimple" style="margin-top:14px"></div>
       <div id="ssAsk"></div>
-      <div class="row" style="margin-top:10px"><a id="ssXlsx" href="#"><button type="button" class="ghost">⬇ Excel</button></a><a id="ssPdf" href="#"><button type="button" class="ghost">📄 PDF</button></a><button type="button" class="ghost" id="ssShareBtn">🔗 Share with a lender</button></div>
+      <div class="row" style="margin-top:10px"><a id="ssXlsx" href="#"><button type="button" class="ghost">Download Excel</button></a><a id="ssPdf" href="#"><button type="button" class="ghost">Download PDF</button></a><button type="button" class="ghost" id="ssShareBtn">Share with a lender</button></div>
       <div class="ss-share hidden" id="ssSharePanel">
         <b>Share a private link</b>
         <div class="mute" style="font-size:13px;margin:3px 0 8px">Anyone with the link can see this result (no files, no login, no transaction descriptions). It stops working on its own, and you can switch it off any time below.</div>
@@ -1193,17 +1403,17 @@ html { scroll-behavior:smooth; scroll-padding-top:72px; }
   </section>
 
   <section class="card analyst-up hidden" data-views="batch" id="batchCard">
-    <h2>🗂️ Batch Check <small class="mute">for lenders and agents</small></h2>
+    <h2>Batch Check <small class="mute">for lenders and agents</small></h2>
     <p class="d-sub">Drop up to 25 applicants' bank statements at once. Each one gets the same score and is ranked from strongest to weakest. Files are read and thrown away; they are not saved. Each statement uses one check from your plan.</p>
-    <div class="row"><input type="file" id="btFiles" multiple accept=".csv,.xlsx,.xls,.xlsm,.ods,.pdf,.txt,.json,.xml,.html,.docx,.png,.jpg,.jpeg"><button type="button" id="btRun">🔍 Score all</button></div>
+    <div class="row"><input type="file" id="btFiles" multiple accept=".csv,.xlsx,.xls,.xlsm,.ods,.pdf,.txt,.json,.xml,.html,.docx,.png,.jpg,.jpeg"><button type="button" id="btRun">Score all</button></div>
     <div class="mute" id="btPicked"></div>
     <div class="error" id="btErr"></div>
     <div id="btOut" class="hidden"><p id="btSummary" class="insight"></p><div class="ss-wrap" id="btTable"></div>
-      <div class="row" style="margin-top:10px"><a id="btXlsx" href="#"><button type="button" class="ghost">⬇ Excel ranking</button></a><a id="btPdf" href="#"><button type="button" class="ghost">📄 PDF</button></a></div></div>
+      <div class="row" style="margin-top:10px"><a id="btXlsx" href="#"><button type="button" class="ghost">Download Excel ranking</button></a><a id="btPdf" href="#"><button type="button" class="ghost">Download PDF</button></a></div></div>
   </section>
 
   <section class="card" data-views="support" id="supportCard">
-    <h2>💬 Support</h2>
+    <h2>Support</h2>
     <p class="d-sub">Write to the Report Analyzer team here. We reply in this same place and you get a notification. You can also email <a href="mailto:reconciliationsolutionsupport@gmail.com">reconciliationsolutionsupport@gmail.com</a>.</p>
     <div class="urow" id="tkNew"><b>Start a new conversation</b>
       <div style="display:grid;gap:8px;margin-top:6px"><input type="text" id="tkSubject" maxlength="120" placeholder="Title, e.g. My payment is not showing"><textarea id="tkBody" rows="4" maxlength="3000" placeholder="Tell us what happened…"></textarea>
@@ -1215,7 +1425,7 @@ html { scroll-behavior:smooth; scroll-padding-top:72px; }
   </section>
 
   <section class="card analyst-up hidden" id="apiCard" data-views="settings">
-    <h2>🔌 API access <small class="mute">for lenders and developers</small></h2>
+    <h2>API access <small class="mute">for lenders and developers</small></h2>
     <div class="mute">Let your own system send a statement and get the score back automatically. Each call uses one check from your plan. Keep keys secret: anyone with the key can spend your checks.</div>
     <div class="row" style="margin:8px 0"><input type="text" id="akLabel" maxlength="60" placeholder="Name this key, e.g. Loan app"><button type="button" id="akMake">Create key</button></div>
     <div class="api-key-box hidden" id="akNew"><b>Your new key (copy it now, it is not shown again)</b><code id="akKey"></code><button type="button" class="ghost" id="akCopy">Copy key</button></div>
@@ -1225,67 +1435,67 @@ html { scroll-behavior:smooth; scroll-padding-top:72px; }
   </section>
 
   <section class="card" id="secCard" data-views="settings">
-    <h2>🛡️ Security &amp; privacy</h2>
-    <div class="urow"><b>📬 Weekly email</b>
+    <h2>Security &amp; privacy</h2>
+    <div class="urow"><b>Weekly email</b>
       <div class="mute">A short Monday email: what you did last week, checks left and plan days left. Off by default.</div>
       <label class="mute"><input type="checkbox" id="wkOn"> Send me the weekly email</label>
       <div class="row"><button type="button" class="ghost" id="wkTest">Send me a sample now</button></div><div class="mute" id="wkMsg"></div></div>
-    <div class="urow"><b>💻 Devices signed in</b>
+    <div class="urow"><b>Devices signed in</b>
       <div class="mute">If you see one you do not know, sign it out and change your password. We also tell you when a new device signs in.</div>
       <div id="devList"></div>
       <div class="row"><button type="button" class="ghost" id="devOthers">Sign out all other devices</button></div><div class="mute" id="devMsg"></div></div>
-    <div class="urow"><b>⬇️ Download my data</b>
+    <div class="urow"><b>Download my data</b>
       <div class="mute">A ZIP of the information the website keeps about your account (profile, activity, questions, notifications). Passwords are never included.</div>
       <div class="row"><a href="/api/me/export" id="exportLink"><button type="button" class="ghost">Download my data</button></a></div></div>
-    <div class="urow" id="delBox"><b>🗑️ Delete my account</b>
+    <div class="urow" id="delBox"><b>Delete my account</b>
       <div class="mute" id="delInfo">Ask us to remove your account and personal details. We process it within 7 days and write to you when it is done.</div>
       <div id="delForm"><div class="row"><input type="password" id="delPw" placeholder="Your password" autocomplete="current-password"><input type="text" id="delNote" placeholder="Reason (optional)" maxlength="300"><button type="button" class="danger" id="delSend">Request deletion</button></div></div>
       <div class="row hidden" id="delCancelRow"><button type="button" class="ghost" id="delCancel">Cancel my request</button></div>
       <div class="mute" id="delMsg"></div></div>
-    <div class="urow admin-only hidden"><b>🗑️ Deletion requests (owner)</b><div id="delAdmin" class="mute">None.</div></div>
+    <div class="urow admin-only hidden"><b>Deletion requests (owner)</b><div id="delAdmin" class="mute">None.</div></div>
   </section>
 
   <section class="d-panel" data-views="notifications">
-    <div class="d-head"><div><h3>🔔 Notifications</h3><p class="d-sub">News and announcements from the Report Analyzer team.</p></div><button type="button" class="ghost" id="notifReadAll">Mark all as read</button></div>
+    <div class="d-head"><div><h3>Notifications</h3><p class="d-sub">News and announcements from the Report Analyzer team.</p></div><button type="button" class="ghost" id="notifReadAll">Mark all as read</button></div>
     <div id="notifList" style="display:grid;gap:10px"></div>
   </section>
 
   <section class="d-panel admin-only hidden bc-box" data-views="broadcast">
-    <h3>📣 Broadcast</h3>
+    <h3>Broadcast</h3>
     <p class="d-sub">Send an announcement to every customer. They will see it under Notifications (the bell), and as a banner at the top until they read it.</p>
     <div style="display:grid;gap:10px">
       <input type="text" id="bcTitle" placeholder="Title, e.g. Scheduled maintenance tonight" maxlength="120">
       <textarea id="bcBody" rows="5" maxlength="2000" placeholder="Write your message here…"></textarea>
       <div class="mute" id="bcCount">0 / 2000</div>
       <div class="row">
-        <select id="bcLevel"><option value="info">📢 Announcement</option><option value="success">✅ Good news</option><option value="warning">⚠️ Important</option></select>
+        <select id="bcLevel"><option value="info">Announcement</option><option value="success">Good news</option><option value="warning">Important</option></select>
         <select id="bcDays"><option value="1">Show for 1 day</option><option value="3">Show for 3 days</option><option value="7">Show for 7 days</option><option value="14" selected>Show for 14 days</option><option value="30">Show for 30 days</option><option value="0">Until I withdraw it</option></select>
       </div>
       <label class="mute"><input type="checkbox" id="bcEmail"> Also send it by email to customers who added an email</label>
       <div><div class="mute" style="margin-bottom:4px">Preview</div><div id="bcPreview"></div></div>
-      <div class="row"><button type="button" id="bcSend">📣 Send to all customers</button><span class="mute" id="bcMsg"></span></div>
+      <div class="row"><button type="button" id="bcSend">Send to all customers</button><span class="mute" id="bcMsg"></span></div>
     </div>
     <h3 style="margin-top:18px">Sent announcements</h3>
     <div id="bcHistory" style="display:grid;gap:10px"></div>
   </section>
 
   <section class="d-panel" data-views="donations">
-    <h3>❤️ Support Our Mission</h3>
+    <h3>Support Our Mission</h3>
     <p>Report Analyzer exists to make financial reconciliation simple and affordable for teams like yours. Your support helps cover hosting, security and new features.</p>
     <p class="mute">Online donations are still being set up. If you would like to support the project today, email us and we will share the details.</p>
     <a class="d-btn" href="mailto:reconciliationsolutionsupport@gmail.com?subject=Supporting%20Report%20Analyzer">Email us</a>
   </section>
 
   <section class="card" id="accountCard" data-views="settings">
-    <h2>👤 My account</h2>
+    <h2>My account</h2>
     <div class="urow">
-      <b>📧 My email</b>
+      <b>My email</b>
       <div class="mute">We use it to send your password reset code, plan reminders and payment updates. Nobody else sees it.</div>
       <div class="row"><input type="email" id="acctEmail" placeholder="you@example.com" maxlength="160"><button id="acctEmailSave" type="button">Save email</button></div>
       <div class="mute" id="acctMsg"></div>
     </div>
     <div class="urow">
-      <b>🎁 Refer a friend</b>
+      <b>Refer a friend</b>
       <div class="mute" id="refStats">Loading…</div>
       <div>Your code: <b id="refCode" style="letter-spacing:.06em"></b></div>
       <div class="row"><input type="text" id="refLink" readonly><button class="ghost" id="refCopy" type="button">Copy link</button><a id="refShare" target="_blank" rel="noopener"><button type="button">Share on WhatsApp</button></a></div>
@@ -1293,7 +1503,7 @@ html { scroll-behavior:smooth; scroll-padding-top:72px; }
   </section>
 
   <section class="card hidden" id="twofaCard" data-views="settings">
-    <h2>🔐 Two-factor login</h2>
+    <h2>Two-factor login</h2>
     <div id="twofaStatus"></div>
     <div class="mute" id="twofaMsg"></div>
     <div id="twofaSetup" style="margin-top:8px">
@@ -1328,16 +1538,16 @@ html { scroll-behavior:smooth; scroll-padding-top:72px; }
   </section>
 
   <section class="card hidden" id="billingCard" data-views="plan">
-    <h2>💳 Plan &amp; usage</h2>
+    <h2>Plan &amp; usage</h2>
     <div id="billingStatus" class="mute">Loading plan…</div>
     <div class="urow pay-notice">
-      <strong>🙏 Please bear with us: a humble request</strong>
+      <strong>Please bear with us: a humble request</strong>
       <p>We are truly sorry for the inconvenience, and we kindly beg you not to be angry with us. Our online card payment (Paystack) is still being set up, so for now we can only receive payments by bank transfer to the two accounts below.</p>
-      <p>These are temporary accounts with limited transaction capacity, so a transfer may sometimes fail or take a little longer. Please be patient with us. We are working hard to make paying easier, and we promise it will be worth the wait. Thank you so much for your understanding and for trusting us ❤️</p>
+      <p>These are temporary accounts with limited transaction capacity, so a transfer may sometimes fail or take a little longer. Please be patient with us. We are working hard to make paying easier, and we promise it will be worth the wait. Thank you so much for your understanding and for trusting us </p>
       <p><strong>For payments above ₦150,000, please message us before paying</strong> so we can arrange it smoothly. Kindly do not split one payment into smaller transfers to get around account limits.</p>
     </div>
     <div class="urow" id="couponBox">
-      <b>🎟️ Have a coupon code?</b>
+      <b>Have a coupon code?</b>
       <div class="mute">A free-days code adds days to your plan right away. A discount code goes in the box next to your payment reference below.</div>
       <div class="row"><input type="text" id="couponCode" placeholder="Free-days coupon code" maxlength="32" style="max-width:240px"><button id="couponRedeem" type="button" class="ghost">Redeem</button><span class="mute" id="couponMsg"></span></div>
       <div class="row"><input type="text" id="payCoupon" placeholder="Discount coupon for this payment (optional)" maxlength="32" style="max-width:340px"></div>
@@ -1351,11 +1561,11 @@ html { scroll-behavior:smooth; scroll-padding-top:72px; }
       </select>
       <input id="transferReference" placeholder="Bank transfer reference" maxlength="120">
       <button id="submitPayment">Submit transfer for review</button>
-      <button type="button" class="ghost" id="proformaBtn">📄 Download invoice for this plan</button>
+      <button type="button" class="ghost" id="proformaBtn">Download invoice for this plan</button>
     </div>
     <div class="mute" style="margin-top:6px">Need more than 750 analyses a month or more than 10 team members? Business and larger plans are arranged with us first. Open <b>Support</b> in the side menu and tell us what you need.</div>
     <div class="urow" style="margin-top:8px">
-      <b>📸 Payment screenshot</b>
+      <b>Payment screenshot</b>
       <div class="mute">After paying, attach a screenshot of your transfer receipt. It goes straight to our team so we can confirm your payment faster.</div>
       <div class="row"><input type="file" id="payProof" accept="image/png,image/jpeg,image/webp"><button class="ghost" id="attachProof" type="button">Send screenshot for my pending request</button></div>
       <div class="mute" id="proofMsg"></div>
@@ -1365,7 +1575,7 @@ html { scroll-behavior:smooth; scroll-padding-top:72px; }
   </section>
 
   <section class="card" id="guideCard" data-views="guide">
-    <h2>📘 Getting started</h2>
+    <h2>Getting started</h2>
     <ol>
       <li>Upload a CSV, Excel or supported PDF report.</li>
       <li>Ask a plain-language question about totals, trends, dates, branches or failed transactions.</li>
@@ -1377,7 +1587,7 @@ html { scroll-behavior:smooth; scroll-padding-top:72px; }
     <p class="mute">Paid access starts only after an administrator verifies the bank transfer. AI findings can be wrong; validate high-impact financial decisions against source records.</p>
   </section>
   <section class="card hidden" id="aboutCard" data-views="upload analytics">
-    <h2>📄 About this report</h2>
+    <h2>About this report</h2>
     <div id="aboutWhat"></div>
     <div class="mute" id="aboutPeriod"></div>
     <ul id="aboutPoints"></ul>
@@ -1392,7 +1602,7 @@ html { scroll-behavior:smooth; scroll-padding-top:72px; }
     <div class="row">
       <input type="text" id="question" placeholder='e.g. "total amount by branch and month, top 10"'>
       <button id="ask">Analyze</button>
-      <button type="button" class="ghost" id="howBtn" aria-expanded="false" aria-controls="howBox">💡 How to ask</button>
+      <button type="button" class="ghost" id="howBtn" aria-expanded="false" aria-controls="howBox">How to ask</button>
     </div>
     <div class="how-box hidden" id="howBox">
       <b>Type your question the way you would say it to a person.</b> You do not need special words, and spelling mistakes are fine. A good question has up to four parts:
@@ -1403,7 +1613,7 @@ html { scroll-behavior:smooth; scroll-padding-top:72px; }
         <li><b>How many to show</b> (optional): top 10, bottom 5, all.</li>
       </ol>
       <div class="how-ex"><i>Example:</i> “total withdrawals by branch for March, top 5” = what (total withdrawals) + split (branch) + only for (March) + how many (top 5).</div>
-      <div class="how-tip">💬 Not sure? Just ask <b>“explain this report”</b>, <b>“what does this column mean?”</b> or <b>“why is this so high?”</b> and it will explain in simple words, step by step. To change the last answer, tick <b>Refine the previous result</b> and type what to change, for example “now only for Lagos”.</div>
+      <div class="how-tip">Not sure? Just ask <b>“explain this report”</b>, <b>“what does this column mean?”</b> or <b>“why is this so high?”</b> and it will explain in simple words, step by step. To change the last answer, tick <b>Refine the previous result</b> and type what to change, for example “now only for Lagos”.</div>
       <div class="mute" style="margin:8px 0 4px">Tap an example to put it in the question bar:</div>
       <div id="howChips" class="row"></div>
     </div>
@@ -1411,7 +1621,7 @@ html { scroll-behavior:smooth; scroll-padding-top:72px; }
     <div id="savedQs"></div>
     <div class="mute" style="margin-top:6px">Tip: choose "All reports combined" above to compare months or files. You can type in your own words, spelling mistakes are fine.</div>
     <div class="row" style="margin-top:10px">
-      <button class="ghost" id="fBtn">📈 ATM cash forecast</button>
+      <button class="ghost" id="fBtn">ATM cash forecast</button>
       <input type="number" id="fDays" value="7" min="1" max="30" style="width:74px" title="days ahead"> <span class="mute">days</span>
       <input type="number" id="fCash" placeholder="cash per ATM (optional)" style="width:190px">
     </div>
@@ -1421,7 +1631,7 @@ html { scroll-behavior:smooth; scroll-padding-top:72px; }
   <section class="card hidden" id="resultCard" data-views="analytics">
     <div class="row" style="justify-content:space-between">
       <h2 id="title" style="margin:0"></h2>
-      <span class="row"><a id="download"><button class="ghost">⬇ Excel</button></a><a id="downloadPdf"><button class="ghost">📄 PDF</button></a></span>
+      <span class="row"><a id="download"><button class="ghost">Download Excel</button></a><a id="downloadPdf"><button class="ghost">Download PDF</button></a></span>
     </div>
     <div class="insight hidden" id="insight"></div>
     <canvas id="chart" class="hidden"></canvas>
@@ -1429,9 +1639,9 @@ html { scroll-behavior:smooth; scroll-padding-top:72px; }
     <div class="mute" id="rowInfo"></div>
     <div class="fb-row">
       <span class="mute">Was this answer helpful?</span>
-      <button class="ghost" id="fbUp" type="button" aria-label="Helpful">👍</button>
-      <button class="ghost" id="fbDown" type="button" aria-label="Not helpful">👎</button>
-      <button class="ghost" id="saveQ" type="button">⭐ Save this question</button>
+      <button class="ghost" id="fbUp" type="button" aria-label="Helpful">Helpful</button>
+      <button class="ghost" id="fbDown" type="button" aria-label="Not helpful">Not helpful</button>
+      <button class="ghost" id="saveQ" type="button">Save this question</button>
       <span class="mute" id="fbMsg"></span>
     </div>
   </section>
@@ -1440,18 +1650,18 @@ html { scroll-behavior:smooth; scroll-padding-top:72px; }
     <h2>Compare two files</h2>
     <div class="mute">Compare e.g. an ATM switch log with the bank ledger: matches, amount differences, and items missing on either side.</div>
     <div class="row" style="margin-top:8px"><select id="rA"></select> <span>vs</span> <select id="rB"></select></div>
-    <div class="row" style="margin-top:8px"><input type="text" id="rNote" placeholder="Optional note, e.g. match Reference with Ref No"><button id="rBtn">Reconcile</button><button type="button" class="ghost" id="rHowBtn" aria-expanded="false">💡 How to write a note</button></div>
+    <div class="row" style="margin-top:8px"><input type="text" id="rNote" placeholder="Optional note, e.g. match Reference with Ref No"><button id="rBtn">Reconcile</button><button type="button" class="ghost" id="rHowBtn" aria-expanded="false">How to write a note</button></div>
     <div class="how-box hidden" id="rHow">
       <b>The note is optional.</b> With no note, the site works out which columns match by itself and tells you how it matched them. When you do write one, use your own words, spelling mistakes are fine. You can say:
       <ol><li><b>Which columns match</b>: “match Reference with Ref No”, “match RRN with transaction id and amount with value”.</li>
         <li><b>How much difference to ignore</b>: “ignore differences under 10 naira”, “tolerance of ₦50”.</li></ol>
-      <div class="how-tip">💬 After the result appears you can ask anything about it in the box under the table, for example “why are these missing?” or “which one is the biggest difference?”.</div>
+      <div class="how-tip">After the result appears you can ask anything about it in the box under the table, for example “why are these missing?” or “which one is the biggest difference?”.</div>
       <div class="mute" style="margin:8px 0 4px">Tap an example to put it in the note box:</div><div id="rHowChips" class="row"></div>
     </div>
     <div class="error" id="rErr"></div>
     <div id="rOut" class="hidden" style="margin-top:10px">
       <pre class="recon" id="rText"></pre>
-      <span class="row"><a id="rDownload"><button class="ghost">⬇ Excel (all details)</button></a><a id="rPdf"><button class="ghost">📄 PDF</button></a></span>
+      <span class="row"><a id="rDownload"><button class="ghost">Download Excel (all details)</button></a><a id="rPdf"><button class="ghost">Download PDF</button></a></span>
       <div class="tablewrap" style="margin-top:10px"><table id="rTable"></table></div>
       <div class="mute" id="rInfo"></div>
       <div id="rAsk"></div>
@@ -1459,7 +1669,7 @@ html { scroll-behavior:smooth; scroll-padding-top:72px; }
   </section>
 
   <section class="card" id="operationsCard" data-views="reconciliation discrepancies insights plan settings">
-    <h2 id="opsTitle">🧰 Company operations</h2>
+    <h2 id="opsTitle">Company operations</h2>
     <p class="mute ops-intro">Review discrepancy cases, compare reconciliation history, configure recurring reconciliation, manage notifications and invoices, and create secure integration tokens. These tools use the selected company's access permissions.</p>
     <div class="row" style="margin-bottom:12px"><label for="opsCompany">Company</label><select id="opsCompany"></select><button class="ghost" id="opsRefresh">Refresh all</button></div>
     <div class="urow" data-views="discrepancies">
@@ -1513,7 +1723,7 @@ html { scroll-behavior:smooth; scroll-padding-top:72px; }
   </section>
 
   <section class="card analyst-up hidden" id="digestCard" data-views="settings">
-    <h2>🗓 Scheduled digests</h2>
+    <h2>Scheduled digests</h2>
     <div class="mute">Runs a question on a schedule and sends the answer + PDF to this company's linked Telegram users. Times use the server's timezone.</div>
     <ul id="digestList" style="margin:8px 0"></ul>
     <div class="row">
@@ -1532,14 +1742,14 @@ html { scroll-behavior:smooth; scroll-padding-top:72px; }
   </section>
 
   <section class="card hidden" id="adminCard" data-views="team plan settings">
-    <h2 data-views="team">🔐 Admin - users &amp; access</h2>
+    <h2 data-views="team">Admin - users &amp; access</h2>
     <div data-views="team">
     <div class="mute" style="margin-bottom:8px">Owner controls: customer accounts are created as analysts and assigned to their own company. They cannot see other companies unless you explicitly assign access. Telegram ID links a customer to the bot.</div>
-    <h2 style="margin-top:12px">📝 Customer registration requests</h2>
+    <h2 style="margin-top:12px">Customer registration requests</h2>
     <div class="mute">Public sign-up requests stay pending until you approve them. Approved customers get Analyst access to their own company only.</div>
     <div class="row" style="margin:8px 0"><button class="ghost" id="refreshRegs">Refresh requests</button><span class="mute" id="regAdminMsg"></span></div>
     <div id="registrationRequests"></div>
-    <h2 style="margin-top:16px">🏢 Onboard a new customer manually</h2>
+    <h2 style="margin-top:16px">Onboard a new customer manually</h2>
     <div class="mute">Creates a separate company and customer login together. Use a unique company name; the new customer role is fixed to Analyst, not Admin. Password must be at least 10 characters.</div>
     <div class="row" style="margin-top:8px">
       <input type="text" id="custCompany" placeholder="Company name" maxlength="120">
@@ -1562,7 +1772,7 @@ html { scroll-behavior:smooth; scroll-padding-top:72px; }
     </div>
     <div data-views="plan">
 
-    <h2 style="margin-top:18px">💳 Billing &amp; free plan grants</h2>
+    <h2 style="margin-top:18px">Billing &amp; free plan grants</h2>
     <div class="mute">Verify the actual bank transfer in your account before approving. A reference alone is not proof of payment.</div>
     <h3>Pending payment requests</h3>
     <div id="billingPayments"></div>
@@ -1580,14 +1790,14 @@ html { scroll-behavior:smooth; scroll-padding-top:72px; }
 
     </div>
     <div data-views="settings">
-    <h2 style="margin-top:18px">🎨 Company branding (for PDFs)</h2>
-    <div class="row"><select id="bCo"></select><input type="text" id="bName" placeholder="Name shown on PDFs"><input type="color" id="bColor" value="#2b59ff" title="Brand colour"><input type="file" id="bLogo" accept="image/png,image/jpeg"><button id="bBtn">Save branding</button><span class="mute" id="bMsg"></span></div>
+    <h2 style="margin-top:18px">Company branding (for PDFs)</h2>
+    <div class="row"><select id="bCo"></select><input type="text" id="bName" placeholder="Name shown on PDFs"><input type="color" id="bColor" value="#0b6b4b" title="Brand colour"><input type="file" id="bLogo" accept="image/png,image/jpeg"><button id="bBtn">Save branding</button><span class="mute" id="bMsg"></span></div>
 
-    <h2 style="margin-top:18px">🤖 AI usage today</h2>
+    <h2 style="margin-top:18px">AI usage today</h2>
     <div class="mute" id="usageInfo"></div>
     <div class="tablewrap"><table id="usageTable"></table></div>
 
-    <h2 style="margin-top:18px">💾 Backup</h2>
+    <h2 style="margin-top:18px">Backup</h2>
     <div class="row"><button class="ghost" id="backupBtn">Back up now</button><span class="mute" id="backupMsg">A backup also runs automatically every night.</span></div>
 
     <h2 style="margin-top:18px">Audit log</h2>
@@ -1789,7 +1999,7 @@ async function start() {
 /* ---------- two-factor ---------- */
 function renderTwofa() {
   const on = S.user.totp_enabled;
-  $("twofaStatus").textContent = on ? "Two-factor login is ON ✅" : "Two-factor login is OFF";
+  $("twofaStatus").textContent = on ? "Two-factor login is ON " : "Two-factor login is OFF";
   $("twofaSetup").classList.toggle("hidden", on); $("twofaOff").classList.toggle("hidden", !on); $("twofaSecretBox").classList.add("hidden"); $("twofaErr").textContent = "";
 }
 $("twofaBtn").onclick = () => { $("twofaCard").classList.toggle("hidden"); renderTwofa(); };
@@ -1832,11 +2042,11 @@ async function showPreview() {
 }
 function renderAbout(d) {
   $("aboutCard").classList.remove("hidden");
-  $("aboutWhat").textContent = d.what_it_is || ""; $("aboutPeriod").textContent = d.period ? "🗓 " + d.period : "";
+  $("aboutWhat").textContent = d.what_it_is || ""; $("aboutPeriod").textContent = d.period ? " " + d.period : "";
   $("aboutPoints").replaceChildren(...(d.key_points || []).map(p => el("li", p)));
-  const icon = { high: "🔴", medium: "🟠", info: "ℹ️" };
+  const icon = { high: "High", medium: "Medium", info: "Info" };
   $("aboutAlerts").replaceChildren(...(d.alerts || []).map(a => el("div", `${icon[a.severity] || "•"} ${a.text}`)));
-  $("aboutFlags").textContent = (d.flags && d.flags.length) ? "⚠️ Worth checking: " + d.flags.join(" • ") : "";
+  $("aboutFlags").textContent = (d.flags && d.flags.length) ? "Worth checking: " + d.flags.join(" • ") : "";
   $("aboutQs").replaceChildren(...(d.suggested_questions || []).map(q => { const b = el("button", q, "chip"); b.onclick = () => { $("question").value = q; $("followup").checked = false; $("ask").click(); }; return b; }));
 }
 async function loadHistory() {
@@ -1868,7 +2078,7 @@ $("ask").onclick = async () => {
   try {
     const rid = $("report").value;
     const r = await jpost("/api/analyze", { company_id: Number($("company").value), report_id: rid === "all" ? null : Number(rid), question: q, prev_plan: $("followup").checked ? S.plan : null });
-    if (r.clarify) $("error").textContent = "🤔 " + r.clarify; else { S.plan = r.plan; renderResult(r); loadHistory(); }
+    if (r.clarify) $("error").textContent = " " + r.clarify; else { S.plan = r.plan; renderResult(r); loadHistory(); }
   } catch (e) { $("error").textContent = e.message; }
   $("ask").disabled = false; $("ask").textContent = "Analyze";
 };
@@ -1885,7 +2095,7 @@ function renderResult(r) {
   $("title").textContent = r.title; $("download").href = `/api/download/${r.result_id}`; $("downloadPdf").href = `/api/download/${r.result_id}/pdf`;
   const ins = $("insight"); ins.textContent = r.insight || ""; ins.classList.toggle("hidden", !r.insight);
   const cv = $("chart"); if (S.chart) { S.chart.destroy(); S.chart = null; }
-  if (r.chart) { cv.classList.remove("hidden"); const c = r.chart; S.chart = new Chart(cv, { type: c.type, data: { labels: c.labels, datasets: [{ label: c.metric, data: c.values, borderWidth: 2, backgroundColor: "rgba(43,89,255,.55)", borderColor: "#2b59ff", tension: .3 }] }, options: { responsive: true, plugins: { legend: { display: c.type === "pie" } } } }); } else cv.classList.add("hidden");
+  if (r.chart) { cv.classList.remove("hidden"); const c = r.chart; S.chart = new Chart(cv, { type: c.type, data: { labels: c.labels, datasets: [{ label: c.metric, data: c.values, borderWidth: 2, backgroundColor: "rgba(11,107,75,.55)", borderColor: "#0b6b4b", tension: .3 }] }, options: { responsive: true, plugins: { legend: { display: c.type === "pie" } } } }); } else cv.classList.add("hidden");
   fillTable($("table"), r.columns, r.rows);
   $("rowInfo").textContent = r.total_rows > r.rows.length ? `Showing ${r.rows.length} of ${r.total_rows} rows - download Excel for all.` : `${r.total_rows} row(s)`;
   $("resultCard").scrollIntoView({ behavior: "smooth" });
@@ -1898,11 +2108,11 @@ $("rBtn").onclick = async () => {
   $("rBtn").disabled = true; $("rBtn").textContent = "Reconciling…";
   try {
     const r = await jpost("/api/reconcile", { company_id: Number($("company").value), report_a: Number($("rA").value), report_b: Number($("rB").value), instruction: $("rNote").value });
-    if (r.clarify) $("rErr").textContent = "🤔 " + r.clarify;
+    if (r.clarify) $("rErr").textContent = " " + r.clarify;
     else {
       S.reconResultId = r.result_id; $("rOut").classList.remove("hidden"); $("rText").textContent = r.text; $("rDownload").href = `/api/download/${r.result_id}`; $("rPdf").href = `/api/download/${r.result_id}/pdf`;
       fillTable($("rTable"), r.columns, r.rows);
-      $("rInfo").textContent = r.total_problem_rows ? `${r.total_problem_rows} unmatched/mismatched row(s)` + (r.total_problem_rows > r.rows.length ? ` - showing ${r.rows.length}, download Excel for all.` : "") : "✅ Everything matched.";
+      $("rInfo").textContent = r.total_problem_rows ? `${r.total_problem_rows} unmatched/mismatched row(s)` + (r.total_problem_rows > r.rows.length ? ` - showing ${r.rows.length}, download Excel for all.` : "") : "Everything matched.";
     }
   } catch (e) { $("rErr").textContent = e.message; }
   $("rBtn").disabled = false; $("rBtn").textContent = "Reconcile";
@@ -1945,8 +2155,8 @@ async function loadCases() {
     members.forEach(m=>{const o=el("option",`${m.username} (${m.role})`);o.value=m.id;assignee.appendChild(o)}); assignee.value=c.assigned_user_id ? String(c.assigned_user_id) : "";
     const comment = document.createElement("input"); comment.type="text"; comment.placeholder="Resolution note / comment"; comment.maxLength=2000;
     const save = el("button", "Save case"), events = el("button", "View activity", "ghost"), msg=el("span", "", "mute");
-    save.onclick = async()=>{ save.disabled=true; try { const payload={status:status.value,comment:comment.value}; if(assignee.value) payload.assigned_user_id=Number(assignee.value); await jsend("PATCH", `/api/cases/${c.id}`, payload); msg.textContent="Saved ✓"; await loadCases(); } catch(e){msg.textContent="❌ "+e.message; save.disabled=false;} };
-    events.onclick = async()=>{ try { const ev=await api(`/api/cases/${c.id}/events`); msg.textContent=ev.length?ev.map(x=>`${x.created_at} · ${x.username||"System"} · ${x.action}: ${x.detail}`).join(" | "):"No activity yet."; }catch(e){msg.textContent="❌ "+e.message;} };
+    save.onclick = async()=>{ save.disabled=true; try { const payload={status:status.value,comment:comment.value}; if(assignee.value) payload.assigned_user_id=Number(assignee.value); await jsend("PATCH", `/api/cases/${c.id}`, payload); msg.textContent="Saved ✓"; await loadCases(); } catch(e){msg.textContent=" "+e.message; save.disabled=false;} };
+    events.onclick = async()=>{ try { const ev=await api(`/api/cases/${c.id}/events`); msg.textContent=ev.length?ev.map(x=>`${x.created_at} · ${x.username||"System"} · ${x.action}: ${x.detail}`).join(" | "):"No activity yet."; }catch(e){msg.textContent=" "+e.message;} };
     controls.append(status,assignee,comment,save,events,msg); card.append(title,detail,controls); host.appendChild(card);
   });
 }
@@ -1964,8 +2174,8 @@ async function loadTrends() {
   if (window.Chart) {
     if(S.trendRunsChart) S.trendRunsChart.destroy();
     if(S.trendQualityChart) S.trendQualityChart.destroy();
-    S.trendRunsChart=new Chart($("trendRunsChart"),{type:"line",data:{labels,datasets:[{label:"Runs",data:runs,borderColor:"#315efb",backgroundColor:"rgba(49,94,251,.13)",fill:true,tension:.28}]},options:{responsive:true,maintainAspectRatio:true,plugins:{legend:{display:false}},scales:{x:{ticks:{maxTicksLimit:7}},y:{beginAtZero:true,ticks:{precision:0}}}}});
-    S.trendQualityChart=new Chart($("trendQualityChart"),{type:"bar",data:{labels,datasets:[{label:"Matched",data:matchedSeries,backgroundColor:"rgba(16,185,129,.75)"},{label:"Discrepancies",data:discrepSeries,backgroundColor:"rgba(239,68,68,.72)"}]},options:{responsive:true,scales:{x:{stacked:false,ticks:{maxTicksLimit:7}},y:{beginAtZero:true}}}});
+    S.trendRunsChart=new Chart($("trendRunsChart"),{type:"line",data:{labels,datasets:[{label:"Runs",data:runs,borderColor:"#0b6b4b",backgroundColor:"rgba(11,107,75,.12)",fill:true,tension:.28}]},options:{responsive:true,maintainAspectRatio:true,plugins:{legend:{display:false}},scales:{x:{ticks:{maxTicksLimit:7}},y:{beginAtZero:true,ticks:{precision:0}}}}});
+    S.trendQualityChart=new Chart($("trendQualityChart"),{type:"bar",data:{labels,datasets:[{label:"Matched",data:matchedSeries,backgroundColor:"rgba(11,107,75,.75)"},{label:"Discrepancies",data:discrepSeries,backgroundColor:"rgba(180,35,24,.7)"}]},options:{responsive:true,scales:{x:{stacked:false,ticks:{maxTicksLimit:7}},y:{beginAtZero:true}}}});
   }
   fillTable($("trendTable") || makeTrendTable(), ["day","runs","rows","matched","discrepancies","net_difference"], data.series);
 }
@@ -1981,24 +2191,24 @@ async function loadSchedules() {
   const cid=opsCid(), host=$("scheduleList"); if(!host||!cid)return; host.replaceChildren();
   try { const rows=await api(`/api/companies/${cid}/scheduled-reconciliations`);
     if(!rows.length){host.textContent="No scheduled reconciliations.";return;}
-    rows.forEach(r=>{const card=el("div",`${r.report_a_name||("#"+r.report_a)} vs ${r.report_b_name||("#"+r.report_b)} · every ${r.interval_hours}h · next ${r.next_run} UTC · last: ${r.last_status||"not run"}${r.last_error?" · "+r.last_error:""}`,"urow"); const b=el("button","Delete schedule","danger"); b.onclick=async()=>{try{await api(`/api/scheduled-reconciliations/${r.id}`,{method:"DELETE"});await loadSchedules()}catch(e){$("scheduleMsg").textContent="❌ "+e.message}};card.appendChild(b);host.appendChild(card)});
-  } catch(e){host.textContent="❌ "+e.message;}
+    rows.forEach(r=>{const card=el("div",`${r.report_a_name||("#"+r.report_a)} vs ${r.report_b_name||("#"+r.report_b)} · every ${r.interval_hours}h · next ${r.next_run} UTC · last: ${r.last_status||"not run"}${r.last_error?" · "+r.last_error:""}`,"urow"); const b=el("button","Delete schedule","danger"); b.onclick=async()=>{try{await api(`/api/scheduled-reconciliations/${r.id}`,{method:"DELETE"});await loadSchedules()}catch(e){$("scheduleMsg").textContent=" "+e.message}};card.appendChild(b);host.appendChild(card)});
+  } catch(e){host.textContent=" "+e.message;}
 }
-async function loadNotifySettings() { try { const s=await api(`/api/companies/${opsCid()}/notification-settings`); $("notifyEmails").value=(s.emails||[]).join(", "); $("quotaThreshold").value=s.quota_threshold||80; }catch(e){$("notifyMsg").textContent="❌ "+e.message;} }
+async function loadNotifySettings() { try { const s=await api(`/api/companies/${opsCid()}/notification-settings`); $("notifyEmails").value=(s.emails||[]).join(", "); $("quotaThreshold").value=s.quota_threshold||80; }catch(e){$("notifyMsg").textContent=" "+e.message;} }
 async function loadInvoices() { const rows=await api(`/api/billing/invoices?company_id=${opsCid()}`),host=$("invoiceList");host.replaceChildren();if(!rows.length){host.textContent="No paid invoices/receipts yet.";return;}rows.forEach(i=>{const row=el("div",`${i.invoice_number} · ${i.plan.toUpperCase()} · ₦${Number(i.amount_ngn).toLocaleString()} · ${i.status} · ${i.issued_at} UTC`,"urow");const a=el("a","Download PDF receipt");a.href=`/api/billing/invoices/${i.id}/pdf`;a.target="_blank";a.rel="noopener";row.appendChild(a);host.appendChild(row)}); }
-async function loadIntegrations() { const host=$("integrationList");host.replaceChildren();if(S.user.role!=="admin"){host.textContent="Integration token management is available to company administrators.";return;}const rows=await api(`/api/companies/${opsCid()}/integrations/tokens`);if(!rows.length){host.textContent="No integration tokens created.";return;}rows.forEach(t=>{const row=el("div",`${t.label} · created ${t.created_at} · last used ${t.last_used_at||"never"} · ${t.revoked_at?"REVOKED":"active"}`,"urow");if(!t.revoked_at){const b=el("button","Revoke token","danger");b.onclick=async()=>{if(!confirm("Revoke this integration token? Connected imports will stop working."))return;try{await api(`/api/companies/${opsCid()}/integrations/tokens/${t.id}`,{method:"DELETE"});await loadIntegrations()}catch(e){$("integrationMsg").textContent="❌ "+e.message}};row.appendChild(b)}host.appendChild(row)}); }
-async function refreshOperations() { $("opsError").textContent=""; try { await Promise.all([loadCases(),loadTrends(),loadReconHistory(),loadSchedules(),loadNotifySettings(),loadInvoices(),loadIntegrations()]); } catch(e) { $("opsError").textContent="❌ "+e.message; } }
-$("opsCompany").onchange=()=>{ $("company").value=$("opsCompany").value; loadReports().then(refreshOperations).catch(e=>$("opsError").textContent="❌ "+e.message); };
+async function loadIntegrations() { const host=$("integrationList");host.replaceChildren();if(S.user.role!=="admin"){host.textContent="Integration token management is available to company administrators.";return;}const rows=await api(`/api/companies/${opsCid()}/integrations/tokens`);if(!rows.length){host.textContent="No integration tokens created.";return;}rows.forEach(t=>{const row=el("div",`${t.label} · created ${t.created_at} · last used ${t.last_used_at||"never"} · ${t.revoked_at?"REVOKED":"active"}`,"urow");if(!t.revoked_at){const b=el("button","Revoke token","danger");b.onclick=async()=>{if(!confirm("Revoke this integration token? Connected imports will stop working."))return;try{await api(`/api/companies/${opsCid()}/integrations/tokens/${t.id}`,{method:"DELETE"});await loadIntegrations()}catch(e){$("integrationMsg").textContent=" "+e.message}};row.appendChild(b)}host.appendChild(row)}); }
+async function refreshOperations() { $("opsError").textContent=""; try { await Promise.all([loadCases(),loadTrends(),loadReconHistory(),loadSchedules(),loadNotifySettings(),loadInvoices(),loadIntegrations()]); } catch(e) { $("opsError").textContent=" "+e.message; } }
+$("opsCompany").onchange=()=>{ $("company").value=$("opsCompany").value; loadReports().then(refreshOperations).catch(e=>$("opsError").textContent=" "+e.message); };
 $("opsRefresh").onclick=refreshOperations;
-$("loadCases").onclick=()=>loadCases().catch(e=>$("opsError").textContent="❌ "+e.message);
-$("loadTrends").onclick=()=>loadTrends().catch(e=>$("opsError").textContent="❌ "+e.message);
-$("loadReconHistory").onclick=()=>loadReconHistory().catch(e=>$("opsError").textContent="❌ "+e.message);
-$("caseStatus").onchange=()=>loadCases().catch(e=>$("opsError").textContent="❌ "+e.message);
-$("addSchedule").onclick=async()=>{ $("scheduleMsg").textContent="";const a=Number($("opsReportA").value),b=Number($("opsReportB").value),hours=Number($("scheduleHours").value);if(!a||!b||a===b){$("scheduleMsg").textContent="Choose two different reports.";return;}try{await jpost(`/api/companies/${opsCid()}/scheduled-reconciliations`,{report_a:a,report_b:b,interval_hours:hours,instruction:$("scheduleNote").value});$("scheduleMsg").textContent="Schedule created ✓";await loadSchedules()}catch(e){$("scheduleMsg").textContent="❌ "+e.message}};
-$("saveNotify").onclick=async()=>{try{const emails=$("notifyEmails").value.split(",").map(x=>x.trim()).filter(Boolean);await jsend("PUT",`/api/companies/${opsCid()}/notification-settings`,{emails,quota_threshold:Number($("quotaThreshold").value)});$("notifyMsg").textContent="Settings saved ✓"}catch(e){$("notifyMsg").textContent="❌ "+e.message}};
-$("loadInvoices").onclick=()=>loadInvoices().catch(e=>$("invoiceList").textContent="❌ "+e.message);
-$("createIntegration").onclick=async()=>{try{const label=$("integrationLabel").value.trim()||"External accounting export";const r=await api(`/api/companies/${opsCid()}/integrations/tokens?label=${encodeURIComponent(label)}`,{method:"POST"});$("integrationMsg").textContent=`New token (shown once): ${r.token} · ${r.warning}`;$("integrationLabel").value="";await loadIntegrations()}catch(e){$("integrationMsg").textContent="❌ "+e.message}};
-$("loadIntegrations").onclick=()=>loadIntegrations().catch(e=>$("integrationMsg").textContent="❌ "+e.message);
+$("loadCases").onclick=()=>loadCases().catch(e=>$("opsError").textContent=" "+e.message);
+$("loadTrends").onclick=()=>loadTrends().catch(e=>$("opsError").textContent=" "+e.message);
+$("loadReconHistory").onclick=()=>loadReconHistory().catch(e=>$("opsError").textContent=" "+e.message);
+$("caseStatus").onchange=()=>loadCases().catch(e=>$("opsError").textContent=" "+e.message);
+$("addSchedule").onclick=async()=>{ $("scheduleMsg").textContent="";const a=Number($("opsReportA").value),b=Number($("opsReportB").value),hours=Number($("scheduleHours").value);if(!a||!b||a===b){$("scheduleMsg").textContent="Choose two different reports.";return;}try{await jpost(`/api/companies/${opsCid()}/scheduled-reconciliations`,{report_a:a,report_b:b,interval_hours:hours,instruction:$("scheduleNote").value});$("scheduleMsg").textContent="Schedule created ✓";await loadSchedules()}catch(e){$("scheduleMsg").textContent=" "+e.message}};
+$("saveNotify").onclick=async()=>{try{const emails=$("notifyEmails").value.split(",").map(x=>x.trim()).filter(Boolean);await jsend("PUT",`/api/companies/${opsCid()}/notification-settings`,{emails,quota_threshold:Number($("quotaThreshold").value)});$("notifyMsg").textContent="Settings saved ✓"}catch(e){$("notifyMsg").textContent=" "+e.message}};
+$("loadInvoices").onclick=()=>loadInvoices().catch(e=>$("invoiceList").textContent=" "+e.message);
+$("createIntegration").onclick=async()=>{try{const label=$("integrationLabel").value.trim()||"External accounting export";const r=await api(`/api/companies/${opsCid()}/integrations/tokens?label=${encodeURIComponent(label)}`,{method:"POST"});$("integrationMsg").textContent=`New token (shown once): ${r.token} · ${r.warning}`;$("integrationLabel").value="";await loadIntegrations()}catch(e){$("integrationMsg").textContent=" "+e.message}};
+$("loadIntegrations").onclick=()=>loadIntegrations().catch(e=>$("integrationMsg").textContent=" "+e.message);
 if($("backupRestoreCheck")) $("backupRestoreCheck").onclick=async()=>{const b=$("backupRestoreCheck");b.disabled=true;$("backupCheckMsg").textContent="Running backup and temporary restore check…";try{const r=await jpost("/api/backup/restore-check",{});$("backupCheckMsg").textContent=`PASS · ${r.file} · archive valid · SQLite ${r.sqlite_check} · restore ${r.restore_drill} · ${r.restored_files} restored file(s).`}catch(e){$("backupCheckMsg").textContent="FAILED · "+e.message}finally{b.disabled=false}};
 
 /* ---------- customer billing ---------- */
@@ -2007,7 +2217,7 @@ async function loadBilling() {
   try {
     const b = await api(`/api/billing/status?company_id=${encodeURIComponent(cid)}`);
     const term = b.term_label || (b.plan === "expired" ? "access expired" : `${b.duration_days} day term`);
-    $("billingStatus").textContent = `${b.name} plan: ${b.plan.toUpperCase()} · ${b.used}/${b.monthly_limit} analyses used this month · ${b.remaining} remaining · ${term}` + (b.expires_at ? ` · expires ${b.expires_at} UTC` : "") + (b.in_grace ? ` · ⏰ Grace period until ${b.grace_ends_at} UTC: please renew` : "");
+    $("billingStatus").textContent = `${b.name} plan: ${b.plan.toUpperCase()} · ${b.used}/${b.monthly_limit} analyses used this month · ${b.remaining} remaining · ${term}` + (b.expires_at ? ` · expires ${b.expires_at} UTC` : "") + (b.in_grace ? ` ·  Grace period until ${b.grace_ends_at} UTC: please renew` : "");
     const banks = Array.isArray(b.banks) ? b.banks : (b.bank && b.bank.name ? [b.bank] : []);
     $("bankDetails").replaceChildren();
     $("bankDetails").append(el("b", "Temporary bank transfer details"));
@@ -2154,7 +2364,7 @@ function userRow(u) {
     if (pw.value) body.password = pw.value; if (reset2.checked) body.reset_2fa = true;
     try { await jsend("PATCH", `/api/users/${u.id}`, body); msg.textContent = "Saved ✓"; pw.value = ""; reset2.checked = false; } catch (e) { msg.textContent = e.message; }
   };
-  const r1 = el("div", "", "row"); r1.append(el("b", u.username + (u.totp_enabled ? "  🔐" : "")), role, labeled("active", active), labeled("Telegram alerts", alerts), tg);
+  const r1 = el("div", "", "row"); r1.append(el("b", u.username + (u.totp_enabled ? "  " : "")), role, labeled("active", active), labeled("Telegram alerts", alerts), tg);
   const r2 = el("div", "", "row"); r2.append(...cos);
   const r3 = el("div", "", "row"); r3.append(pw, labeled("reset their 2FA", reset2), save, msg);
   d.append(r1, r2, r3); return d;
@@ -2222,14 +2432,14 @@ api("/api/me").then(start).catch(showLanding);
   const D = {};              // chart instances
   let view = "dashboard", query = "", tok = 0;
   const TITLES = {
-    reconciliation: "⚖️ Reconciliation history & schedules",
-    discrepancies: "🚨 Discrepancy cases",
-    insights: "📊 Company insights & trends",
-    plan: "🧾 Billing history",
-    settings: "⚙️ Notifications & integrations"
+    reconciliation: "Reconciliation history & schedules",
+    discrepancies: "Discrepancy cases",
+    insights: "Company insights & trends",
+    plan: "Billing history",
+    settings: "Notifications & integrations"
   };
   const OPS_VIEWS = ["reconciliation", "discrepancies", "insights", "plan", "settings"];
-  const COLORS = ["#2563eb", "#10b981", "#f59e0b", "#7c3aed", "#94a3b8"];
+  const COLORS = ["#0b6b4b", "#4f9a80", "#9cc7b6", "#c9d3ce", "#8a958f"];
 
   const fmt = n => Number(n || 0).toLocaleString(undefined, { maximumFractionDigits: 0 });
   const extOf = name => { const m = /\.([a-z0-9]+)$/i.exec(name || ""); return m ? m[1].toLowerCase() : ""; };
@@ -2273,7 +2483,7 @@ api("/api/me").then(start).catch(showLanding);
       e.classList.toggle("view-off", !on);
     });
     document.querySelectorAll("#v2Sidebar .sb-item").forEach(b => b.classList.toggle("active", b.dataset.nav === v));
-    if ($("opsTitle")) $("opsTitle").textContent = TITLES[v] || "🧰 Company operations";
+    if ($("opsTitle")) $("opsTitle").textContent = TITLES[v] || "Company operations";
     document.body.classList.remove("sb-open");
     window.scrollTo(0, 0);
     if (window.onViewChange) { try { window.onViewChange(v); } catch (e) { /* never block navigation */ } }
@@ -2350,7 +2560,7 @@ api("/api/me").then(start).catch(showLanding);
   async function dashRefresh() {
     const my = ++tok, u = S.user; if (!u) return;
     const nm = u.username || "there", hr = new Date().getHours();
-    $("dGreet").textContent = (hr < 12 ? "Good morning" : hr < 18 ? "Good afternoon" : "Good evening") + ", " + nm.charAt(0).toUpperCase() + nm.slice(1) + " 👋";
+    $("dGreet").textContent = (hr < 12 ? "Good morning" : hr < 18 ? "Good afternoon" : "Good evening") + ", " + nm.charAt(0).toUpperCase() + nm.slice(1) + " ";
     $("avatar").textContent = nm.charAt(0).toUpperCase();
     $("dUpgrade").classList.toggle("hidden", u.role === "admin");
     const reports = S.reports || [];
@@ -2360,7 +2570,7 @@ api("/api/me").then(start).catch(showLanding);
     $("kv1").textContent = fmt(reports.length); $("ks1").textContent = "uploaded for this company";
     const byDay = {}; reports.forEach(r => { const d = (r.uploaded_at || "").slice(0, 10); if (d) byDay[d] = (byDay[d] || 0) + 1; });
     let cum = 0; const upSeries = Object.keys(byDay).sort().map(d => (cum += byDay[d]));
-    $("sp1").innerHTML = spark(upSeries, "#bcd4ff");
+    $("sp1").innerHTML = spark(upSeries, "#0b6b4b");
 
     const cid = Number($("company").value);
     if (!cid) { $("kv2").textContent = $("kv3").textContent = $("kv4").textContent = "-"; return; }
@@ -2377,43 +2587,43 @@ api("/api/me").then(start).catch(showLanding);
     $("kv2").textContent = rate === null ? "-" : rate.toFixed(1) + "%";
     $("ks2").textContent = rate === null ? "no reconciliation runs yet" : fmt(totals.runs) + " runs · last 90 days";
     const rates = series.map(x => { const t = Number(x.matched || 0) + Number(x.discrepancies || 0); return t ? Number(x.matched || 0) / t * 100 : null; }).filter(v => v !== null);
-    $("sp2").innerHTML = spark(rates, "#c8ffe9");
+    $("sp2").innerHTML = spark(rates, "#0b6b4b");
 
     const list = cases || [];
     const openCount = list.filter(c => c.status === "open" || c.status === "in_review").length;
     $("kv3").textContent = fmt(openCount);
     $("ks3").textContent = list.length ? fmt(list.length) + " cases in total" : "no cases yet";
-    $("sp3").innerHTML = spark(series.map(x => Number(x.discrepancies || 0)), "#ffd0d3");
+    $("sp3").innerHTML = spark(series.map(x => Number(x.discrepancies || 0)), "#0b6b4b");
 
     const net = series.reduce((a, x) => a + Number(x.net_difference || 0), 0);
     $("kv4").textContent = fmt(Math.abs(net));
     $("ks4").textContent = "difference across runs · 90 days";
-    $("sp4").innerHTML = spark(series.map(x => Number(x.net_difference || 0)), "#e3d4ff");
+    $("sp4").innerHTML = spark(series.map(x => Number(x.net_difference || 0)), "#0b6b4b");
 
     // Performance chart
     const perf = series.map(x => { const t = Number(x.matched || 0) + Number(x.discrepancies || 0); return t ? { d: String(x.day).slice(5), v: Math.round(Number(x.matched || 0) / t * 1000) / 10 } : null; }).filter(Boolean);
     $("perfEmpty").classList.toggle("hidden", perf.length > 0);
-    if (perf.length) mkChart("perf", "perfChart", { type: "line", data: { labels: perf.map(p => p.d), datasets: [{ data: perf.map(p => p.v), borderColor: "#1769ff", backgroundColor: "rgba(23,105,255,.12)", fill: true, tension: .3, pointRadius: 3, pointBackgroundColor: "#1769ff" }] }, options: { scales: { y: { min: 0, max: 100, ticks: { callback: v => v + "%" } }, x: { ticks: { maxTicksLimit: 7 } } } } });
+    if (perf.length) mkChart("perf", "perfChart", { type: "line", data: { labels: perf.map(p => p.d), datasets: [{ data: perf.map(p => p.v), borderColor: "#0b6b4b", backgroundColor: "rgba(11,107,75,.12)", fill: true, tension: .3, pointRadius: 3, pointBackgroundColor: "#0b6b4b" }] }, options: { scales: { y: { min: 0, max: 100, ticks: { callback: v => v + "%" } }, x: { ticks: { maxTicksLimit: 7 } } } } });
     else if (D.perf) { D.perf.destroy(); D.perf = null; }
 
     // Activity chart
     $("actEmpty").classList.toggle("hidden", series.length > 0);
-    if (series.length) mkChart("act", "actChart", { type: "bar", data: { labels: series.map(x => String(x.day).slice(5)), datasets: [{ data: series.map(x => Number(x.runs || 0)), backgroundColor: "rgba(124,58,237,.78)", borderRadius: 6 }] }, options: { scales: { y: { beginAtZero: true, ticks: { precision: 0 } }, x: { ticks: { maxTicksLimit: 7 } } } } });
+    if (series.length) mkChart("act", "actChart", { type: "bar", data: { labels: series.map(x => String(x.day).slice(5)), datasets: [{ data: series.map(x => Number(x.runs || 0)), backgroundColor: "rgba(11,107,75,.75)", borderRadius: 6 }] }, options: { scales: { y: { beginAtZero: true, ticks: { precision: 0 } }, x: { ticks: { maxTicksLimit: 7 } } } } });
     else if (D.act) { D.act.destroy(); D.act = null; }
 
     // Category chart
     const cat = {}; list.forEach(c => { const k = String(c.discrepancy_type || "other").replace(/_/g, " "); cat[k] = (cat[k] || 0) + 1; });
     const ck = Object.keys(cat).sort((a, b) => cat[b] - cat[a]).slice(0, 6);
     $("catEmpty").classList.toggle("hidden", ck.length > 0);
-    if (ck.length) mkChart("cat", "catChart", { type: "bar", data: { labels: ck.map(k => k.charAt(0).toUpperCase() + k.slice(1)), datasets: [{ data: ck.map(k => cat[k]), backgroundColor: ["#0b5bd8", "#1f7bff", "#4f7dff", "#6c8dff", "#8aa4ff", "#a9bbff"], borderRadius: 8 }] }, options: { scales: { y: { beginAtZero: true, ticks: { precision: 0 } } } } });
+    if (ck.length) mkChart("cat", "catChart", { type: "bar", data: { labels: ck.map(k => k.charAt(0).toUpperCase() + k.slice(1)), datasets: [{ data: ck.map(k => cat[k]), backgroundColor: ["#0b6b4b", "#2f8465", "#4f9a80", "#7db5a0", "#9cc7b6", "#c4dcd1"], borderRadius: 8 }] }, options: { scales: { y: { beginAtZero: true, ticks: { precision: 0 } } } } });
     else if (D.cat) { D.cat.destroy(); D.cat = null; }
 
     // Company insights minis
     const minis = [
-      ["Reports uploaded", fmt(reports.length), upSeries, "#1769ff"],
-      ["Match rate", rate === null ? "-" : rate.toFixed(1) + "%", rates, "#10b981"],
-      ["Discrepancy rows", fmt(disc), series.map(x => Number(x.discrepancies || 0)), "#ef4444"],
-      ["Reconciliation runs", fmt(totals.runs), series.map(x => Number(x.runs || 0)), "#7c3aed"]
+      ["Reports uploaded", fmt(reports.length), upSeries, "#0b6b4b"],
+      ["Match rate", rate === null ? "-" : rate.toFixed(1) + "%", rates, "#0b6b4b"],
+      ["Discrepancy rows", fmt(disc), series.map(x => Number(x.discrepancies || 0)), "#b42318"],
+      ["Reconciliation runs", fmt(totals.runs), series.map(x => Number(x.runs || 0)), "#0b6b4b"]
     ];
     $("dMinis").innerHTML = "";
     minis.forEach(m => {
@@ -2455,7 +2665,7 @@ api("/api/me").then(start).catch(showLanding);
   /* ---------- bank details cards ---------- */
   function renderBanks(banks) {
     const host = $("bankDetails"); host.replaceChildren();
-    host.append(el("b", "🏦 Temporary bank transfer details"), el("div", "Please pay into ONE of the accounts below:", "mute"));
+    host.append(el("b", "Temporary bank transfer details"), el("div", "Please pay into ONE of the accounts below:", "mute"));
     banks.filter(b => b.account_number).forEach((bank, i) => {
       if (i > 0) host.append(el("div", "— or —", "bank-or"));
       const card = el("div", "", "bank-card");
@@ -2479,7 +2689,7 @@ api("/api/me").then(start).catch(showLanding);
     try {
       const b = await api("/api/billing/status?company_id=" + encodeURIComponent(cid));
       const term = b.term_label || (b.plan === "expired" ? "access expired" : b.duration_days + " day term");
-      $("billingStatus").textContent = `${b.name} plan: ${b.plan.toUpperCase()} · ${b.used}/${b.monthly_limit} analyses used this month · ${b.remaining} remaining · ${term}` + (b.expires_at ? ` · expires ${b.expires_at} UTC` : "") + (b.in_grace ? ` · ⏰ Grace period until ${b.grace_ends_at} UTC: please renew` : "");
+      $("billingStatus").textContent = `${b.name} plan: ${b.plan.toUpperCase()} · ${b.used}/${b.monthly_limit} analyses used this month · ${b.remaining} remaining · ${term}` + (b.expires_at ? ` · expires ${b.expires_at} UTC` : "") + (b.in_grace ? ` ·  Grace period until ${b.grace_ends_at} UTC: please renew` : "");
       const banks = Array.isArray(b.banks) ? b.banks : (b.bank && b.bank.name ? [b.bank] : []);
       renderBanks(banks);
       const ready = banks.some(bank => bank.name && bank.account_number && bank.account_name);
@@ -2514,14 +2724,14 @@ api("/api/me").then(start).catch(showLanding);
     const cid = Number($("company").value);
     if (!$("payProof").files[0]) { $("proofMsg").textContent = "Choose your screenshot first."; return; }
     $("attachProof").disabled = true; $("proofMsg").textContent = "Sending…";
-    try { $("proofMsg").textContent = "✅ " + await sendProof(cid); } catch (e) { $("proofMsg").textContent = e.message; }
+    try { $("proofMsg").textContent = " " + await sendProof(cid); } catch (e) { $("proofMsg").textContent = e.message; }
     $("attachProof").disabled = false;
   };
   $("submitPayment").onclick = async () => {
     const cid = Number($("company").value), plan = $("billingPlan").value, reference = $("transferReference").value.trim();
     $("billingMsg").textContent = "";
     if (!cid || !reference) { $("billingMsg").textContent = "Choose a company and enter the bank transfer reference."; return; }
-    if (!$("payProof").files[0]) { $("billingMsg").textContent = "Please attach a screenshot of your payment first (the box just below). Thank you 🙏"; return; }
+    if (!$("payProof").files[0]) { $("billingMsg").textContent = "Please attach a screenshot of your payment first (the box just below). Thank you "; return; }
     const planPrices = { starter: 25000, growth: 60000, professional: 150000, business: 1000000, corporate: 2500000, enterprise: 5000000 };
     if ((planPrices[plan] || 0) > 150000) {
       $("billingMsg").textContent = "This plan costs more than ₦150,000. Please message the admin before making any payment. No payment request has been submitted.";
@@ -2532,7 +2742,7 @@ api("/api/me").then(start).catch(showLanding);
       const r = await jpost("/api/billing/payment-requests", { company_id: cid, plan, transfer_reference: reference, coupon_code: ($("payCoupon") && $("payCoupon").value.trim()) || null });
       let extra = "";
       try { extra = " " + await sendProof(cid); }
-      catch (e) { extra = " ⚠️ Your request is saved, but the screenshot could not be sent (" + e.message + "). Please use the “Send screenshot” button below to try again."; }
+      catch (e) { extra = "  Your request is saved, but the screenshot could not be sent (" + e.message + "). Please use the “Send screenshot” button below to try again."; }
       $("billingMsg").textContent = `Request #${r.id} submitted for ₦${Number(r.amount_ngn).toLocaleString()}. Access stays on your current plan until we verify your payment.` + extra;
       $("transferReference").value = ""; await loadBilling();
     } catch (e) { $("billingMsg").textContent = e.message; }
@@ -2547,7 +2757,7 @@ api("/api/me").then(start).catch(showLanding);
     items.forEach((p, i) => {
       const card = cards[i]; if (!card) return;
       const line = p.has_proof
-        ? (() => { const a = el("a", "📸 View payment screenshot"); a.href = `/api/admin/billing/payments/${p.id}/proof`; a.target = "_blank"; a.rel = "noopener"; return a; })()
+        ? (() => { const a = el("a", "View payment screenshot"); a.href = `/api/admin/billing/payments/${p.id}/proof`; a.target = "_blank"; a.rel = "noopener"; return a; })()
         : el("div", "No screenshot attached yet.", "mute");
       card.insertBefore(line, card.children[2] || null);
     });
@@ -2565,7 +2775,7 @@ api("/api/me").then(start).catch(showLanding);
     $("fpConfirm").disabled = true;
     try {
       const r = await jpost("/api/password-reset/confirm", { username: $("fpUser").value.trim(), code: $("fpCode").value.trim(), new_password: $("fpNew").value });
-      $("fpMsg").textContent = "✅ " + r.message; $("fpCode").value = ""; $("fpNew").value = ""; $("fpStep2").classList.add("hidden");
+      $("fpMsg").textContent = " " + r.message; $("fpCode").value = ""; $("fpNew").value = ""; $("fpStep2").classList.add("hidden");
     } catch (e) { $("fpMsg").textContent = e.message; }
     $("fpConfirm").disabled = false;
   };
@@ -2589,14 +2799,14 @@ api("/api/me").then(start).catch(showLanding);
   let todoItems = [], news = [], fresh = new Set(), curView = "dashboard", busy = false;
   const plural = (n, w) => n + " " + w + (n === 1 ? "" : "s");
   const isNew = n => !n.is_read || fresh.has(n.id);
-  const LEVEL_ICON = { info: "📢", success: "✅", warning: "⚠️" };
+  const LEVEL_ICON = { info: "", success: "", warning: "" };
   const utcNow = () => new Date().toISOString().slice(0, 19).replace("T", " ");
   const shortDate = s => { const d = new Date(String(s || "").replace(" ", "T") + "Z"); return isNaN(d) ? "" : d.toLocaleString(undefined, { day: "numeric", month: "short", hour: "numeric", minute: "2-digit" }); };
 
   function newsCard(n) {
     const card = el("div", "", "news-item " + (n.level || "info"));
     const top = el("div", "", "nt");
-    top.append(el("span", (LEVEL_ICON[n.level] || "📢") + " " + n.title));
+    top.append(el("span", (LEVEL_ICON[n.level] || "") + " " + n.title));
     if (isNew(n)) top.append(el("span", "NEW", "news-new"));
     card.append(top, el("div", n.body, "nb"), el("small", shortDate(n.created_at)));
     return card;
@@ -2606,7 +2816,7 @@ api("/api/me").then(start).catch(showLanding);
     if (!n || !S.user || curView === "notifications") { b.classList.add("hidden"); return; }
     b.className = "news-banner " + (n.level || "info");
     const txt = el("div", "", "nbt");
-    txt.append(el("b", (LEVEL_ICON[n.level] || "📢") + " " + n.title + " "), document.createTextNode(n.body.length > 150 ? n.body.slice(0, 147) + "…" : n.body));
+    txt.append(el("b", (LEVEL_ICON[n.level] || "") + " " + n.title + " "), document.createTextNode(n.body.length > 150 ? n.body.slice(0, 147) + "…" : n.body));
     if (unread.length > 1) txt.append(el("small", "  (+" + (unread.length - 1) + " more)"));
     const read = el("button", "Read", "ghost"); read.type = "button"; read.onclick = () => navigate("notifications");
     const close = el("button", "Dismiss", "ghost"); close.type = "button"; close.onclick = () => markRead([n.id]);
@@ -2620,7 +2830,7 @@ api("/api/me").then(start).catch(showLanding);
   }
   function renderBell() {
     const p = $("bellPanel"), head = el("div", "", "bell-head");
-    head.append(el("b", "🔔 Notifications"));
+    head.append(el("b", "Notifications"));
     if (news.some(n => !n.is_read)) { const m = el("button", "Mark all read", "d-link"); m.type = "button"; m.onclick = e => { e.stopPropagation(); markRead(); }; head.append(m); }
     p.replaceChildren(head);
     if (news.length) { p.append(el("div", "Announcements", "bell-section")); news.slice(0, 4).forEach(n => p.append(newsCard(n))); }
@@ -2633,7 +2843,7 @@ api("/api/me").then(start).catch(showLanding);
         p.append(b);
       });
     }
-    if (!news.length && !todoItems.length) p.append(el("div", "You're all caught up 🎉", "mute"));
+    if (!news.length && !todoItems.length) p.append(el("div", "You're all caught up ", "mute"));
     const all = el("button", "See all notifications →", "d-link"); all.type = "button";
     all.onclick = () => { p.classList.add("hidden"); fresh.clear(); navigate("notifications"); };
     p.append(all);
@@ -2657,16 +2867,16 @@ api("/api/me").then(start).catch(showLanding);
     try {
       const items = [], cid = Number($("company").value), jobs = [];
       jobs.push(api("/api/notifications").then(r => { news = r; }).catch(() => {}));
-      if (cid) jobs.push(api("/api/companies/" + cid + "/cases?status=open&limit=200").then(c => { if (c.length) items.push({ icon: "⚠️", text: plural(c.length, "open discrepancy case") + " to review", go: "discrepancies" }); }).catch(() => {}));
+      if (cid) jobs.push(api("/api/companies/" + cid + "/cases?status=open&limit=200").then(c => { if (c.length) items.push({ icon: "", text: plural(c.length, "open discrepancy case") + " to review", go: "discrepancies" }); }).catch(() => {}));
       if (S.user.role === "admin") {
-        jobs.push(api("/api/admin/billing/payments?status=pending").then(p => { if (p.length) items.push({ icon: "💳", text: plural(p.length, "payment") + " waiting for your approval", go: "plan" }); }).catch(() => {}));
-        jobs.push(api("/api/admin/registrations?status=pending").then(r => { if (r.length) items.push({ icon: "📝", text: plural(r.length, "new account request") + " to review", go: "team" }); }).catch(() => {}));
+        jobs.push(api("/api/admin/billing/payments?status=pending").then(p => { if (p.length) items.push({ icon: "", text: plural(p.length, "payment") + " waiting for your approval", go: "plan" }); }).catch(() => {}));
+        jobs.push(api("/api/admin/registrations?status=pending").then(r => { if (r.length) items.push({ icon: "", text: plural(r.length, "new account request") + " to review", go: "team" }); }).catch(() => {}));
       } else if (cid) {
         jobs.push(api("/api/billing/status?company_id=" + cid).then(b => {
-          if (b.pending_payment_requests) items.push({ icon: "⏳", text: "Your payment is waiting for approval", go: "plan" });
+          if (b.pending_payment_requests) items.push({ icon: "Pending", text: "Your payment is waiting for approval", go: "plan" });
           const lim = Number(b.monthly_limit || 0), used = Number(b.used || 0);
-          if (lim && used / lim >= 0.8) items.push({ icon: "📉", text: `You have used ${used} of ${lim} analyses this month`, go: "plan" });
-          if (b.expires_at) { const ms = new Date(String(b.expires_at).replace(" ", "T") + "Z") - Date.now(); if (ms > 0 && ms < 3 * 864e5) items.push({ icon: "⏰", text: "Your plan expires soon", go: "plan" }); }
+          if (lim && used / lim >= 0.8) items.push({ icon: "", text: `You have used ${used} of ${lim} analyses this month`, go: "plan" });
+          if (b.expires_at) { const ms = new Date(String(b.expires_at).replace(" ", "T") + "Z") - Date.now(); if (ms > 0 && ms < 3 * 864e5) items.push({ icon: "", text: "Your plan expires soon", go: "plan" }); }
         }).catch(() => {}));
       }
       await Promise.all(jobs); todoItems = items;
@@ -2738,7 +2948,7 @@ api("/api/me").then(start).catch(showLanding);
     try {
       await jpost("/api/admin/broadcasts", { title, message, level: $("bcLevel").value, days: Number($("bcDays").value) || null, email: $("bcEmail").checked });
       $("bcTitle").value = ""; $("bcBody").value = ""; bcPreview();
-      $("bcMsg").textContent = "✅ Sent. Customers will see it under Notifications.";
+      $("bcMsg").textContent = "Sent. Customers will see it under Notifications.";
       await loadBroadcasts(); refreshBell();
     } catch (e) { $("bcMsg").textContent = e.message; }
     $("bcSend").disabled = false;
@@ -2779,8 +2989,8 @@ api("/api/me").then(start).catch(showLanding);
       .map(([a, b]) => { const d = el("div", "", "ss-kpi"); d.append(el("small", a), el("b", b)); return d; }));
     if (S.ssChart) S.ssChart.destroy();
     S.ssChart = new Chart($("ssChart"), { type: "bar", data: { labels: r.chart.labels, datasets: [
-      { label: "Income", data: r.chart.income, backgroundColor: "rgba(16,185,129,.75)" }, { label: "Spending", data: r.chart.expenses, backgroundColor: "rgba(239,68,68,.75)" },
-      { type: "line", label: "Left over", data: r.chart.left, borderColor: "#2b59ff", backgroundColor: "#2b59ff", tension: .25 }] }, options: { responsive: true } });
+      { label: "Income", data: r.chart.income, backgroundColor: "rgba(11,107,75,.75)" }, { label: "Spending", data: r.chart.expenses, backgroundColor: "rgba(180,35,24,.7)" },
+      { type: "line", label: "Left over", data: r.chart.left, borderColor: "#0b6b4b", backgroundColor: "#0b6b4b", tension: .25 }] }, options: { responsive: true } });
     const tbl = el("table", "", "ss-table"), head = el("tr");
     r.columns.forEach(c => head.append(el("th", c))); tbl.append(head);
     r.rows.forEach(row => { const tr = el("tr"); r.columns.forEach(c => {
@@ -2788,7 +2998,7 @@ api("/api/me").then(start).catch(showLanding);
       if (money && v < 0) td.className = "ss-neg"; tr.append(td); }); tbl.append(tr); });
     $("ssTableWrap").replaceChildren(tbl);
     const g = r.loan_guide, box = $("ssLoan"); box.classList.toggle("hidden", !g);
-    if (g) box.replaceChildren(el("b", "💰 Rough loan guide"), el("div", `Comfortable monthly repayment: up to ${ngn(g.max_monthly_repayment)}`),
+    if (g) box.replaceChildren(el("b", "Rough loan guide"), el("div", `Comfortable monthly repayment: up to ${ngn(g.max_monthly_repayment)}`),
       el("div", `Roughly ${ngn(g.rough_loan_6_months)} over 6 months, or ${ngn(g.rough_loan_12_months)} over 12 months (before interest).`), el("small", g.how, "mute"));
     ssList("ssGood", r.strengths, "Nothing stands out yet."); ssList("ssBad", r.concerns, "No big worries found."); ssList("ssTips", r.advice, "Keep doing what you are doing.");
     $("ssFactors").replaceChildren(...r.factors.map(f => { const d = el("div", "", "ss-factor"), bar = el("div", "", "ss-bar"), i = el("i");
@@ -2796,7 +3006,7 @@ api("/api/me").then(start).catch(showLanding);
       const lab = el("div"); lab.append(el("b", f.name), el("div", f.detail, "mute")); d.append(lab, bar, el("b", `${f.score} / ${f.max}`)); return d; }));
     const ig = r.integrity || {}, ib = $("ssIntegrity");
     ib.className = "ss-banner " + (ig.status === "passed" ? "" : (ig.status || "unavailable"));
-    ib.replaceChildren(el("b", { passed: "✅ Statement looks genuine", warning: "⚠️ Some balances do not add up", failed: "🚩 Balances do not add up: this statement may have been edited", unavailable: "ℹ️ Authenticity check not possible" }[ig.status] || ""), el("small", ig.message || ""));
+    ib.replaceChildren(el("b", { passed: "Statement looks genuine", warning: "Some balances do not add up", failed: "Balances do not add up: this statement may have been edited", unavailable: "Authenticity check not possible" }[ig.status] || ""), el("small", ig.message || ""));
     $("ssFlags").replaceChildren(...(r.flags || []).map(f => { const d = el("div", "", "ss-flag " + f.severity); d.append(el("b", f.title), el("div", f.detail)); if (f.examples && f.examples.length) d.append(el("small", "e.g. " + f.examples.slice(0, 3).join(" · "))); return d; }));
     const cats = r.categories; $("ssCatsBox").classList.toggle("hidden", !cats);
     if (cats) [["ssCatSpend", "Spending", cats.spending], ["ssCatIn", "Money in", cats.income]].forEach(([id, title, list]) => {
@@ -2809,7 +3019,7 @@ api("/api/me").then(start).catch(showLanding);
         cols.forEach(c => hr.append(el("th", c))); t.append(hr);
         fc.rows.forEach(row => { const tr = el("tr"); cols.forEach(c => { const v = row[c], td = el("td", c === "Month" ? String(v) : ngn(v)); if (c !== "Month" && v < 0) td.className = "ss-neg"; tr.append(td); }); t.append(tr); });
         $("ssFcTable").replaceChildren(t);
-        $("ssFcWarn").replaceChildren(...fc.warnings.map(w => el("div", "⚠️ " + w, "ss-flag")), el("div", `Confidence: ${fc.confidence} (based on the last ${fc.based_on_months} month(s))`, "mute"));
+        $("ssFcWarn").replaceChildren(...fc.warnings.map(w => el("div", " " + w, "ss-flag")), el("div", `Confidence: ${fc.confidence} (based on the last ${fc.based_on_months} month(s))`, "mute"));
         $("ssFcNote").textContent = fc.note;
       }
     }
@@ -2830,7 +3040,7 @@ api("/api/me").then(start).catch(showLanding);
         report_ids: combo.length >= 2 ? combo : null, from_month: $("ssFrom").value || null, to_month: $("ssTo").value || null }));
       $("ssOut").scrollIntoView({ behavior: "smooth", block: "start" });
     } catch (e) { $("ssErr").textContent = e.message; }
-    $("ssRun").disabled = false; $("ssRun").textContent = "🔍 Check statement";
+    $("ssRun").disabled = false; $("ssRun").textContent = "Check statement";
   };
   $("ssReport").addEventListener("change", () => { $("ssFrom").value = ""; $("ssTo").value = ""; });
   $("ssCombo").addEventListener("change", () => { $("ssFrom").value = ""; $("ssTo").value = ""; });
@@ -2842,7 +3052,7 @@ api("/api/me").then(start).catch(showLanding);
       const list = await api("/api/shares"), box = $("ssShareList");
       if (!list.length) { box.textContent = "None yet."; return; }
       box.replaceChildren(...list.slice(0, 10).map(x => { const row = el("div", "", "sec-row"), left = el("div");
-        left.append(el("b", x.title), el("small", `${x.active ? "✅ Active, until " + when(x.expires_at) + " UTC" : (x.revoked ? "⛔ Switched off" : "⌛ Expired")} · opened ${x.views} time(s)`)); row.append(left);
+        left.append(el("b", x.title), el("small", `${x.active ? "Active, until " + when(x.expires_at) + " UTC" : (x.revoked ? "Switched off" : "Expired")} · opened ${x.views} time(s)`)); row.append(left);
         if (x.active) { const b = el("button", "Switch off"); b.type = "button"; b.className = "danger"; b.onclick = async () => { b.disabled = true; try { await api("/api/shares/" + x.id, { method: "DELETE" }); } catch (e) {} ssLoadShares(); }; row.append(b); }
         return row; }));
     } catch (e) { /* not signed in yet */ }
@@ -2879,7 +3089,7 @@ api("/api/me").then(start).catch(showLanding);
       $("btTable").replaceChildren(tbl); $("btXlsx").href = `/api/download/${r.result_id}`; $("btPdf").href = `/api/download/${r.result_id}/pdf`;
       if (typeof loadBilling === "function") loadBilling();
     } catch (e) { $("btErr").textContent = e.message; }
-    $("btRun").disabled = false; $("btRun").textContent = "🔍 Score all";
+    $("btRun").disabled = false; $("btRun").textContent = "Score all";
   };
 
   /* ---------- security & privacy ---------- */
@@ -2912,13 +3122,13 @@ api("/api/me").then(start).catch(showLanding);
         return row; }));
     } catch (e) {}
   }
-  $("wkOn").onchange = async () => { try { await jpost("/api/me/weekly-email", { enabled: $("wkOn").checked }); $("wkMsg").textContent = $("wkOn").checked ? "✅ Turned on. You will get it on Monday mornings." : "Turned off."; } catch (e) { $("wkOn").checked = false; $("wkMsg").textContent = e.message; } };
-  $("wkTest").onclick = async () => { $("wkMsg").textContent = "Sending…"; try { const r = await jpost("/api/me/weekly-email/test", {}); $("wkMsg").textContent = "✅ Sample sent to " + r.sent_to; } catch (e) { $("wkMsg").textContent = e.message; } };
-  $("devOthers").onclick = async () => { try { const r = await jpost("/api/me/sessions/revoke-others", {}); $("devMsg").textContent = `✅ Signed out ${r.signed_out} other device(s).`; } catch (e) { $("devMsg").textContent = e.message; } loadSecurity(); };
+  $("wkOn").onchange = async () => { try { await jpost("/api/me/weekly-email", { enabled: $("wkOn").checked }); $("wkMsg").textContent = $("wkOn").checked ? "Turned on. You will get it on Monday mornings." : "Turned off."; } catch (e) { $("wkOn").checked = false; $("wkMsg").textContent = e.message; } };
+  $("wkTest").onclick = async () => { $("wkMsg").textContent = "Sending…"; try { const r = await jpost("/api/me/weekly-email/test", {}); $("wkMsg").textContent = "Sample sent to " + r.sent_to; } catch (e) { $("wkMsg").textContent = e.message; } };
+  $("devOthers").onclick = async () => { try { const r = await jpost("/api/me/sessions/revoke-others", {}); $("devMsg").textContent = `Signed out ${r.signed_out} other device(s).`; } catch (e) { $("devMsg").textContent = e.message; } loadSecurity(); };
   $("delSend").onclick = async () => {
     $("delMsg").textContent = ""; if (!$("delPw").value) { $("delMsg").textContent = "Enter your password to confirm."; return; }
     if (!confirm("Ask us to delete your account? This removes your access and personal details.")) return;
-    try { await jpost("/api/me/deletion-request", { password: $("delPw").value, note: $("delNote").value }); $("delPw").value = ""; $("delMsg").textContent = "✅ Request sent."; } catch (e) { $("delMsg").textContent = e.message; }
+    try { await jpost("/api/me/deletion-request", { password: $("delPw").value, note: $("delNote").value }); $("delPw").value = ""; $("delMsg").textContent = "Request sent."; } catch (e) { $("delMsg").textContent = e.message; }
     loadSecurity();
   };
   $("delCancel").onclick = async () => { try { await api("/api/me/deletion-request", { method: "DELETE" }); $("delMsg").textContent = "Request cancelled."; } catch (e) { $("delMsg").textContent = e.message; } loadSecurity(); };
@@ -2927,7 +3137,7 @@ api("/api/me").then(start).catch(showLanding);
   function mountAsk(hostId, kind, payloadFn, examples, title) {
     const host = $(hostId); if (!host) return;
     const box = el("div", "", "ask-box"), inp = el("input"), btn = el("button", "Ask"), row = el("div", "", "row"), chips = el("div", "", "row"), out = el("div"), err = el("div", "", "error");
-    box.append(el("b", title || "💬 Ask anything about this"), el("div", "Type it your own way: short, casual, spelling mistakes are all fine.", "mute"));
+    box.append(el("b", title || "Ask anything about this"), el("div", "Type it your own way: short, casual, spelling mistakes are all fine.", "mute"));
     inp.type = "text"; inp.maxLength = 600; inp.placeholder = examples[0]; inp.style.flex = "1"; btn.type = "button"; row.style.marginTop = "6px"; row.append(inp, btn);
     chips.style.marginTop = "6px"; examples.forEach(q => { const c = el("button", q, "chip"); c.type = "button"; c.onclick = () => { inp.value = q; inp.focus(); }; chips.append(c); });
     box.append(row, chips, err, out); host.replaceChildren(box);
@@ -2942,13 +3152,13 @@ api("/api/me").then(start).catch(showLanding);
     btn.onclick = go; inp.addEventListener("keydown", e => { if (e.key === "Enter") go(); });
   }
   mountAsk("ssAsk", "result", () => S.ssResultId ? { result_id: S.ssResultId } : null,
-    ["Why is my score low?", "Explain this to me like I am new", "Which month was the worst and why?", "Can I afford a ₦500,000 loan?"], "💬 Ask about this statement result");
+    ["Why is my score low?", "Explain this to me like I am new", "Which month was the worst and why?", "Can I afford a ₦500,000 loan?"], "Ask about this statement result");
   mountAsk("rAsk", "result", () => S.reconResultId ? { result_id: S.reconResultId } : null,
-    ["Why are there missing items?", "Which difference is the biggest?", "Explain this result in simple words", "What should I do next?"], "💬 Ask about this reconciliation");
+    ["Why are there missing items?", "Which difference is the biggest?", "Explain this result in simple words", "What should I do next?"], "Ask about this reconciliation");
   mountAsk("caseAsk", "cases", () => ({ company_id: Number($("company").value) }),
-    ["How many cases are still open?", "Which case should I handle first?", "Explain what 'accepted' means", "Summarise the cases for my boss"], "💬 Ask about your cases");
+    ["How many cases are still open?", "Which case should I handle first?", "Explain what 'accepted' means", "Summarise the cases for my boss"], "Ask about your cases");
   mountAsk("helpAsk", "help", () => ({}),
-    ["How do I compare two reports?", "Why did my upload not use a check?", "How do I share a result with a lender?", "Wetin be Statement Score?"], "💬 Ask how to use Report Analyzer");
+    ["How do I compare two reports?", "Why did my upload not use a check?", "How do I share a result with a lender?", "Wetin be Statement Score?"], "Ask how to use Report Analyzer");
   (function () {
     const notes = ["match Reference with Ref No", "match RRN with transaction id and amount with value", "ignore differences under 10 naira", "match Reference with Ref No, tolerance of ₦50"];
     notes.forEach(q => { const b = el("button", q, "chip"); b.type = "button"; b.onclick = () => { $("rNote").value = q; $("rNote").focus(); }; $("rHowChips").append(b); });
@@ -2992,7 +3202,7 @@ api("/api/me").then(start).catch(showLanding);
     const url = URL.createObjectURL(await r.blob()), a = document.createElement("a"); a.href = url; a.download = filename; document.body.append(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(url), 4000);
   }
   $("proformaBtn").onclick = async () => {
-    try { await downloadPost("/api/billing/proforma", { company_id: Number($("company").value), plan: $("billingPlan").value, coupon_code: ($("payCoupon").value || "").trim() || null }, "invoice.pdf"); $("billingMsg").textContent = "✅ Invoice downloaded. Pay with the bank details on it, then submit your transfer reference."; }
+    try { await downloadPost("/api/billing/proforma", { company_id: Number($("company").value), plan: $("billingPlan").value, coupon_code: ($("payCoupon").value || "").trim() || null }, "invoice.pdf"); $("billingMsg").textContent = "Invoice downloaded. Pay with the bank details on it, then submit your transfer reference."; }
     catch (e) { $("billingMsg").textContent = e.message; }
   };
 
@@ -3020,7 +3230,7 @@ api("/api/me").then(start).catch(showLanding);
   }
   $("tkSend").onclick = async () => {
     $("tkMsg").textContent = "";
-    try { await jpost("/api/tickets", { company_id: Number($("company").value), subject: $("tkSubject").value, body: $("tkBody").value }); $("tkSubject").value = ""; $("tkBody").value = ""; $("tkMsg").textContent = "✅ Sent. We will reply here."; loadTickets(); }
+    try { await jpost("/api/tickets", { company_id: Number($("company").value), subject: $("tkSubject").value, body: $("tkBody").value }); $("tkSubject").value = ""; $("tkBody").value = ""; $("tkMsg").textContent = "Sent. We will reply here."; loadTickets(); }
     catch (e) { $("tkMsg").textContent = e.message; }
   };
   $("tkReplySend").onclick = async () => {
@@ -3037,7 +3247,7 @@ api("/api/me").then(start).catch(showLanding);
       const list = await api("/api/api-keys?company_id=" + Number($("company").value)), box = $("akList");
       const live = list.filter(k => !k.revoked); if (!list.length) { box.textContent = "No keys yet."; return; }
       box.replaceChildren(...list.map(k => { const row = el("div", "", "sec-row"), left = el("div");
-        left.append(el("b", `${k.label}  (${k.prefix}…)`), el("small", `${k.revoked ? "⛔ Switched off" : "✅ Active"} · used ${k.uses} time(s)${k.last_used_at ? ", last " + when(k.last_used_at) + " UTC" : ""}`)); row.append(left);
+        left.append(el("b", `${k.label}  (${k.prefix}…)`), el("small", `${k.revoked ? "Switched off" : "Active"} · used ${k.uses} time(s)${k.last_used_at ? ", last " + when(k.last_used_at) + " UTC" : ""}`)); row.append(left);
         if (!k.revoked) { const b = el("button", "Switch off"); b.type = "button"; b.className = "danger"; b.onclick = async () => { b.disabled = true; try { await api(`/api/api-keys/${k.id}?company_id=${Number($("company").value)}`, { method: "DELETE" }); } catch (e) {} loadApiKeys(); }; row.append(b); }
         return row; }));
     } catch (e) { /* viewers cannot see keys */ }
@@ -3053,7 +3263,7 @@ api("/api/me").then(start).catch(showLanding);
   function setTheme(t) {
     document.documentElement.setAttribute("data-theme", t);
     try { localStorage.setItem("ra_theme", t); } catch (e) { /* private mode: fine */ }
-    const b = $("themeBtn"); if (b) { b.textContent = t === "dark" ? "☀️" : "🌙"; b.title = t === "dark" ? "Switch to light mode" : "Switch to dark mode"; }
+    const b = $("themeBtn"); if (b) { b.textContent = t === "dark" ? "Light" : "Dark"; b.title = t === "dark" ? "Switch to light mode" : "Switch to dark mode"; }
   }
   (function () { let t = "light"; try { t = localStorage.getItem("ra_theme") === "dark" ? "dark" : "light"; } catch (e) {} setTheme(t); })();
   $("themeBtn").addEventListener("click", () => setTheme(document.documentElement.getAttribute("data-theme") === "dark" ? "light" : "dark"));
@@ -3076,7 +3286,7 @@ api("/api/me").then(start).catch(showLanding);
     try {
       const r = await jsend("PUT", "/api/me/email", { email: $("acctEmail").value.trim() });
       S.user.email = r.email;
-      $("acctMsg").textContent = r.email ? "✅ Saved. We will use it for password resets and plan reminders." : "Email removed.";
+      $("acctMsg").textContent = r.email ? "Saved. We will use it for password resets and plan reminders." : "Email removed.";
     } catch (e) { $("acctMsg").textContent = e.message; }
   };
   $("refCopy").onclick = async () => {
@@ -3091,7 +3301,7 @@ api("/api/me").then(start).catch(showLanding);
     if (!code) { $("couponMsg").textContent = "Enter your coupon code."; return; }
     try {
       const r = await jpost("/api/billing/redeem", { company_id: Number($("company").value), code });
-      $("couponMsg").textContent = `✅ ${r.days} free day(s) added. Your plan now runs until ${r.expires_at} UTC.`;
+      $("couponMsg").textContent = ` ${r.days} free day(s) added. Your plan now runs until ${r.expires_at} UTC.`;
       $("couponCode").value = ""; if (typeof loadBilling === "function") loadBilling();
     } catch (e) { $("couponMsg").textContent = e.message; }
   };
@@ -3104,7 +3314,7 @@ api("/api/me").then(start).catch(showLanding);
       const items = await api(`/api/companies/${cid}/saved-questions`);
       host.replaceChildren();
       if (!items.length) return;
-      host.append(el("span", "⭐ Saved:", "mute"));
+      host.append(el("span", "Saved:", "mute"));
       items.forEach(q => {
         const chip = el("span", "", "d-chip"); chip.style.cursor = "pointer";
         const t = el("span", q.question.length > 46 ? q.question.slice(0, 44) + "…" : q.question); t.title = q.question;
@@ -3120,7 +3330,7 @@ api("/api/me").then(start).catch(showLanding);
   $("question").addEventListener("keydown", e => { if (e.key === "Enter") lastQ = $("question").value.trim(); });
   $("saveQ").onclick = async () => {
     const q = lastQ || $("question").value.trim(); if (!q) return;
-    try { await jpost(`/api/companies/${Number($("company").value)}/saved-questions`, { question: q }); $("fbMsg").textContent = "⭐ Saved. Find it under your question box."; loadSaved(); }
+    try { await jpost(`/api/companies/${Number($("company").value)}/saved-questions`, { question: q }); $("fbMsg").textContent = "Saved. Find it under your question box."; loadSaved(); }
     catch (e) { $("fbMsg").textContent = e.message; }
   };
   async function sendFeedback(rating) {
@@ -3128,7 +3338,7 @@ api("/api/me").then(start).catch(showLanding);
     if (rating < 0) comment = prompt("Sorry about that. What was wrong? (optional)") || "";
     try {
       await jpost("/api/feedback", { company_id: Number($("company").value), rating, question: lastQ || $("question").value.trim(), comment });
-      $("fbMsg").textContent = rating > 0 ? "Thank you! 💙" : "Thanks, we will use this to improve.";
+      $("fbMsg").textContent = rating > 0 ? "Thank you!" : "Thanks, we will use this to improve.";
       $("fbUp").disabled = $("fbDown").disabled = true;
     } catch (e) { $("fbMsg").textContent = e.message; }
   }
@@ -3168,10 +3378,10 @@ api("/api/me").then(start).catch(showLanding);
         row.append(el("span", m.month), fillb, el("b", naira(m.ngn))); bars.append(row);
       });
       host.append(bars);
-      host.append(listBox("⚠️ Close to their monthly limit", o.near_limit.map(x => `${x.company}: ${x.used}/${x.limit} (${x.plan})`), "Nobody is near their limit."));
-      host.append(listBox("⏰ Plans ending within 3 days", o.expiring_soon.map(x => `${x.company}: ${x.plan} ends ${x.expires_at} UTC`), "No plans ending soon."));
-      host.append(listBox("🕒 In grace period (plan ended, still working)", o.in_grace.map(x => `${x.company}: ${x.plan}, grace ends ${x.grace_ends_at} UTC`), "Nobody."));
-      host.append(listBox("👍 / 👎 answer ratings (30 days)", [`👍 ${o.feedback_up_30d}   👎 ${o.feedback_down_30d}`], ""));
+      host.append(listBox("Close to their monthly limit", o.near_limit.map(x => `${x.company}: ${x.used}/${x.limit} (${x.plan})`), "Nobody is near their limit."));
+      host.append(listBox("Plans ending within 3 days", o.expiring_soon.map(x => `${x.company}: ${x.plan} ends ${x.expires_at} UTC`), "No plans ending soon."));
+      host.append(listBox("In grace period (plan ended, still working)", o.in_grace.map(x => `${x.company}: ${x.plan}, grace ends ${x.grace_ends_at} UTC`), "Nobody."));
+      host.append(listBox("Answer ratings (30 days)", [`Helpful ${o.feedback_up_30d}   Not helpful ${o.feedback_down_30d}`], ""));
     } catch (e) { host.textContent = e.message; }
     loadFeedbackAdmin(); loadContactAdmin(); loadCoupons();
   }
@@ -3179,8 +3389,8 @@ api("/api/me").then(start).catch(showLanding);
     const host = $("fbList"); try {
       const f = await api("/api/admin/feedback"); host.replaceChildren();
       const bad = f.items.filter(i => i.rating < 0).slice(0, 8);
-      if (!bad.length) { host.append(el("div", "No 👎 ratings yet.", "mute")); return; }
-      bad.forEach(i => host.append(el("div", `👎 ${i.company || ""} · ${i.username || ""}: “${i.question || "?"}”` + (i.comment ? ` — ${i.comment}` : ""), "mute")));
+      if (!bad.length) { host.append(el("div", "No negative ratings yet.", "mute")); return; }
+      bad.forEach(i => host.append(el("div", `${i.company || ""} · ${i.username || ""}: “${i.question || "?"}”` + (i.comment ? ` — ${i.comment}` : ""), "mute")));
     } catch (e) { host.textContent = ""; }
   }
   async function loadContactAdmin() {
@@ -3216,7 +3426,7 @@ api("/api/me").then(start).catch(showLanding);
     try {
       const r = await jpost("/api/admin/coupons", { kind: $("cpKind").value, value: Number($("cpValue").value), max_uses: Number($("cpUses").value) || 1,
                                                     days_valid: Number($("cpDays").value) || null, code: $("cpCode").value.trim() || null });
-      $("cpMsg").textContent = "✅ Created: " + r.code + "  (send this code to your customer)"; $("cpCode").value = ""; loadCoupons();
+      $("cpMsg").textContent = "Created: " + r.code + "  (send this code to your customer)"; $("cpCode").value = ""; loadCoupons();
     } catch (e) { $("cpMsg").textContent = e.message; }
   };
 
@@ -3277,23 +3487,23 @@ api("/api/me").then(start).catch(showLanding);
     box.classList.toggle("hidden", hidden || done === steps.length || S.user.role !== "analyst");
     const list = steps.map(s => {
       const row = el("div", "", "chk-row" + (s[0] ? " done" : ""));
-      row.append(el("span", s[0] ? "✅" : "⬜", "chk-ic"), el("span", s[1], "chk-tx"));
+      row.append(el("span", s[0] ? "✓" : "○", "chk-ic"), el("span", s[1], "chk-tx"));
       if (!s[0]) { const b = el("button", s[3], "ghost"); b.type = "button"; b.onclick = () => navigate(s[2]); row.append(b); }
       return row;
     });
     const bar = el("div", "", "chk-bar"); const fill = el("i"); fill.style.width = (done / steps.length * 100) + "%"; bar.append(fill);
     const foot = el("div", "", "row");
-    if ((S.reports || []).length < 2) { const sb = el("button", "🧪 Add two sample reports to try it out", "ghost"); sb.type = "button"; sb.onclick = () => addSamples(sb); foot.append(sb); }
+    if ((S.reports || []).length < 2) { const sb = el("button", "Add two sample reports to try it out", "ghost"); sb.type = "button"; sb.onclick = () => addSamples(sb); foot.append(sb); }
     const hide = el("button", "Hide this", "d-link"); hide.type = "button"; hide.onclick = () => { try { localStorage.setItem("ra_check_hidden", "1"); } catch (e) {} box.classList.add("hidden"); };
     foot.append(hide);
-    box.replaceChildren(el("h3", "🚀 Get started"), el("p", done + " of " + steps.length + " done", "d-sub"), bar, ...list, foot);
+    box.replaceChildren(el("h3", "Get started"), el("p", done + " of " + steps.length + " done", "d-sub"), bar, ...list, foot);
   };
 })();
 
 </script>
 
 <a class="support-contact" id="floatSupport" href="mailto:reconciliationsolutionsupport@gmail.com?subject=Report%20Analyzer%20support" aria-label="Contact Report Analyzer support by email">
-  <span class="wa-icon" aria-hidden="true">✉</span>
+  <span class="wa-icon" aria-hidden="true"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="#fff" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 7l9 6 9-6"/></svg></span>
   <span>Contact support<small>We reply by email</small></span>
 </a>
 <script>
@@ -3365,6 +3575,14 @@ document.addEventListener("click", function (ev) {
   box.scrollIntoView({ behavior: "smooth", block: "start" });
   var u = document.getElementById("lUser"); if (u) { try { u.focus({ preventScroll: true }); } catch (e) { u.focus(); } }
 });
+</script>
+<script>
+/* mobile: theme and log-out live in the menu */
+(function () {
+  var t = document.getElementById("sbTheme"), l = document.getElementById("sbLogout");
+  if (t) t.addEventListener("click", function () { var b = document.getElementById("themeBtn"); if (b) b.click(); });
+  if (l) l.addEventListener("click", function () { var b = document.getElementById("logout"); if (b) b.click(); });
+})();
 </script>
 </body>
 </html>
