@@ -17,6 +17,7 @@
 <meta property="og:url" content="__BASE__/"><meta property="og:image" content="__BASE__/static/icon-512.png">
 <meta name="twitter:card" content="summary"><meta name="twitter:title" content="Report Analyzer - turn any report into answers">
 <meta name="twitter:description" content="Report Analyzer reconciles ATM, POS and bank reports in seconds, checks bank statements, and answers questions about your data in plain English. Built for finance and operations teams in Nigeria.">
+<script type="application/ld+json">{"@context": "https://schema.org", "@graph": [{"@type": "Organization", "name": "Reconciliation Solutions", "url": "__BASE__/", "email": "reconciliationsolutionsupport@gmail.com", "sameAs": ["https://t.me/COLDFX26"]}, {"@type": "SoftwareApplication", "name": "Report Analyzer", "applicationCategory": "BusinessApplication", "operatingSystem": "Web", "description": "Reconciles ATM, POS and bank reports, checks bank statements and answers questions about your data in plain English.", "publisher": {"@type": "Organization", "name": "Reconciliation Solutions"}, "inLanguage": "en-NG"}]}</script>
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap">
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
@@ -1081,6 +1082,23 @@ html[data-theme=dark] ::-webkit-scrollbar-thumb { background:#3a4b43; background
 #landing.lp .lp-story p { color:var(--lp-ink); }
 #landing.lp .lp-story-sign { font-weight:600; }
 </style>
+<style id="polish4">
+#landing.lp .lp-story { grid-template-columns:minmax(0,1fr); }
+#landing.lp .lp-story a, #landing.lp .lp-chapters a { overflow-wrap:anywhere; }
+#landing.lp .lp-more { border:1px solid var(--lp-line); border-radius:12px; background:#fff; padding:4px 20px; }
+#landing.lp .lp-more > summary { cursor:pointer; list-style:none; font-weight:700; color:var(--lp-brand); min-height:48px; display:flex; align-items:center; justify-content:space-between; }
+#landing.lp .lp-more > summary::-webkit-details-marker { display:none; }
+#landing.lp .lp-more > summary::after { content:"+"; font-size:22px; font-weight:500; }
+#landing.lp .lp-more[open] > summary::after { content:"\2212"; }
+#landing.lp .lp-chapters { padding:6px 0 18px; display:grid; gap:12px; }
+#landing.lp .lp-chapters h3 { font-size:19px; font-weight:800; letter-spacing:-.01em; margin-top:14px; color:var(--lp-ink); }
+#landing.lp .lp-chapters p { font-size:17px; line-height:1.75; }
+</style>
+<style id="polish5">
+button:not(:disabled):active, .lp-btn:active { transform:scale(.98); }
+input:not([type=checkbox]):not([type=radio]):not([type=file]):not([type=color]):not(:placeholder-shown):user-valid { border-color:#1f8a5f; box-shadow:0 0 0 3px rgba(31,138,95,.12); }
+input:not([type=checkbox]):not([type=radio]):not([type=file]):not([type=color]):not(:placeholder-shown):user-invalid { border-color:#b42318; box-shadow:0 0 0 3px rgba(180,35,24,.12); }
+</style>
 </head>
 <body>
 <a class="skip-link" href="#top">Skip to main content</a>
@@ -1308,13 +1326,31 @@ html[data-theme=dark] ::-webkit-scrollbar-thumb { background:#3a4b43; background
 
   <section class="lp-sec lp-alt" id="about">
     <div class="lp-wrap lp-narrow">
-      <div class="lp-head"><h2>The story behind Report Analyzer</h2><p>Why it exists and who is behind it.</p></div>
-      <!-- OWNER: replace the text in this block with your own story, your name and a photo if you like. -->
+      <div class="lp-head"><h2>Our story</h2><p>How a dream, a TikTok post and a question to my dad became Reconciliation Solutions.</p></div>
       <div class="lp-story">
-        <p>Report Analyzer is built in Nigeria for the people who match ATM, POS and bank reports by hand and answer for the numbers at the end of the month.</p>
-        <p>The idea is simple: you should not need to be a spreadsheet expert to find what is missing. You upload your reports, the tool compares them, and every figure it shows is calculated from your own data.</p>
-        <p>It is built and supported directly by its maker. When you write to us, you get a reply from the person who builds it, and your feedback decides what is improved next.</p>
-        <p class="lp-story-sign"><a href="mailto:reconciliationsolutionsupport@gmail.com">Write to us</a></p>
+        <p>I am a young Nigerian with a dream of becoming known, of building something that people talk about. For a long time that dream came with limits. There were things I did not have and doors that did not open. But I made one decision early and I have kept it: I never gave up.</p>
+        <details class="lp-more">
+          <summary>Read the full story</summary>
+          <div class="lp-chapters">
+            <h3>Chapter 1: The dream</h3>
+            <p>Like many young people in this country, I wanted to be popular and famous. I wanted my name and my work to travel. The road was not smooth. There were many limitations, and more than once it would have been easier to stop. I kept going anyway, because I believed that a limitation is only a reason to find another way.</p>
+            <h3>Chapter 2: A post on TikTok</h3>
+            <p>One day I came across a post on TikTok that changed the direction of my life. Watching it, I noticed something about myself: I had a liking for coding. It was not a big moment with music playing. It was a quiet discovery, but it was the start of everything that followed.</p>
+            <h3>Chapter 3: The hard beginning</h3>
+            <p>At first it was tough. Code did not behave the way I wanted, errors appeared that I did not understand, and progress was slow. But I kept practising, and with time I began to get the hang of it. Things that looked impossible at the start slowly became normal.</p>
+            <h3>Chapter 4: The question</h3>
+            <p>Then, one day, a question came to me: what can I build that will lower the pressure on Nigerians? I was out of ideas, so I did what I think every young builder should do. I asked for pointers from someone who knows the real world. I asked my dad.</p>
+            <p>He told me about the section where he belongs at his place of work. He explained how much effort goes into checking and matching records by hand, and said that if a website could do this work, it would bring ease, not only to his section but to the country.</p>
+            <h3>Chapter 5: Day and night</h3>
+            <p>That answer gave me a direction. I started working day and night to turn it into something real. My goal is bigger than one website. I want to help make Nigeria one of the top ten countries in the world for able, hardworking young people and teenagers, and to show what Nigerians are made of.</p>
+            <p>That work became <b>Reconciliation Solutions</b>, and the tool at its heart, <b>Report Analyzer</b>: a website that matches ATM, POS and bank reports, finds what is missing, and answers your questions in plain English.</p>
+            <h3>Chapter 6: Where you can find me</h3>
+            <p>I do not run support on WhatsApp. My WhatsApp account keeps getting banned, so most of my operations run on Telegram instead. You can reach me there at <a href="https://t.me/COLDFX26" target="_blank" rel="noopener">t.me/COLDFX26</a>, or by email at <a href="mailto:reconciliationsolutionsupport@gmail.com">reconciliationsolutionsupport@gmail.com</a>.</p>
+            <h3>What comes next</h3>
+            <p>I hope this website reaches the whole world, so that people can see what Nigerians are made of. If Report Analyzer helps you, please share it with your colleagues, your team and your friends, so we can grow together.</p>
+          </div>
+        </details>
+        <p class="lp-story-sign"><a href="https://t.me/COLDFX26" target="_blank" rel="noopener">Message me on Telegram</a> <span aria-hidden="true">&middot;</span> <a href="mailto:reconciliationsolutionsupport@gmail.com">Email us</a></p>
       </div>
     </div>
   </section>
@@ -1330,7 +1366,8 @@ html[data-theme=dark] ::-webkit-scrollbar-thumb { background:#3a4b43; background
         <details><summary>Can I talk to someone before I sign up?</summary><p>Yes. Use the contact form on this page or email <a href="mailto:reconciliationsolutionsupport@gmail.com">reconciliationsolutionsupport@gmail.com</a> and we will reply.</p></details>
         <details><summary>How do I get started?</summary><p>Choose "Request an account" in the sign-in box. Once an administrator approves it, sign in and open <b>Settings</b> first. Save your email there (it is used for password resets and plan reminders) and add your company logo so it appears on your PDF reports. Then upload your first report.</p></details>
         <details><summary>Can I put my company logo on my reports?</summary><p>Yes, every customer can. In Settings, add your company name, logo and brand colour once. Your PDF reports then show your logo and colour, with a faint copy of the logo as the page background.</p></details>
-        <details><summary>Who built Report Analyzer?</summary><p>Report Analyzer is built in Nigeria for ATM, POS and finance teams. <a href="#about">Read the story behind it</a> or write to us at <a href="mailto:reconciliationsolutionsupport@gmail.com">reconciliationsolutionsupport@gmail.com</a>.</p></details>
+        <details><summary>Who built Report Analyzer?</summary><p>Report Analyzer is built in Nigeria by a young Nigerian developer, for ATM, POS and finance teams. <a href="#about">Read the full story</a>.</p></details>
+        <details><summary>Do you have a WhatsApp number?</summary><p>No. Our WhatsApp account keeps getting banned, so most of our operations run on Telegram: <a href="https://t.me/COLDFX26" target="_blank" rel="noopener">t.me/COLDFX26</a>. You can also email <a href="mailto:reconciliationsolutionsupport@gmail.com">reconciliationsolutionsupport@gmail.com</a> or use the contact form on this page.</p></details>
       </div>
     </div>
   </section>
@@ -1346,7 +1383,7 @@ html[data-theme=dark] ::-webkit-scrollbar-thumb { background:#3a4b43; background
         <input type="text" id="ctWebsite" tabindex="-1" autocomplete="off" aria-hidden="true" class="hp-field">
         <button type="submit" id="ctSend" class="lp-btn lp-btn-primary lp-full">Send message</button>
         <div class="lp-msg" id="ctMsg" aria-live="polite"></div>
-        <div class="lp-note">Or email <a href="mailto:reconciliationsolutionsupport@gmail.com">reconciliationsolutionsupport@gmail.com</a></div>
+        <div class="lp-note">Or email <a href="mailto:reconciliationsolutionsupport@gmail.com">reconciliationsolutionsupport@gmail.com</a> or message us on Telegram: <a href="https://t.me/COLDFX26" target="_blank" rel="noopener">t.me/COLDFX26</a>. We do not use WhatsApp.</div>
       </form>
     </div>
   </section>
@@ -1361,7 +1398,7 @@ html[data-theme=dark] ::-webkit-scrollbar-thumb { background:#3a4b43; background
         </div>
         <nav aria-label="Product"><h4>Product</h4><ul><li><a href="#features">Features</a></li><li><a href="#statement">Statement check</a></li><li><a href="#pricing">Pricing</a></li><li><a href="#about">About</a></li><li><a href="#faq">FAQ</a></li></ul></nav>
         <nav aria-label="Legal"><h4>Legal</h4><ul><li><button type="button" class="lp-foot-btn" data-legal="terms">Terms of Service</button></li><li><button type="button" class="lp-foot-btn" data-legal="privacy">Privacy Policy</button></li></ul></nav>
-        <div><h4>Contact</h4><ul><li><a href="mailto:reconciliationsolutionsupport@gmail.com">reconciliationsolutionsupport@gmail.com</a></li><li><a href="#contact">Send us a message</a></li></ul></div>
+        <div><h4>Contact</h4><ul><li><a href="mailto:reconciliationsolutionsupport@gmail.com">reconciliationsolutionsupport@gmail.com</a></li><li><a href="#contact">Send us a message</a></li><li><a href="https://t.me/COLDFX26" target="_blank" rel="noopener">Telegram: t.me/COLDFX26</a></li></ul></div>
       </div>
       <div class="lp-foot-bar"><span>&copy; <span id="ftYear">2026</span> Report Analyzer. All rights reserved.</span><span>Data encrypted &middot; Two-factor sign-in available</span></div>
     </div>
