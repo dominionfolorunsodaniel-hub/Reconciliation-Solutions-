@@ -12,6 +12,7 @@ import datetime
 import io
 import json
 import os
+import time
 import re
 import statistics
 import warnings
@@ -51,6 +52,13 @@ _client = None
 # Cost control: db.py plugs in these hooks. current_user_id says whose AI request this is.
 current_user_id: contextvars.ContextVar = contextvars.ContextVar("current_user_id", default=None)
 LIMIT_CHECK = None
+# Time budget: analyze() sets a deadline so a slow or busy AI service can never keep a question waiting for minutes.
+_deadline: contextvars.ContextVar = contextvars.ContextVar("ai_deadline", default=None)
+ANALYZE_BUDGET = float(os.getenv("ANALYZE_TIME_BUDGET", "30"))      # seconds for a whole question
+AI_CALL_TIMEOUT = float(os.getenv("GEMINI_CALL_TIMEOUT", "14"))     # seconds for ONE call to Gemini
+# Gemini "thinking" makes answers 10-60 s slower; this app needs a quick JSON plan and a short summary, so it is off by default.
+# Set GEMINI_THINKING_BUDGET to a number (e.g. 512) to turn some thinking back on, or to "off" to never send the setting.
+THINKING_BUDGET = os.getenv("GEMINI_THINKING_BUDGET", "0").strip()
 USAGE_RECORD = None
 
 
@@ -100,19 +108,36 @@ async def _ask(**kwargs):
     # The planner and report description must return JSON; summaries should remain plain text.
     if "JSON object" in system or "JSON plan" in system:
         payload["generationConfig"]["responseMimeType"] = "application/json"
+    use_thinking_cfg = THINKING_BUDGET.lower() not in ("off", "none", "")
+    if use_thinking_cfg:
+        try:
+            payload["generationConfig"]["thinkingConfig"] = {"thinkingBudget": int(THINKING_BUDGET)}
+        except ValueError:
+            use_thinking_cfg = False
     payload = {key: value for key, value in payload.items() if value is not None}
     headers = {"x-goog-api-key": api_key, "content-type": "application/json"}
     # When Google is busy (503/500/timeouts) wait and retry, then fall back to backup models.
     backups = [m.strip() for m in os.getenv("GEMINI_FALLBACK_MODELS", "gemini-2.5-flash,gemini-flash-lite-latest").split(",") if m.strip()]
-    plan = [model] * 2 + [m for m in backups if m != model]
-    data, last_busy = None, "Gemini is very busy right now. Please try again in a minute."
+    plan = [model] + [m for m in backups if m != model]   # a slow model is replaced by a backup at once, not asked again
+    data, last_busy = None, "The AI service is slow right now. Please try again in a moment."
+    per_call = float(kwargs.get("timeout") or AI_CALL_TIMEOUT)
+    reserve = float(kwargs.get("reserve") or 0)             # seconds to keep free for the step that comes after this one
     for attempt, current in enumerate(plan):
         if attempt:
-            await asyncio.sleep(2 * min(attempt, 3))
+            await asyncio.sleep(1)
+        dl = _deadline.get()
+        left = (dl - time.monotonic() - reserve) if dl else per_call
+        if left < 3:
+            print("[gemini] time budget used up, giving up on this call", flush=True)
+            break
         url = f"https://generativelanguage.googleapis.com/v1beta/models/{current}:generateContent"
         try:
-            async with httpx.AsyncClient(timeout=httpx.Timeout(25.0, connect=10.0)) as client:
+            async with httpx.AsyncClient(timeout=httpx.Timeout(min(per_call, left), connect=min(8.0, left))) as client:
                 response = await client.post(url, headers=headers, json=payload)
+                # Some models do not accept a thinking setting: send the same request once more without it.
+                if response.status_code == 400 and "thinkingConfig" in payload.get("generationConfig", {}) and "think" in response.text.lower():
+                    payload["generationConfig"].pop("thinkingConfig", None)
+                    response = await client.post(url, headers=headers, json=payload)
         except httpx.TimeoutException:
             print(f"[gemini] {current} timed out (attempt {attempt + 1}/{len(plan)})", flush=True)
             continue
@@ -724,7 +749,7 @@ async def make_plan(question: str, df: pd.DataFrame, prev_plan: dict | None, hin
     plan = None
     for attempt in range(2):
         resp = await _ask(
-            model=MODEL, model_override=os.getenv("GEMINI_PLAN_MODEL", "").strip() or None, max_tokens=2500, system=SYSTEM_PROMPT,
+            model=MODEL, model_override=os.getenv("GEMINI_PLAN_MODEL", "").strip() or None, max_tokens=2500, system=SYSTEM_PROMPT, reserve=8,
             messages=[{"role": "user", "content": user_msg + ("\n\nReply with the JSON object only." if attempt else "")}],
         )
         plan = _parse_plan(_text_of(resp))
@@ -788,7 +813,7 @@ async def summarize(question: str, res: pd.DataFrame, extra: str = "", system: s
     try:
         table = res.head(60).to_string(index=False, max_colwidth=40)
         resp = await _ask(
-            model=MODEL, max_tokens=2200, system=system or INSIGHT_PROMPT,
+            model=MODEL, max_tokens=2200, system=system or INSIGHT_PROMPT, timeout=12,
             messages=[{"role": "user", "content": f"Question: {question}\n\nResult table (exact):\n{table}\n\n{extra}"}],
         )
         return _text_of(resp).strip() or None
@@ -1118,7 +1143,10 @@ async def analyze(df: pd.DataFrame, question: str, prev_plan: dict | None = None
     real column values are sent back to the AI so it can correct itself (up to 3 tries)."""
     df, money_note = add_money_columns(df)
     plan, feedback, ran = None, None, None
+    _deadline.set(time.monotonic() + ANALYZE_BUDGET)
     for attempt in range(3):
+        if attempt and _deadline.get() - time.monotonic() < 14:   # not enough time left for another full round: use what we have
+            break
         plan = await make_plan(question, df, prev_plan, money_note, feedback)
         plan = fix_plan_columns(plan, df.columns)
         if plan.get("mode") in ("explain", "general"):

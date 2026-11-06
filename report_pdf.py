@@ -78,6 +78,19 @@ def build_pdf(company_name: str, title: str, question: str, insight: str | None,
     if logo:
         import db  # local import: logos may live in the database (PostgreSQL mode)
         logo_bytes = db.read_file(logo)
+    # Faint copy of the logo, drawn behind the content of every page (the logo's own alpha is lowered so text stays readable).
+    wm = None
+    if logo_bytes:
+        try:
+            from PIL import Image as PILImage
+            from reportlab.lib.utils import ImageReader
+            im = PILImage.open(io.BytesIO(logo_bytes)).convert("RGBA")
+            im.putalpha(im.getchannel("A").point(lambda a: int(a * 0.10)))
+            buf = io.BytesIO(); im.save(buf, "PNG"); buf.seek(0)
+            wm = (ImageReader(buf), im.width / max(im.height, 1))
+        except Exception:  # noqa: BLE001  (a bad logo must never stop the PDF)
+            wm = None
+
     if logo_bytes:
         img = Image(io.BytesIO(logo_bytes))
         ratio = img.imageWidth / img.imageHeight
@@ -107,7 +120,7 @@ def build_pdf(company_name: str, title: str, question: str, insight: str | None,
         t.setStyle(TableStyle([
             ("BACKGROUND", (0, 0), (-1, 0), brand), ("TEXTCOLOR", (0, 0), (-1, 0), colors.white),
             ("FONTNAME", (0, 0), (-1, -1), f_reg), ("FONTNAME", (0, 0), (-1, 0), f_bold), ("FONTSIZE", (0, 0), (-1, -1), 7.5), ("GRID", (0, 0), (-1, -1), 0.25, colors.HexColor("#d5d9e4")),
-            ("ROWBACKGROUNDS", (0, 1), (-1, -1), [colors.white, colors.HexColor("#f5f6fa")]),
+            ("ROWBACKGROUNDS", (0, 1), (-1, -1), [None if wm else colors.white, colors.Color(0.96, 0.965, 0.98, alpha=0.7 if wm else 1)]),
             ("VALIGN", (0, 0), (-1, -1), "MIDDLE"),
         ]))
         story.append(t)
@@ -116,6 +129,14 @@ def build_pdf(company_name: str, title: str, question: str, insight: str | None,
             story.append(Paragraph(escape(f"Showing the first {min(MAX_ROWS, total)} of {total:,} rows - full detail is in the Excel file."), s_sub))
 
     def footer(canvas, doc):
+        canvas.saveState()
+        canvas.setFillColor(brand)
+        canvas.rect(0, A4[1] - 0.35 * cm, A4[0], 0.35 * cm, stroke=0, fill=1)
+        if wm:
+            w = min(13 * cm, 13 * cm * wm[1]) if wm[1] >= 1 else 9 * cm * wm[1]
+            h = w / wm[1]
+            canvas.drawImage(wm[0], (A4[0] - w) / 2, (A4[1] - h) / 2, width=w, height=h, mask="auto")
+        canvas.restoreState()
         canvas.saveState()
         canvas.setFont(f_reg, 8)
         canvas.setFillColor(colors.HexColor("#6b7385"))

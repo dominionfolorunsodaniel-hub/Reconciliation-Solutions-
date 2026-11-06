@@ -40,3 +40,17 @@ Look: light/neutral theme, one green brand colour (#0b6b4b), no gradients, glow,
 - Optional free Microsoft Clarity heatmaps: set CLARITY_PROJECT_ID in Render.
 - Fixed: grey sections on the landing page were narrower than the header (a global `main` style leaked in).
 - Not added on purpose: custom cursor, glow/glass/gradient/particle backgrounds, fake live-activity ticker, countdown timers, fake client logos, 3D hero.
+
+# Round 4 (Nov 6): faster answers
+Cause of 1-2 minute answers: each question makes two Gemini calls (plan, then written summary). Every call could wait 25 s, retry the same model, then try two backups (with sleeps), and a "thinking" model adds many seconds even when Google is healthy.
+- core.py: a question now has a 30 s time budget (ANALYZE_TIME_BUDGET). One Gemini call waits at most 14 s (GEMINI_CALL_TIMEOUT), then moves straight to a backup model instead of retrying the slow one. The plan step keeps 8 s free for the summary; if the summary is late the answer shows the exact figures without the written part.
+- Gemini "thinking" is switched off (thinkingBudget 0). If a model rejects the setting, the call is repeated once without it. Set GEMINI_THINKING_BUDGET=off to stop sending it, or a number to allow some thinking.
+- Dashboard: the Analyze button shows the seconds while it works.
+- If answers are still slow, look in Render > Logs for lines starting "[gemini]" (timed out / HTTP 429 / 503). Also keep the site awake with UptimeRobot on /api/health (a sleeping free Render service needs 30-60 s to wake up).
+
+# Round 5 (Nov 6): onboarding, customer logos, About
+- Get-started card (dashboard + Settings) tells new customers to open Settings first: step 1 save email, step 2 add company logo. It disappears when both are done (logo can be skipped). Customers without a saved email are taken to Settings after the first-time tour (or straight after sign-in if the tour was already seen). The tour's first step now says the same.
+- Company logo and colour moved out of the owner-only admin card into its own Settings card for every customer (analyst accounts; viewers cannot). web.py: PUT /api/companies/{id}/branding now needs "analyst" plus access to that company (was admin only).
+- PDF reports (report_pdf.py): coloured top edge, logo at the top, and a faint copy of the logo as the page background (shows through the table). No logo = no background; a broken logo never stops the PDF.
+- Landing page: About ("The story behind Report Analyzer") section with nav + footer links, and three new FAQ items (getting started, logo on reports, who built it). OWNER: replace the About text (search for "OWNER:" in static/index.html) with your own story.
+- Files changed: static/index.html, web.py, report_pdf.py.

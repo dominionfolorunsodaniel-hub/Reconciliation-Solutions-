@@ -1416,7 +1416,7 @@ def download_pdf(result_id: str, user: dict = Depends(current_user)):
                              headers={"Content-Disposition": 'attachment; filename="report.pdf"'})
 
 
-# ------------------------------- branding (admin) ------------------------------ #
+# ------------------------------- branding (every customer, own company) ------------------------------ #
 @app.get("/api/companies/{company_id}/branding")
 def get_branding(company_id: int, user: dict = Depends(current_user)):
     need_company(user, company_id)
@@ -1428,7 +1428,8 @@ def get_branding(company_id: int, user: dict = Depends(current_user)):
 @app.put("/api/companies/{company_id}/branding")
 async def put_branding(company_id: int, display_name: str = Form(""), color: str = Form("#2b59ff"),
                        logo: UploadFile | None = File(None), user: dict = Depends(current_user)):
-    need(user, "admin")
+    need(user, "analyst")            # every customer (analyst or admin) can brand their own company; viewers cannot
+    need_company(user, company_id)   # ...but only a company they belong to
     if not db.get_company(company_id):
         raise HTTPException(404, "Unknown company")
     if not re.fullmatch(r"#[0-9a-fA-F]{6}", color):
