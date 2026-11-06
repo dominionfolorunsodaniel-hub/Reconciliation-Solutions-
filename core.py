@@ -32,7 +32,7 @@ import pandas as pd
 import loaders
 import privacy
 
-MODEL = os.getenv("GEMINI_MODEL", "gemini-flash-latest")
+MODEL = os.getenv("GEMINI_MODEL", "gemini-3.8-flash")
 MAX_FILE_MB = 20
 ALLOWED_EXT = {"csv", "tsv", "txt", "text", "dat", "xlsx", "xlsm", "xls", "ods", "pdf", "json", "jsonl", "ndjson",
                "xml", "html", "htm", "docx", "png", "jpg", "jpeg", "webp", "bmp", "tif", "tiff", "gif"}
@@ -83,7 +83,7 @@ async def _ask(**kwargs):
             "Get one from https://aistudio.google.com/."
         )
 
-    model = (kwargs.get("model_override") or os.getenv("GEMINI_MODEL", MODEL)).strip() or "gemini-flash-latest"
+    model = (kwargs.get("model_override") or os.getenv("GEMINI_MODEL", MODEL)).strip() or "gemini-3.8-flash"
     max_tokens = int(kwargs.get("max_tokens", 800))
     system = str(kwargs.get("system", ""))
     messages = kwargs.get("messages", [])
@@ -117,7 +117,7 @@ async def _ask(**kwargs):
     payload = {key: value for key, value in payload.items() if value is not None}
     headers = {"x-goog-api-key": api_key, "content-type": "application/json"}
     # When Google is busy (503/500/timeouts) wait and retry, then fall back to backup models.
-    backups = [m.strip() for m in os.getenv("GEMINI_FALLBACK_MODELS", "gemini-2.5-flash,gemini-flash-lite-latest").split(",") if m.strip()]
+    backups = [m.strip() for m in os.getenv("GEMINI_FALLBACK_MODELS", "gemini-3.8-flash,gemini-flash-lite-latest").split(",") if m.strip()]
     plan = [model] + [m for m in backups if m != model]   # a slow model is replaced by a backup at once, not asked again
     data, last_busy = None, "The AI service is slow right now. Please try again in a moment."
     per_call = float(kwargs.get("timeout") or AI_CALL_TIMEOUT)
