@@ -1036,6 +1036,33 @@ button.ra-busy::after { content:""; display:inline-block; width:14px; height:14p
 }
 @media (prefers-reduced-motion:reduce) { button.ra-busy::after { animation-duration:1.6s; } }
 </style>
+
+<style id="polish2">
+#landing.lp main { max-width:none; width:100%; margin:0; padding:0; display:block; }
+/* ============ POLISH 2 (Nov 6): scroll reveal, nav shadow, scrollbar, button feel, mic, reduced motion ============ */
+#landing.lp .rv { opacity:0; transform:translateY(18px); transition:opacity .55s ease-out, transform .55s ease-out; }
+#landing.lp .rv.rv-in { opacity:1; transform:none; }
+#landing.lp .lp-nav { transition:box-shadow .2s, background-color .2s; }
+#landing.lp .lp-nav.is-scrolled { box-shadow:0 4px 18px rgba(20,32,27,.08); background:rgba(255,255,255,.94); -webkit-backdrop-filter:saturate(1.4) blur(8px); backdrop-filter:saturate(1.4) blur(8px); }
+#landing.lp .lp-btn:hover, #landing.lp .lp-sample button:hover { transform:translateY(-1px); box-shadow:0 4px 12px rgba(11,107,75,.18); }
+#landing.lp .lp-btn-outline:hover, #landing.lp .lp-btn-quiet:hover { box-shadow:0 4px 12px rgba(20,32,27,.08); }
+#landing.lp .lp-btn:active { transform:none; box-shadow:none; }
+html { scrollbar-width:thin; scrollbar-color:#9fb5aa transparent; }
+::-webkit-scrollbar { width:10px; height:10px; }
+::-webkit-scrollbar-track { background:transparent; }
+::-webkit-scrollbar-thumb { background:#b9c9c0; border-radius:8px; border:2px solid transparent; background-clip:padding-box; }
+::-webkit-scrollbar-thumb:hover { background:#8fa89b; background-clip:padding-box; border:2px solid transparent; }
+html[data-theme=dark] ::-webkit-scrollbar-thumb { background:#3a4b43; background-clip:padding-box; }
+.mic-btn { flex:0 0 auto; min-width:44px; padding:0 12px !important; display:inline-flex; align-items:center; justify-content:center; }
+.mic-btn svg { width:18px; height:18px; fill:none; stroke:currentColor; stroke-width:1.8; stroke-linecap:round; stroke-linejoin:round; }
+.mic-btn.on { border-color:#b42318 !important; color:#b42318 !important; }
+.mic-btn.on svg { animation:ra-pulse 1s ease-in-out infinite; }
+@keyframes ra-pulse { 50% { opacity:.35; } }
+@media (prefers-reduced-motion:reduce) {
+  *, *::before, *::after { animation-duration:.01ms !important; animation-iteration-count:1 !important; transition-duration:.01ms !important; scroll-behavior:auto !important; }
+  #landing.lp .rv { opacity:1; transform:none; }
+}
+</style>
 </head>
 <body>
 <a class="skip-link" href="#top">Skip to main content</a>
@@ -3371,7 +3398,7 @@ api("/api/me").then(start).catch(showLanding);
     try { localStorage.setItem("ra_theme", t); } catch (e) { /* private mode: fine */ }
     const b = $("themeBtn"); if (b) { b.textContent = t === "dark" ? "Light" : "Dark"; b.title = t === "dark" ? "Switch to light mode" : "Switch to dark mode"; }
   }
-  (function () { let t = "light"; try { t = localStorage.getItem("ra_theme") === "dark" ? "dark" : "light"; } catch (e) {} setTheme(t); })();
+  (function () { let t = "light"; try { var sv = localStorage.getItem("ra_theme"); t = sv ? (sv === "dark" ? "dark" : "light") : ((window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches) ? "dark" : "light"); } catch (e) {} setTheme(t); })();
   $("themeBtn").addEventListener("click", () => setTheme(document.documentElement.getAttribute("data-theme") === "dark" ? "light" : "dark"));
 
   /* ---------- my account: email + referral ---------- */
@@ -3777,6 +3804,35 @@ document.addEventListener("click", function (ev) {
     var a = document.createElement("a"); a.href = URL.createObjectURL(new Blob([CHECK], { type: "text/plain" })); a.download = "reconciliation-checklist.txt";
     document.body.appendChild(a); a.click(); a.remove();
   });
+})();
+</script>
+<script>
+/* scroll reveal, nav shadow, voice input (only where the browser supports it) */
+(function () {
+  var reduce = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  var nav = document.querySelector("#landing .lp-nav");
+  if (nav) { var f = function () { nav.classList.toggle("is-scrolled", window.scrollY > 8); }; f(); window.addEventListener("scroll", f, { passive: true }); }
+  if (!reduce && "IntersectionObserver" in window) {
+    var els = document.querySelectorAll("#landing .lp-head, #landing .lp-card, #landing .lp-plan, #landing .lp-steps li, #landing .lp-pillar, #landing .lp-demo, #landing .lp-faq, #landing .lp-form, #landing .lp-biz, #landing .lp-tags");
+    var io = new IntersectionObserver(function (list) { list.forEach(function (e) { if (e.isIntersecting) { e.target.classList.add("rv-in"); io.unobserve(e.target); } }); }, { threshold: 0.08, rootMargin: "0px 0px -30px 0px" });
+    els.forEach(function (el) { el.classList.add("rv"); io.observe(el); });
+    setTimeout(function () { els.forEach(function (el) { el.classList.add("rv-in"); }); }, 6000);   /* safety: never leave anything hidden */
+  }
+  var SR = window.SpeechRecognition || window.webkitSpeechRecognition, q = document.getElementById("question"), ask = document.getElementById("ask");
+  if (SR && q && ask) {
+    var b = document.createElement("button"); b.type = "button"; b.className = "ghost mic-btn"; b.setAttribute("aria-label", "Speak your question"); b.title = "Speak your question";
+    b.innerHTML = '<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/></svg>';
+    ask.parentNode.insertBefore(b, ask);
+    var rec = null;
+    b.addEventListener("click", function () {
+      if (rec) { try { rec.stop(); } catch (e) {} return; }
+      rec = new SR(); rec.lang = "en-NG"; rec.interimResults = false; rec.maxAlternatives = 1;
+      rec.onstart = function () { b.classList.add("on"); };
+      rec.onresult = function (ev) { var t = ev.results[0][0].transcript; q.value = (q.value ? q.value + " " : "") + t; q.focus(); };
+      rec.onerror = rec.onend = function () { b.classList.remove("on"); rec = null; };
+      try { rec.start(); } catch (e) { b.classList.remove("on"); rec = null; }
+    });
+  }
 })();
 </script>
 </body>
