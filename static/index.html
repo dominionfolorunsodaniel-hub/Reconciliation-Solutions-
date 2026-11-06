@@ -17,7 +17,10 @@
 <meta property="og:url" content="__BASE__/"><meta property="og:image" content="__BASE__/static/icon-512.png">
 <meta name="twitter:card" content="summary"><meta name="twitter:title" content="Report Analyzer - turn any report into answers">
 <meta name="twitter:description" content="Report Analyzer reconciles ATM, POS and bank reports in seconds, checks bank statements, and answers questions about your data in plain English. Built for finance and operations teams in Nigeria.">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap">
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
+<!--ANALYTICS-->
 <style>
   :root { --bg:#f4f6fb; --card:#fff; --ink:#151b2c; --mute:#6b7385; --brand:#2b59ff; --brand2:#06b6d4; --line:#e5e8f0; --navy:#0a1236; }
   * { box-sizing:border-box; }
@@ -947,11 +950,98 @@ html[data-theme=dark] .d-legend, html[data-theme=dark] .d-legend span { color:va
 html[data-theme=dark] #app .ghost { background:var(--a-card); color:var(--a-ink); }
 #app { background:var(--a-bg); min-height:100vh; min-height:100dvh; }
 </style>
+
+<style id="polish">
+/* ============ POLISH (Nov 5, round 2): Inter, spacing, contrast, highlights, dark footer, spinner, exit offer ============ */
+html, body, #landing.lp, #app, #app button, #app input, #app select, #app textarea, #landing.lp button, #landing.lp input, #landing.lp textarea, .legal, .bell-panel, .v2-tour-card {
+  font-family:"Inter",system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+}
+body { font-feature-settings:"cv11","ss01"; }
+/* skip link */
+.skip-link { position:absolute; left:12px; top:-60px; z-index:100; background:#0b6b4b; color:#fff; padding:10px 16px; border-radius:8px; font-weight:600; text-decoration:none; }
+.skip-link:focus { top:12px; }
+/* contrast: placeholders and muted text pass 4.5:1 */
+#landing.lp input::placeholder, #landing.lp textarea::placeholder, #app input::placeholder, #app textarea::placeholder { color:#66726b; opacity:1; }
+#landing.lp { --lp-mute:#4f5c55; }
+/* more air */
+#landing.lp .lp-sec { padding:88px 0; }
+#landing.lp .lp-hero { padding:72px 0 64px; }
+#landing.lp .lp-head { margin-bottom:48px; }
+#landing.lp h1 { font-size:clamp(32px,5vw,54px); line-height:1.08; letter-spacing:-.03em; font-weight:800; }
+#landing.lp .lp-head h2 { font-weight:800; letter-spacing:-.025em; }
+#landing.lp .lp-lead { font-size:19px; line-height:1.55; }
+#landing.lp .lp-eyebrow { display:inline-flex; align-items:center; gap:8px; background:var(--lp-tint); padding:5px 12px; border-radius:999px; font-size:13px; letter-spacing:.01em; }
+#landing.lp .lp-card { transition:border-color .15s, box-shadow .15s; }
+#landing.lp .lp-card:hover { border-color:#b7c7be; box-shadow:0 6px 18px rgba(20,32,27,.06); }
+#landing.lp .lp-login { box-shadow:0 12px 32px rgba(20,32,27,.08); }
+#landing.lp .lp-btn-primary:active, #landing.lp button:active { background:#074b34; }
+/* 44px minimum tap targets */
+#landing.lp .lp-links a, #landing.lp .lp-foot a, #landing.lp .lp-details summary { display:inline-flex; align-items:center; min-height:44px; }
+#landing.lp .lp-foot ul a { min-height:28px; font-size:14.5px; }
+#landing.lp .lp-foot ul { gap:6px; }
+/* three highlights */
+#landing.lp .lp-pillars { background:#fff; border-bottom:1px solid var(--lp-line); }
+#landing.lp .lp-pillars-in { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:0; }
+#landing.lp .lp-pillar { padding:36px 32px; display:grid; grid-template-columns:48px 1fr; gap:16px; align-items:start; border-right:1px solid var(--lp-line); }
+#landing.lp .lp-pillar:last-child { border-right:0; }
+#landing.lp .lp-pillar-ic { width:48px; height:48px; border-radius:12px; background:var(--lp-tint); color:var(--lp-brand); display:grid; place-items:center; }
+#landing.lp .lp-pillar-ic svg { width:24px; height:24px; fill:none; stroke:currentColor; stroke-width:1.8; stroke-linecap:round; stroke-linejoin:round; }
+#landing.lp .lp-pillar h3 { font-size:18px; font-weight:700; letter-spacing:-.01em; margin-bottom:4px; }
+#landing.lp .lp-pillar p { color:var(--lp-mute); font-size:15px; }
+/* dark footer */
+#landing.lp .lp-foot { background:#0f1a15; color:#aebbb4; border-top:0; padding:64px 0 0; font-size:15px; }
+#landing.lp .lp-foot a { color:#d7e2dc; text-decoration:none; }
+#landing.lp .lp-foot a:hover { color:#fff; text-decoration:underline; }
+#landing.lp .lp-foot-top { display:grid; grid-template-columns:1.3fr .8fr .8fr 1.6fr; gap:40px; padding-bottom:44px; }
+#landing.lp .lp-foot .lp-brand { color:#fff; margin-bottom:12px; }
+#landing.lp .lp-foot .lp-logo-ic { color:#4cc19a; }
+#landing.lp .lp-foot h4 { color:#fff; font-size:13px; letter-spacing:.08em; text-transform:uppercase; font-weight:700; margin:0 0 14px; }
+#landing.lp .lp-foot ul { display:grid; gap:6px; }
+#landing.lp .lp-foot p { max-width:300px; }
+#landing.lp .lp-foot-bar { border-top:1px solid #24342c; padding:20px 0 28px; display:flex; flex-wrap:wrap; gap:8px 24px; justify-content:space-between; font-size:13.5px; color:#8a9a92; }
+#landing.lp .lp-foot-bar a { color:#c5d3cb; }
+#landing.lp .lp-foot-btn { background:none !important; border:0 !important; padding:0 !important; min-height:0 !important; color:#d7e2dc !important; font:inherit; font-weight:400 !important; cursor:pointer; text-align:left; }
+#landing.lp .lp-foot-btn:hover { color:#fff !important; text-decoration:underline; background:none !important; }
+/* busy spinner on buttons that the page disables while it works */
+@keyframes ra-spin { to { transform:rotate(360deg); } }
+button.ra-busy { position:relative; }
+button.ra-busy::after { content:""; display:inline-block; width:14px; height:14px; margin-left:8px; border:2px solid currentColor; border-right-color:transparent; border-radius:50%; animation:ra-spin .7s linear infinite; vertical-align:-2px; }
+/* exit offer */
+.exit-back { position:fixed; inset:0; z-index:90; background:rgba(15,26,21,.55); display:flex; align-items:center; justify-content:center; padding:16px; }
+.exit-back.hidden { display:none; }
+.exit-card { position:relative; width:100%; max-width:460px; background:#fff; color:#17211c; border-radius:14px; padding:32px 28px 26px; box-shadow:0 24px 60px rgba(0,0,0,.25); }
+.exit-card h2 { margin:0 0 8px; font-size:24px; line-height:1.2; letter-spacing:-.02em; font-weight:800; }
+.exit-card p { margin:0 0 16px; color:#4f5c55; font-size:15.5px; line-height:1.55; }
+.exit-card input[type=email] { width:100%; min-height:46px; padding:11px 12px; font:inherit; font-size:16px; border:1px solid #c5cec9; border-radius:8px; margin-bottom:10px; background:#fff; color:#17211c; }
+.exit-card button.primary { width:100%; min-height:46px; border:0; border-radius:8px; background:#0b6b4b; color:#fff; font:inherit; font-weight:600; font-size:15px; cursor:pointer; }
+.exit-card button.primary:disabled { opacity:.6; cursor:wait; }
+.exit-card .exit-x { position:absolute; top:8px; right:8px; width:44px; height:44px; border:0; background:none; font-size:26px; line-height:1; color:#4f5c55; cursor:pointer; border-radius:8px; }
+.exit-card .exit-x:hover { background:#f1f4f2; }
+.exit-card .exit-skip { display:block; margin:12px auto 0; background:none; border:0; color:#4f5c55; font:inherit; font-size:14px; cursor:pointer; text-decoration:underline; min-height:44px; }
+.exit-card .exit-err { color:#b42318; font-size:14px; margin:0 0 8px; min-height:0; }
+.exit-card .exit-err:empty { display:none; }
+.exit-card ol { margin:0 0 16px; padding-left:20px; color:#17211c; font-size:15px; line-height:1.55; }
+.exit-card ol li { margin-bottom:6px; }
+@media (max-width:960px) {
+  #landing.lp .lp-pillars-in { grid-template-columns:minmax(0,1fr); }
+  #landing.lp .lp-pillar { border-right:0; border-bottom:1px solid var(--lp-line); padding:26px 4px; }
+  #landing.lp .lp-pillar:last-child { border-bottom:0; }
+  #landing.lp .lp-foot-top { grid-template-columns:1fr 1fr; }
+}
+@media (max-width:720px) {
+  #landing.lp .lp-sec { padding:60px 0; }
+  #landing.lp .lp-hero { padding:40px 0 40px; }
+  #landing.lp .lp-foot-top { grid-template-columns:minmax(0,1fr); gap:28px; }
+  #landing.lp .lp-foot { padding-top:44px; }
+}
+@media (prefers-reduced-motion:reduce) { button.ra-busy::after { animation-duration:1.6s; } }
+</style>
 </head>
 <body>
+<a class="skip-link" href="#top">Skip to main content</a>
 <svg width="0" height="0" style="position:absolute;overflow:hidden" aria-hidden="true" focusable="false">
     <defs>
-      <symbol id="i-logo" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="4" fill="currentColor" stroke="none"/><path d="M8 15.5v-3M12 15.5V8.5M16 15.5v-5" stroke="#fff" stroke-width="2" stroke-linecap="round" fill="none"/></symbol>
+      <symbol id="i-bolt" viewBox="0 0 24 24"><path d="M13 2 4 14h7l-1 8 9-12h-7z"/></symbol><symbol id="i-shieldcheck" viewBox="0 0 24 24"><path d="M12 3 5 6v6c0 4.2 2.9 7.4 7 9 4.1-1.6 7-4.8 7-9V6z"/><path d="m9 12 2.2 2.2L15.5 10"/></symbol><symbol id="i-plug" viewBox="0 0 24 24"><path d="M9 2v5M15 2v5M6 7h12v4a6 6 0 0 1-12 0z"/><path d="M12 17v5"/></symbol><symbol id="i-logo" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="4" fill="currentColor" stroke="none"/><path d="M8 15.5v-3M12 15.5V8.5M16 15.5v-5" stroke="#fff" stroke-width="2" stroke-linecap="round" fill="none"/></symbol>
       <symbol id="i-file" viewBox="0 0 24 24"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5M9 13h6M9 17h6"/></symbol>
       <symbol id="i-chat" viewBox="0 0 24 24"><path d="M21 12a8 8 0 0 1-11.6 7.1L4 20.5l1.4-4.6A8 8 0 1 1 21 12z"/></symbol>
       <symbol id="i-scale" viewBox="0 0 24 24"><path d="M12 4v16M6 20h12M5 7h14M5 7l-3 7a3.5 3.5 0 0 0 6 0zM19 7l-3 7a3.5 3.5 0 0 0 6 0z"/></symbol>
@@ -1003,8 +1093,8 @@ html[data-theme=dark] #app .ghost { background:var(--a-card); color:var(--a-ink)
     <div class="lp-wrap lp-hero-in">
       <div class="lp-hero-copy">
         <p class="lp-eyebrow">For ATM, POS and finance teams</p>
-        <h1>Match your reports and find what is missing.</h1>
-        <p class="lp-lead">Upload ATM, POS, ledger or bank statement files. Report Analyzer compares them, shows what does not match, and answers your questions in plain English. Every number is calculated from your data.</p>
+        <h1>Reconcile ATM and POS reports in minutes, not days.</h1>
+        <p class="lp-lead">Upload your switch log, ledger or bank statement. Report Analyzer matches every row, shows exactly what is missing or different, and answers your questions in plain English. No formulas, no accounting degree needed.</p>
         <div class="lp-actions">
           <a class="lp-btn lp-btn-primary" href="#lpLogin" data-goto-login>Request an account</a>
           <a class="lp-btn lp-btn-outline" href="#statement">See a sample check</a>
@@ -1056,6 +1146,14 @@ html[data-theme=dark] #app .ghost { background:var(--a-card); color:var(--a-ink)
           </div>
         </details>
       </div>
+    </div>
+  </section>
+
+  <section class="lp-pillars" aria-label="Why teams use Report Analyzer">
+    <div class="lp-wrap lp-pillars-in">
+      <div class="lp-pillar"><span class="lp-pillar-ic"><svg aria-hidden="true"><use href="#i-bolt"/></svg></span><div><h3>Fast</h3><p>Every row of two reports compared in seconds, not an afternoon of VLOOKUP.</p></div></div>
+      <div class="lp-pillar"><span class="lp-pillar-ic"><svg aria-hidden="true"><use href="#i-shieldcheck"/></svg></span><div><h3>Exact</h3><p>Every figure is calculated from your own data and cross-checked. Nothing is guessed.</p></div></div>
+      <div class="lp-pillar"><span class="lp-pillar-ic"><svg aria-hidden="true"><use href="#i-plug"/></svg></span><div><h3>Simple</h3><p>Works with the CSV, Excel and PDF files you already have. Nothing to install.</p></div></div>
     </div>
   </section>
 
@@ -1195,10 +1293,17 @@ html[data-theme=dark] #app .ghost { background:var(--a-card); color:var(--a-ink)
   </main>
 
   <footer class="lp-foot">
-    <div class="lp-wrap lp-foot-in">
-      <a class="lp-brand" href="#top"><svg class="lp-ic lp-logo-ic"><use href="#i-logo"/></svg><span>Report Analyzer</span></a>
-      <p>Built for teams that handle sensitive financial data.</p>
-      <p><a href="mailto:reconciliationsolutionsupport@gmail.com">reconciliationsolutionsupport@gmail.com</a> &middot; <a href="#" data-legal="terms">Terms</a> &middot; <a href="#" data-legal="privacy">Privacy</a></p>
+    <div class="lp-wrap">
+      <div class="lp-foot-top">
+        <div>
+          <a class="lp-brand" href="#top"><svg class="lp-ic lp-logo-ic" aria-hidden="true"><use href="#i-logo"/></svg><span>Report Analyzer</span></a>
+          <p>Reconcile ATM, POS and bank reports and check bank statements. Built for teams that handle sensitive financial data.</p>
+        </div>
+        <nav aria-label="Product"><h4>Product</h4><ul><li><a href="#features">Features</a></li><li><a href="#statement">Statement check</a></li><li><a href="#pricing">Pricing</a></li><li><a href="#faq">FAQ</a></li></ul></nav>
+        <nav aria-label="Legal"><h4>Legal</h4><ul><li><button type="button" class="lp-foot-btn" data-legal="terms">Terms of Service</button></li><li><button type="button" class="lp-foot-btn" data-legal="privacy">Privacy Policy</button></li></ul></nav>
+        <div><h4>Contact</h4><ul><li><a href="mailto:reconciliationsolutionsupport@gmail.com">reconciliationsolutionsupport@gmail.com</a></li><li><a href="#contact">Send us a message</a></li></ul></div>
+      </div>
+      <div class="lp-foot-bar"><span>&copy; <span id="ftYear">2026</span> Report Analyzer. All rights reserved.</span><span>Data encrypted &middot; Two-factor sign-in available</span></div>
     </div>
   </footer>
 </div>
@@ -1867,6 +1972,7 @@ html[data-theme=dark] #app .ghost { background:var(--a-card); color:var(--a-ink)
       <p>We keep your data while your account is active. You can ask us to delete your reports or your whole account at any time, and we will do so, including from backups in due course.</p>
       <h3>8. Your choices</h3>
       <p>You can ask to see, correct or delete your information. Email us at <a href="mailto:reconciliationsolutionsupport@gmail.com">reconciliationsolutionsupport@gmail.com</a> or write to us from the Support section after you sign in.</p>
+      <p>If website analytics is switched on, we count page visits (which page, device type, rough location) to improve the site. No report data is ever included.</p>
       <h3>9. Children</h3>
       <p>Report Analyzer is for businesses and is not meant for anyone under 18.</p>
       <h3>10. Changes</h3>
@@ -3582,6 +3688,95 @@ document.addEventListener("click", function (ev) {
   var t = document.getElementById("sbTheme"), l = document.getElementById("sbLogout");
   if (t) t.addEventListener("click", function () { var b = document.getElementById("themeBtn"); if (b) b.click(); });
   if (l) l.addEventListener("click", function () { var b = document.getElementById("logout"); if (b) b.click(); });
+})();
+</script>
+<div id="exitOffer" class="exit-back hidden" role="dialog" aria-modal="true" aria-labelledby="exitTitle">
+  <div class="exit-card">
+    <button type="button" class="exit-x" id="exitClose" aria-label="Close">&times;</button>
+    <div id="exitAsk">
+      <h2 id="exitTitle">Before you go: a free reconciliation checklist</h2>
+      <p>The 8 checks finance teams run every month to catch missing ATM and POS transactions. Enter your email and get it now. We will only use it to send you useful updates.</p>
+      <label class="lp-sr" for="exitEmail" style="position:absolute;left:-9999px">Email address</label>
+      <input type="email" id="exitEmail" placeholder="Your email address" autocomplete="email" maxlength="160">
+      <input type="text" id="exitWebsite" tabindex="-1" autocomplete="off" aria-hidden="true" style="position:absolute;left:-9999px;width:1px;height:1px;opacity:0">
+      <div class="exit-err" id="exitErr" role="alert"></div>
+      <button type="button" class="primary" id="exitGo">Send me the checklist</button>
+      <button type="button" class="exit-skip" id="exitNo">No thanks</button>
+    </div>
+    <div id="exitDone" class="hidden">
+      <h2>Your checklist</h2>
+      <ol>
+        <li>Agree the period and time zone of both reports before you compare anything.</li>
+        <li>Confirm the totals: count and value of transactions in each report.</li>
+        <li>Match on a unique reference (RRN or STAN plus terminal ID), not on amount alone.</li>
+        <li>List items in the switch log that are missing from the ledger, and the reverse.</li>
+        <li>Check matched items for amount differences, including charges and fees.</li>
+        <li>Look at reversals and failed transactions, and confirm each was reversed once.</li>
+        <li>Flag duplicates: the same reference, terminal and amount more than once.</li>
+        <li>Record each exception with an owner and a date, and re-check it next cycle.</li>
+      </ol>
+      <button type="button" class="primary" id="exitDl">Download as a text file</button>
+      <button type="button" class="exit-skip" id="exitClose2">Close</button>
+    </div>
+  </div>
+</div>
+<script>
+/* footer year, button spinners, exit-intent offer (desktop, once per visit, never when signed in) */
+(function () {
+  var y = document.getElementById("ftYear"); if (y) y.textContent = new Date().getFullYear();
+
+  /* spinner: a button that the page disables while it works shows a small spinner */
+  try {
+    var timers = new WeakMap();
+    new MutationObserver(function (list) {
+      list.forEach(function (m) {
+        var b = m.target; if (!b || b.tagName !== "BUTTON") return;
+        if (b.disabled && m.oldValue === null) {
+          b.classList.add("ra-busy");
+          clearTimeout(timers.get(b)); timers.set(b, setTimeout(function () { b.classList.remove("ra-busy"); }, 60000));
+        } else if (!b.disabled) { b.classList.remove("ra-busy"); clearTimeout(timers.get(b)); }
+      });
+    }).observe(document.body, { subtree: true, attributes: true, attributeFilter: ["disabled"], attributeOldValue: true });
+  } catch (e) {}
+
+  /* exit-intent */
+  var KEY = "ra_exit_seen", box = document.getElementById("exitOffer"); if (!box) return;
+  function seen() { try { return sessionStorage.getItem(KEY) === "1" || localStorage.getItem(KEY) === "1"; } catch (e) { return false; } }
+  function mark(longer) { try { sessionStorage.setItem(KEY, "1"); if (longer) localStorage.setItem(KEY, "1"); } catch (e) {} }
+  var opened = false, lastFocus = null;
+  function open() {
+    var land = document.getElementById("landing");
+    if (opened || seen() || !land || land.classList.contains("hidden")) return;
+    if (document.querySelector(".legal:not(.hidden)")) return;
+    opened = true; mark(false); lastFocus = document.activeElement;
+    box.classList.remove("hidden"); var e = document.getElementById("exitEmail"); if (e) e.focus();
+  }
+  function close() { box.classList.add("hidden"); mark(true); if (lastFocus && lastFocus.focus) try { lastFocus.focus(); } catch (e) {} }
+  ["exitClose", "exitClose2", "exitNo"].forEach(function (id) { var el = document.getElementById(id); if (el) el.addEventListener("click", close); });
+  box.addEventListener("click", function (ev) { if (ev.target === box) close(); });
+  document.addEventListener("keydown", function (ev) { if (ev.key === "Escape" && !box.classList.contains("hidden")) close(); });
+  var canHover = window.matchMedia && window.matchMedia("(hover:hover) and (pointer:fine)").matches;
+  var armed = false; setTimeout(function () { armed = true; }, 15000);   /* not in the first 15 seconds */
+  if (canHover) document.documentElement.addEventListener("mouseleave", function (ev) { if (armed && ev.clientY <= 0) open(); });
+  var CHECK = "RECONCILIATION CHECKLIST (ATM / POS)\n\n1. Agree the period and time zone of both reports before you compare anything.\n2. Confirm the totals: count and value of transactions in each report.\n3. Match on a unique reference (RRN or STAN plus terminal ID), not on amount alone.\n4. List items in the switch log that are missing from the ledger, and the reverse.\n5. Check matched items for amount differences, including charges and fees.\n6. Look at reversals and failed transactions, and confirm each was reversed once.\n7. Flag duplicates: the same reference, terminal and amount more than once.\n8. Record each exception with an owner and a date, and re-check it next cycle.\n\nReport Analyzer does steps 2 to 7 for you in seconds.";
+  var go = document.getElementById("exitGo");
+  if (go) go.addEventListener("click", async function () {
+    var em = (document.getElementById("exitEmail").value || "").trim(), err = document.getElementById("exitErr"); err.textContent = "";
+    if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(em)) { err.textContent = "Please enter a valid email address."; return; }
+    go.disabled = true;
+    try {
+      var r = await fetch("/api/public/contact", { method: "POST", headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name: "Checklist request", email: em, company: "", message: "Asked for the free reconciliation checklist (exit offer).", website: document.getElementById("exitWebsite").value }) });
+      if (!r.ok) { var m = "Something went wrong. Please try again."; try { var d = await r.json(); if (typeof d.detail === "string") m = d.detail; } catch (e) {} throw new Error(m); }
+      document.getElementById("exitAsk").classList.add("hidden"); document.getElementById("exitDone").classList.remove("hidden"); mark(true);
+    } catch (e) { err.textContent = e.message || "Something went wrong."; }
+    finally { go.disabled = false; }
+  });
+  var dl = document.getElementById("exitDl");
+  if (dl) dl.addEventListener("click", function () {
+    var a = document.createElement("a"); a.href = URL.createObjectURL(new Blob([CHECK], { type: "text/plain" })); a.download = "reconciliation-checklist.txt";
+    document.body.appendChild(a); a.click(); a.remove();
+  });
 })();
 </script>
 </body>
