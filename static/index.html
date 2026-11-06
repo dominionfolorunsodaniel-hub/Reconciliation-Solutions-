@@ -3,16 +3,16 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta name="theme-color" content="#ffffff">
+<meta name="theme-color" content="#0b5ce6">
 <link rel="manifest" href="/manifest.webmanifest">
 <link rel="apple-touch-icon" href="/static/apple-touch-icon.png">
 <meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="Report Analyzer"><meta name="apple-mobile-web-app-status-bar-style" content="default">
-<title>Report Analyzer - turn any report into answers</title>
+<title>Reconciliation Solutions - turn any report into answers</title>
 <meta name="description" content="Report Analyzer reconciles ATM, POS and bank reports in seconds, checks bank statements, and answers questions about your data in plain English. Built for finance and operations teams in Nigeria.">
 <link rel="canonical" href="__BASE__/">
-<meta property="og:type" content="website"><meta property="og:site_name" content="Report Analyzer">
-<meta property="og:title" content="Report Analyzer - turn any report into answers">
+<meta property="og:type" content="website"><meta property="og:site_name" content="Reconciliation Solutions">
+<meta property="og:title" content="Reconciliation Solutions - turn any report into answers">
 <meta property="og:description" content="Report Analyzer reconciles ATM, POS and bank reports in seconds, checks bank statements, and answers questions about your data in plain English. Built for finance and operations teams in Nigeria.">
 <meta property="og:url" content="__BASE__/"><meta property="og:image" content="__BASE__/static/icon-512.png">
 <meta name="twitter:card" content="summary"><meta name="twitter:title" content="Report Analyzer - turn any report into answers">
@@ -548,8 +548,8 @@
 <style id="lp-css">
 /* ============ LANDING (light, one brand colour) ============ */
 #landing.lp {
-  --lp-brand:#0b6b4b; --lp-brand-dark:#085a3f; --lp-tint:#e9f3ee;
-  --lp-ink:#17211c; --lp-mute:#56635c; --lp-line:#dde3df; --lp-bg:#ffffff; --lp-alt:#f5f7f6; --lp-err:#b42318;
+  --lp-brand:#0b5ce6; --lp-brand-dark:#0847b8; --lp-tint:#eaf1ff;
+  --lp-ink:#0b1b3f; --lp-mute:#4a5878; --lp-line:#dbe3f2; --lp-bg:#ffffff; --lp-alt:#f4f7fd; --lp-err:#b42318;
   min-height:0; background:var(--lp-bg); color:var(--lp-ink); overflow:visible; position:static;
   font:16px/1.6 system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
   -webkit-text-size-adjust:100%; text-size-adjust:100%; -webkit-font-smoothing:antialiased;
@@ -576,7 +576,7 @@ html { scroll-behavior:smooth; scroll-padding-top:72px; }
 }
 #landing.lp button:hover, #landing.lp .lp-btn:hover { transform:none; box-shadow:none; background:var(--lp-brand-dark); }
 #landing.lp .lp-btn-primary { background:var(--lp-brand); color:#fff; }
-#landing.lp .lp-btn-outline, #landing.lp .lp-btn-quiet { background:#fff; color:var(--lp-ink); border-color:#c5cec9; }
+#landing.lp .lp-btn-outline, #landing.lp .lp-btn-quiet { background:#fff; color:var(--lp-ink); border-color:#c5d0e6; }
 #landing.lp .lp-btn-outline:hover, #landing.lp .lp-btn-quiet:hover { background:var(--lp-alt); border-color:#9eaaa4; }
 #landing.lp .lp-btn-quiet { min-height:40px; padding:8px 16px; }
 #landing.lp .lp-full { width:100%; }
@@ -586,15 +586,15 @@ html { scroll-behavior:smooth; scroll-padding-top:72px; }
 /* form fields: 16px stops iOS Safari zooming in on focus */
 #landing.lp input[type=text], #landing.lp input[type=password], #landing.lp input[type=email], #landing.lp input[type=number], #landing.lp textarea {
   -webkit-appearance:none; appearance:none; width:100%; min-width:0; flex:none; min-height:46px; padding:11px 12px; font:inherit; font-size:16px; color:var(--lp-ink);
-  background:#fff; border:1px solid #c5cec9; border-radius:8px; box-shadow:none;
+  background:#fff; border:1px solid #c5d0e6; border-radius:8px; box-shadow:none;
 }
 #landing.lp textarea { resize:vertical; min-height:110px; }
 #landing.lp input::placeholder, #landing.lp textarea::placeholder { color:#7a867f; opacity:1; }
-#landing.lp input:focus, #landing.lp textarea:focus { border-color:var(--lp-brand); outline:2px solid rgba(11,107,75,.25); outline-offset:0; }
+#landing.lp input:focus, #landing.lp textarea:focus { border-color:var(--lp-brand); outline:2px solid rgba(11,92,230,.25); outline-offset:0; }
 #landing.lp .hp-field { position:absolute !important; left:-9999px !important; width:1px !important; height:1px !important; opacity:0; }
 #landing.lp .password-field { display:flex; gap:6px; align-items:stretch; width:100%; flex:none; }
 #landing.lp .password-field input { flex:1 1 auto; width:auto; }
-#landing.lp .password-toggle { flex:0 0 auto; min-height:46px; padding:0 14px; background:#fff; color:var(--lp-ink); border:1px solid #c5cec9; font-size:14px; font-weight:600; }
+#landing.lp .password-toggle { flex:0 0 auto; min-height:46px; padding:0 14px; background:#fff; color:var(--lp-ink); border:1px solid #c5d0e6; font-size:14px; font-weight:600; }
 #landing.lp .password-toggle:hover { background:var(--lp-alt); }
 
 /* nav */
@@ -758,16 +758,16 @@ html { scroll-behavior:smooth; scroll-padding-top:72px; }
 
 <style id="app-theme">
 /* ============ DASHBOARD THEME (light, one brand colour; replaces the older dark-blue styling) ============ */
-html { --a-brand:#0b6b4b; --a-brand-dark:#085a3f; --a-tint:#e9f3ee; --a-ink:#17211c; --a-mute:#5b6760; --a-line:#dde3df; --a-bg:#f5f7f6; --a-card:#ffffff; --a-soft:#f1f4f2; --a-err:#b42318; --a-warn:#b54708; --a-field:#ffffff; --a-fieldline:#c5cec9; }
-html[data-theme=dark] { --a-brand:#4cc19a; --a-brand-dark:#6fd2b2; --a-tint:#16322a; --a-ink:#e6ece9; --a-mute:#9aa8a1; --a-line:#2a3732; --a-bg:#0f1512; --a-card:#16201c; --a-soft:#1b2722; --a-err:#f2877b; --a-warn:#f0b36b; --a-field:#101a16; --a-fieldline:#33423b; }
-:root { --brand:#0b6b4b; --brand2:#0b6b4b; --ink:var(--a-ink); --mute:var(--a-mute); --line:var(--a-line); --card:var(--a-card); --bg:var(--a-bg); }
+html { --a-brand:#0b5ce6; --a-brand-dark:#0847b8; --a-tint:#eaf1ff; --a-ink:#0b1b3f; --a-mute:#55627f; --a-line:#dbe3f2; --a-bg:#f4f7fd; --a-card:#ffffff; --a-soft:#f1f5fc; --a-err:#b42318; --a-warn:#b54708; --a-field:#ffffff; --a-fieldline:#c5d0e6; }
+html[data-theme=dark] { --a-brand:#6ea8ff; --a-brand-dark:#8dbaff; --a-tint:#14264d; --a-ink:#e6ecf8; --a-mute:#9fb0d3; --a-line:#26335a; --a-bg:#0c1426; --a-card:#121c35; --a-soft:#17233f; --a-err:#f2877b; --a-warn:#f0b36b; --a-field:#0e1730; --a-fieldline:#34416a; }
+:root { --brand:#0b5ce6; --brand2:#0b5ce6; --ink:var(--a-ink); --mute:var(--a-mute); --line:var(--a-line); --card:var(--a-card); --bg:var(--a-bg); }
 body { background:var(--a-bg); color:var(--a-ink); -webkit-text-size-adjust:100%; text-size-adjust:100%; }
 #app { font-size:15px; color:var(--a-ink); }
 #app .svg-ic, .svg-ic { width:18px; height:18px; flex:0 0 18px; fill:none; stroke:currentColor; stroke-width:1.7; stroke-linecap:round; stroke-linejoin:round; }
 
 /* buttons */
 #app button, .legal button, .v2-tour-card button, .bell-panel button { -webkit-appearance:none; appearance:none; border:1px solid transparent; border-radius:8px; background:var(--a-brand); color:#fff; box-shadow:none; font-weight:600; min-height:38px; transform:none; }
-html[data-theme=dark] #app button:not(.ghost):not(.danger):not(.chip):not(.d-chip):not(.d-link):not(.sb-item):not(.sb-q) { color:#0b1511; }
+html[data-theme=dark] #app button:not(.ghost):not(.danger):not(.chip):not(.d-chip):not(.d-link):not(.sb-item):not(.sb-q) { color:#07112b; }
 #app button:hover, .legal button:hover { transform:none; box-shadow:none; background:var(--a-brand-dark); }
 #app button.ghost, #app .ghost { background:var(--a-card); color:var(--a-ink); border:1px solid var(--a-fieldline); }
 #app button.ghost:hover { background:var(--a-soft); }
@@ -783,7 +783,7 @@ html[data-theme=dark] #app button:not(.ghost):not(.danger):not(.chip):not(.d-chi
   -webkit-appearance:none; appearance:none; font-size:16px; min-height:42px; padding:9px 12px; border:1px solid var(--a-fieldline); border-radius:8px; background:var(--a-field) !important; color:var(--a-ink) !important; box-shadow:none; }
 #app select { background-image:none; padding-right:12px; }
 #app input[type=checkbox], #app input[type=radio] { accent-color:var(--a-brand); }
-#app input:focus, #app select:focus, #app textarea:focus { outline:2px solid rgba(11,107,75,.28); border-color:var(--a-brand) !important; }
+#app input:focus, #app select:focus, #app textarea:focus { outline:2px solid rgba(11,92,230,.28); border-color:var(--a-brand) !important; }
 #app input::placeholder, #app textarea::placeholder { color:#7a867f; opacity:1; }
 #app .password-toggle { background:var(--a-card) !important; color:var(--a-ink) !important; border:1px solid var(--a-fieldline) !important; min-height:42px; }
 
@@ -807,11 +807,11 @@ html[data-theme=dark] #app button:not(.ghost):not(.danger):not(.chip):not(.d-chi
 #v2Sidebar .sb-btn { all:unset; box-sizing:border-box; display:inline-flex; align-items:center; justify-content:center; min-height:36px; padding:0 16px; border-radius:8px; background:var(--a-card); color:var(--a-ink); border:1px solid var(--a-fieldline); font-weight:600; font-size:14px; cursor:pointer; }
 #v2Sidebar .sb-btn:hover { background:var(--a-soft); }
 #v2Sidebar .sb-plan .sb-btn { background:var(--a-brand); color:#fff; border-color:transparent; }
-html[data-theme=dark] #v2Sidebar .sb-plan .sb-btn { color:#0b1511; }
+html[data-theme=dark] #v2Sidebar .sb-plan .sb-btn { color:#07112b; }
 #v2Sidebar .sb-bar { background:var(--a-line); } #v2Sidebar .sb-bar i { background:var(--a-brand); }
 #v2Sidebar .sb-ver, #v2Sidebar .sb-ver a { color:var(--a-mute); }
 .sb-count, .bell-badge, .news-new { background:var(--a-brand) !important; color:#fff !important; }
-html[data-theme=dark] .sb-count, html[data-theme=dark] .bell-badge, html[data-theme=dark] .news-new { color:#0b1511 !important; }
+html[data-theme=dark] .sb-count, html[data-theme=dark] .bell-badge, html[data-theme=dark] .news-new { color:#07112b !important; }
 
 /* top bar */
 #app header.app { background:var(--a-card); color:var(--a-ink); border-bottom:1px solid var(--a-line); box-shadow:none; }
@@ -821,7 +821,7 @@ html[data-theme=dark] .sb-count, html[data-theme=dark] .bell-badge, html[data-th
 #app header.app .who, .who-chip .who { color:var(--a-ink); }
 .who-chip { background:var(--a-soft) !important; border:1px solid var(--a-line) !important; }
 .avatar { background:var(--a-brand) !important; color:#fff; }
-html[data-theme=dark] .avatar { color:#0b1511; }
+html[data-theme=dark] .avatar { color:#07112b; }
 .app-search { background:var(--a-field); border:1px solid var(--a-fieldline); border-radius:8px; color:var(--a-mute); }
 .app-search input { border:0 !important; background:transparent !important; min-height:36px; }
 .app-search svg { width:18px; height:18px; margin-left:10px; color:var(--a-mute); }
@@ -959,11 +959,11 @@ html, body, #landing.lp, #app, #app button, #app input, #app select, #app textar
 }
 body { font-feature-settings:"cv11","ss01"; }
 /* skip link */
-.skip-link { position:absolute; left:12px; top:-60px; z-index:100; background:#0b6b4b; color:#fff; padding:10px 16px; border-radius:8px; font-weight:600; text-decoration:none; }
+.skip-link { position:absolute; left:12px; top:-60px; z-index:100; background:#0b5ce6; color:#fff; padding:10px 16px; border-radius:8px; font-weight:600; text-decoration:none; }
 .skip-link:focus { top:12px; }
 /* contrast: placeholders and muted text pass 4.5:1 */
-#landing.lp input::placeholder, #landing.lp textarea::placeholder, #app input::placeholder, #app textarea::placeholder { color:#66726b; opacity:1; }
-#landing.lp { --lp-mute:#4f5c55; }
+#landing.lp input::placeholder, #landing.lp textarea::placeholder, #app input::placeholder, #app textarea::placeholder { color:#5f6d8c; opacity:1; }
+#landing.lp { --lp-mute:#4a5878; }
 /* more air */
 #landing.lp .lp-sec { padding:88px 0; }
 #landing.lp .lp-hero { padding:72px 0 64px; }
@@ -973,9 +973,9 @@ body { font-feature-settings:"cv11","ss01"; }
 #landing.lp .lp-lead { font-size:19px; line-height:1.55; }
 #landing.lp .lp-eyebrow { display:inline-flex; align-items:center; gap:8px; background:var(--lp-tint); padding:5px 12px; border-radius:999px; font-size:13px; letter-spacing:.01em; }
 #landing.lp .lp-card { transition:border-color .15s, box-shadow .15s; }
-#landing.lp .lp-card:hover { border-color:#b7c7be; box-shadow:0 6px 18px rgba(20,32,27,.06); }
+#landing.lp .lp-card:hover { border-color:#b3c6ec; box-shadow:0 6px 18px rgba(20,32,27,.06); }
 #landing.lp .lp-login { box-shadow:0 12px 32px rgba(20,32,27,.08); }
-#landing.lp .lp-btn-primary:active, #landing.lp button:active { background:#074b34; }
+#landing.lp .lp-btn-primary:active, #landing.lp button:active { background:#0847b8; }
 /* 44px minimum tap targets */
 #landing.lp .lp-links a, #landing.lp .lp-foot a, #landing.lp .lp-details summary { display:inline-flex; align-items:center; min-height:44px; }
 #landing.lp .lp-foot ul a { min-height:28px; font-size:14.5px; }
@@ -990,18 +990,18 @@ body { font-feature-settings:"cv11","ss01"; }
 #landing.lp .lp-pillar h3 { font-size:18px; font-weight:700; letter-spacing:-.01em; margin-bottom:4px; }
 #landing.lp .lp-pillar p { color:var(--lp-mute); font-size:15px; }
 /* dark footer */
-#landing.lp .lp-foot { background:#0f1a15; color:#aebbb4; border-top:0; padding:64px 0 0; font-size:15px; }
-#landing.lp .lp-foot a { color:#d7e2dc; text-decoration:none; }
+#landing.lp .lp-foot { background:#08153a; color:#b4c0e0; border-top:0; padding:64px 0 0; font-size:15px; }
+#landing.lp .lp-foot a { color:#dbe4ff; text-decoration:none; }
 #landing.lp .lp-foot a:hover { color:#fff; text-decoration:underline; }
 #landing.lp .lp-foot-top { display:grid; grid-template-columns:1.3fr .8fr .8fr 1.6fr; gap:40px; padding-bottom:44px; }
 #landing.lp .lp-foot .lp-brand { color:#fff; margin-bottom:12px; }
-#landing.lp .lp-foot .lp-logo-ic { color:#4cc19a; }
+#landing.lp .lp-foot .lp-logo-ic { color:#6ea8ff; }
 #landing.lp .lp-foot h4 { color:#fff; font-size:13px; letter-spacing:.08em; text-transform:uppercase; font-weight:700; margin:0 0 14px; }
 #landing.lp .lp-foot ul { display:grid; gap:6px; }
 #landing.lp .lp-foot p { max-width:300px; }
-#landing.lp .lp-foot-bar { border-top:1px solid #24342c; padding:20px 0 28px; display:flex; flex-wrap:wrap; gap:8px 24px; justify-content:space-between; font-size:13.5px; color:#8a9a92; }
-#landing.lp .lp-foot-bar a { color:#c5d3cb; }
-#landing.lp .lp-foot-btn { background:none !important; border:0 !important; padding:0 !important; min-height:0 !important; color:#d7e2dc !important; font:inherit; font-weight:400 !important; cursor:pointer; text-align:left; }
+#landing.lp .lp-foot-bar { border-top:1px solid #1c2c5c; padding:20px 0 28px; display:flex; flex-wrap:wrap; gap:8px 24px; justify-content:space-between; font-size:13.5px; color:#8e9bc4; }
+#landing.lp .lp-foot-bar a { color:#c9d3f2; }
+#landing.lp .lp-foot-btn { background:none !important; border:0 !important; padding:0 !important; min-height:0 !important; color:#dbe4ff !important; font:inherit; font-weight:400 !important; cursor:pointer; text-align:left; }
 #landing.lp .lp-foot-btn:hover { color:#fff !important; text-decoration:underline; background:none !important; }
 /* busy spinner on buttons that the page disables while it works */
 @keyframes ra-spin { to { transform:rotate(360deg); } }
@@ -1010,18 +1010,18 @@ button.ra-busy::after { content:""; display:inline-block; width:14px; height:14p
 /* exit offer */
 .exit-back { position:fixed; inset:0; z-index:90; background:rgba(15,26,21,.55); display:flex; align-items:center; justify-content:center; padding:16px; }
 .exit-back.hidden { display:none; }
-.exit-card { position:relative; width:100%; max-width:460px; background:#fff; color:#17211c; border-radius:14px; padding:32px 28px 26px; box-shadow:0 24px 60px rgba(0,0,0,.25); }
+.exit-card { position:relative; width:100%; max-width:460px; background:#fff; color:#0b1b3f; border-radius:14px; padding:32px 28px 26px; box-shadow:0 24px 60px rgba(0,0,0,.25); }
 .exit-card h2 { margin:0 0 8px; font-size:24px; line-height:1.2; letter-spacing:-.02em; font-weight:800; }
-.exit-card p { margin:0 0 16px; color:#4f5c55; font-size:15.5px; line-height:1.55; }
-.exit-card input[type=email] { width:100%; min-height:46px; padding:11px 12px; font:inherit; font-size:16px; border:1px solid #c5cec9; border-radius:8px; margin-bottom:10px; background:#fff; color:#17211c; }
-.exit-card button.primary { width:100%; min-height:46px; border:0; border-radius:8px; background:#0b6b4b; color:#fff; font:inherit; font-weight:600; font-size:15px; cursor:pointer; }
+.exit-card p { margin:0 0 16px; color:#4a5878; font-size:15.5px; line-height:1.55; }
+.exit-card input[type=email] { width:100%; min-height:46px; padding:11px 12px; font:inherit; font-size:16px; border:1px solid #c5d0e6; border-radius:8px; margin-bottom:10px; background:#fff; color:#0b1b3f; }
+.exit-card button.primary { width:100%; min-height:46px; border:0; border-radius:8px; background:#0b5ce6; color:#fff; font:inherit; font-weight:600; font-size:15px; cursor:pointer; }
 .exit-card button.primary:disabled { opacity:.6; cursor:wait; }
-.exit-card .exit-x { position:absolute; top:8px; right:8px; width:44px; height:44px; border:0; background:none; font-size:26px; line-height:1; color:#4f5c55; cursor:pointer; border-radius:8px; }
-.exit-card .exit-x:hover { background:#f1f4f2; }
-.exit-card .exit-skip { display:block; margin:12px auto 0; background:none; border:0; color:#4f5c55; font:inherit; font-size:14px; cursor:pointer; text-decoration:underline; min-height:44px; }
+.exit-card .exit-x { position:absolute; top:8px; right:8px; width:44px; height:44px; border:0; background:none; font-size:26px; line-height:1; color:#4a5878; cursor:pointer; border-radius:8px; }
+.exit-card .exit-x:hover { background:#f1f5fc; }
+.exit-card .exit-skip { display:block; margin:12px auto 0; background:none; border:0; color:#4a5878; font:inherit; font-size:14px; cursor:pointer; text-decoration:underline; min-height:44px; }
 .exit-card .exit-err { color:#b42318; font-size:14px; margin:0 0 8px; min-height:0; }
 .exit-card .exit-err:empty { display:none; }
-.exit-card ol { margin:0 0 16px; padding-left:20px; color:#17211c; font-size:15px; line-height:1.55; }
+.exit-card ol { margin:0 0 16px; padding-left:20px; color:#0b1b3f; font-size:15px; line-height:1.55; }
 .exit-card ol li { margin-bottom:6px; }
 @media (max-width:960px) {
   #landing.lp .lp-pillars-in { grid-template-columns:minmax(0,1fr); }
@@ -1045,15 +1045,15 @@ button.ra-busy::after { content:""; display:inline-block; width:14px; height:14p
 #landing.lp .rv.rv-in { opacity:1; transform:none; }
 #landing.lp .lp-nav { transition:box-shadow .2s, background-color .2s; }
 #landing.lp .lp-nav.is-scrolled { box-shadow:0 4px 18px rgba(20,32,27,.08); background:rgba(255,255,255,.94); -webkit-backdrop-filter:saturate(1.4) blur(8px); backdrop-filter:saturate(1.4) blur(8px); }
-#landing.lp .lp-btn:hover, #landing.lp .lp-sample button:hover { transform:translateY(-1px); box-shadow:0 4px 12px rgba(11,107,75,.18); }
+#landing.lp .lp-btn:hover, #landing.lp .lp-sample button:hover { transform:translateY(-1px); box-shadow:0 4px 12px rgba(11,92,230,.18); }
 #landing.lp .lp-btn-outline:hover, #landing.lp .lp-btn-quiet:hover { box-shadow:0 4px 12px rgba(20,32,27,.08); }
 #landing.lp .lp-btn:active { transform:none; box-shadow:none; }
-html { scrollbar-width:thin; scrollbar-color:#9fb5aa transparent; }
+html { scrollbar-width:thin; scrollbar-color:#9fb3dd transparent; }
 ::-webkit-scrollbar { width:10px; height:10px; }
 ::-webkit-scrollbar-track { background:transparent; }
-::-webkit-scrollbar-thumb { background:#b9c9c0; border-radius:8px; border:2px solid transparent; background-clip:padding-box; }
-::-webkit-scrollbar-thumb:hover { background:#8fa89b; background-clip:padding-box; border:2px solid transparent; }
-html[data-theme=dark] ::-webkit-scrollbar-thumb { background:#3a4b43; background-clip:padding-box; }
+::-webkit-scrollbar-thumb { background:#b8c7e6; border-radius:8px; border:2px solid transparent; background-clip:padding-box; }
+::-webkit-scrollbar-thumb:hover { background:#8aa3d6; background-clip:padding-box; border:2px solid transparent; }
+html[data-theme=dark] ::-webkit-scrollbar-thumb { background:#34416a; background-clip:padding-box; }
 .mic-btn { flex:0 0 auto; min-width:44px; padding:0 12px !important; display:inline-flex; align-items:center; justify-content:center; }
 .mic-btn svg { width:18px; height:18px; fill:none; stroke:currentColor; stroke-width:1.8; stroke-linecap:round; stroke-linejoin:round; }
 .mic-btn.on { border-color:#b42318 !important; color:#b42318 !important; }
@@ -1099,12 +1099,131 @@ button:not(:disabled):active, .lp-btn:active { transform:scale(.98); }
 input:not([type=checkbox]):not([type=radio]):not([type=file]):not([type=color]):not(:placeholder-shown):user-valid { border-color:#1f8a5f; box-shadow:0 0 0 3px rgba(31,138,95,.12); }
 input:not([type=checkbox]):not([type=radio]):not([type=file]):not([type=color]):not(:placeholder-shown):user-invalid { border-color:#b42318; box-shadow:0 0 0 3px rgba(180,35,24,.12); }
 </style>
+<style id="blue">
+/* ===== BLUE REBRAND (from the Reconciliation Solutions mockup) ===== */
+#landing.lp .lp-logo-ic, .hdr-brand svg, .sb-logo svg { fill:currentColor; }
+#landing.lp .lp-logo-ic { color:var(--lp-brand); }
+#landing.lp .lp-brand { display:inline-flex; align-items:center; gap:10px; font-weight:800; color:var(--lp-ink); text-decoration:none; }
+#landing.lp .lp-brand-t { font-size:14.5px; line-height:1.1; letter-spacing:-.01em; }
+#landing.lp .lp-logo-ic { width:36px; height:36px; flex-basis:36px; }
+#landing.lp .lp-links { margin-left:auto; gap:28px; }
+#landing.lp .lp-links a { font-weight:500; position:relative; }
+#landing.lp .lp-links a.is-on { color:var(--lp-brand); font-weight:600; }
+#landing.lp .lp-links a.is-on::after { content:""; position:absolute; left:0; right:0; bottom:6px; height:2px; background:var(--lp-brand); border-radius:2px; }
+#landing.lp .lp-nav-cta { display:flex; gap:10px; align-items:center; }
+#landing.lp .lp-btn { border-radius:999px; font-weight:600; }
+#landing.lp .lp-btn-outline { background:#fff !important; color:var(--lp-brand) !important; border:1.5px solid var(--lp-brand) !important; }
+#landing.lp .lp-btn-outline:hover { background:var(--lp-tint) !important; }
+#landing.lp .lp-btn-light { background:#fff !important; color:#08153a !important; border:0; }
+#landing.lp .lp-btn-light:hover { background:#eaf1ff !important; }
+#landing.lp .lp-btn .lp-ic { width:16px; height:16px; margin-right:6px; }
+#landing.lp .lp-hero { background:linear-gradient(180deg,#f4f8ff 0%,#fff 100%); padding:56px 0 40px; }
+#landing.lp .lp-hero-in { grid-template-columns:minmax(0,1fr) minmax(0,1fr); align-items:center; gap:32px; }
+#landing.lp h1 { font-size:clamp(34px,4.5vw,56px); text-wrap:balance; line-height:1.06; letter-spacing:-.035em; font-weight:800; color:#08153a; }
+#landing.lp .lp-hl { color:var(--lp-brand); display:block; }
+#landing.lp .lp-eyebrow { background:#eaf1ff; color:#0847b8; font-weight:600; }
+#landing.lp .lp-eyebrow .lp-ic { width:14px; height:14px; }
+#landing.lp .lp-actions { gap:12px; flex-wrap:wrap; }
+/* hero picture */
+#landing.lp .lp-hero-art { position:relative; min-height:380px; perspective:1400px; }
+#landing.lp .lp-glass { position:absolute; border-radius:26px; background:linear-gradient(160deg,rgba(11,92,230,.16),rgba(11,92,230,.05)); border:1px solid rgba(11,92,230,.14); }
+#landing.lp .lp-glass.g1 { inset:6% 3% 14% 22%; transform:rotate(4deg); }
+#landing.lp .lp-glass.g2 { inset:18% 14% 4% 8%; transform:rotate(-3deg); background:rgba(11,92,230,.08); }
+#landing.lp .lp-device { position:absolute; left:8%; right:8%; top:14%; padding:12px; border-radius:22px; background:#0d1f4f; box-shadow:0 30px 60px rgba(8,21,58,.28); transform:rotateY(-12deg) rotateX(5deg) rotateZ(-2deg); }
+#landing.lp .lp-screen { background:#fff; border-radius:12px; padding:14px 14px 8px; }
+#landing.lp .lp-scr-top { display:flex; justify-content:space-between; align-items:center; margin-bottom:6px; font-size:13px; color:#08153a; }
+#landing.lp .lp-scr-top span { font-size:11px; color:#0847b8; background:#eaf1ff; padding:2px 8px; border-radius:999px; font-weight:600; }
+#landing.lp .lp-screen svg { width:100%; height:auto; display:block; }
+#landing.lp .lp-float { position:absolute; right:2%; top:4%; display:flex; align-items:center; gap:10px; padding:12px 16px; background:#08153a; color:#fff; border-radius:14px; box-shadow:0 16px 34px rgba(8,21,58,.3); }
+#landing.lp .lp-float .ok { width:36px; height:36px; border-radius:50%; background:#17a35a; display:grid; place-items:center; }
+#landing.lp .lp-float .ok svg { width:22px; height:22px; stroke:#fff; fill:none; stroke-width:2; }
+#landing.lp .lp-float b { display:block; font-size:17px; } #landing.lp .lp-float small { color:#b4c0e0; font-size:12px; }
+/* badges */
+#landing.lp .lp-badges { padding:8px 0 32px; background:#fff; }
+#landing.lp .lp-badges-in { display:flex; justify-content:space-around; flex-wrap:wrap; gap:12px 24px; padding:18px 24px; background:#f1f5fd; border-radius:999px; font-weight:600; color:#0b1b3f; }
+#landing.lp .lp-badges-in span { display:inline-flex; align-items:center; gap:10px; }
+#landing.lp .lp-badges-in .lp-ic { width:22px; height:22px; color:var(--lp-brand); fill:none; stroke:currentColor; stroke-width:1.8; }
+/* headings */
+#landing.lp .lp-kicker { text-transform:uppercase; letter-spacing:.12em; font-size:12.5px; font-weight:700; color:var(--lp-brand); margin-bottom:8px; }
+#landing.lp .lp-ic-bubble { width:48px; height:48px; border-radius:50%; background:var(--lp-tint); color:var(--lp-brand); display:grid; place-items:center; margin-bottom:14px; }
+#landing.lp .lp-ic-bubble svg { width:24px; height:24px; fill:none; stroke:currentColor; stroke-width:1.8; stroke-linecap:round; stroke-linejoin:round; }
+/* steps */
+#landing.lp .lp-steps-v { display:grid; grid-template-columns:1fr auto 1fr auto 1fr; align-items:start; gap:8px; text-align:center; }
+#landing.lp .lp-steps-v li { display:block; }
+#landing.lp .lp-step-ic { width:72px; height:72px; margin:0 auto 14px; border-radius:50%; background:var(--lp-tint); color:var(--lp-brand); display:grid; place-items:center; }
+#landing.lp .lp-step-ic svg { width:32px; height:32px; fill:none; stroke:currentColor; stroke-width:1.8; stroke-linecap:round; stroke-linejoin:round; }
+#landing.lp .lp-arrow { color:#8aa3d6; font-size:28px; padding-top:20px; }
+/* call-to-action band */
+#landing.lp .lp-cta-band { padding:8px 0 64px; background:#fff; }
+#landing.lp .lp-cta-in { display:flex; align-items:center; justify-content:space-between; gap:24px; flex-wrap:wrap; padding:32px 40px; border-radius:24px; background:#0a1f55; color:#fff; }
+#landing.lp .lp-cta-in h2 { font-size:clamp(20px,2.4vw,28px); font-weight:800; letter-spacing:-.02em; color:#fff; margin:0 0 4px; }
+#landing.lp .lp-cta-in p { color:#b4c0e0; margin:0; }
+/* footer + sign-in pop-up */
+#landing.lp .lp-foot .lp-logo-ic { color:#fff; }
+#landing.lp .lp-foot .lp-brand { color:#fff; }
+#landing.lp .lp-login { display:none; position:fixed; z-index:80; left:50%; top:50%; transform:translate(-50%,-50%); width:min(440px,calc(100vw - 24px)); max-height:calc(100vh - 24px); overflow:auto; box-shadow:0 30px 80px rgba(8,21,58,.4); border-radius:18px; }
+#landing.lp .lp-login.open { display:grid; }
+#landing.lp .lp-back { display:none; position:fixed; inset:0; z-index:79; background:rgba(8,21,58,.55); }
+#landing.lp .lp-back.open { display:block; }
+#landing.lp button.lp-x { position:absolute; top:8px; right:8px; width:44px; height:44px; min-height:44px; padding:0; background:transparent !important; color:#4a5878 !important; font-size:28px; line-height:1; border:0; border-radius:10px; }
+#landing.lp button.lp-x:hover { background:#f1f5fd !important; }
+#landing.lp .lp-hero-copy .lp-facts { margin-top:22px; }
+@media (max-width:960px) {
+  #landing.lp .lp-hero-in { grid-template-columns:minmax(0,1fr); }
+  #landing.lp .lp-hero-art { min-height:300px; order:2; }
+  #landing.lp .lp-steps-v { grid-template-columns:minmax(0,1fr); gap:28px; }
+  #landing.lp .lp-arrow { display:none; }
+  #landing.lp .lp-badges-in { border-radius:24px; justify-content:flex-start; }
+}
+@media (max-width:720px) {
+  #landing.lp .lp-links { display:none; }
+  #landing.lp .lp-nav-cta { margin-left:auto; }
+  #landing.lp .lp-nav-cta { gap:6px; }
+  #landing.lp .lp-nav-cta .lp-btn { padding:0 14px; min-height:40px; font-size:14px; }
+  #landing.lp .lp-nav-cta .lp-btn span { display:none; }
+  #landing.lp .lp-nav-in { gap:10px; }
+  #landing.lp .lp-brand-t { font-size:13px; }
+  #landing.lp .lp-cta-in { padding:26px 22px; }
+  #landing.lp .lp-hero-art { min-height:250px; }
+}
+/* ===== APP: navy sidebar, colourful KPI cards ===== */
+#v2Sidebar.sb { background:#08153a; color:#c9d3f2; border-right:0; }
+#v2Sidebar .sb-brand b { color:#fff; line-height:1.15; }
+#v2Sidebar .sb-brand small { color:#8e9bc4; }
+#v2Sidebar .sb-logo { background:#fff; }
+#v2Sidebar .sb-logo svg { stroke:none; fill:#0b5ce6; }
+#v2Sidebar .sb-item, #v2Sidebar .sb-q { color:#b9c6ea; }
+#v2Sidebar .sb-item:hover, #v2Sidebar .sb-q:hover { background:rgba(255,255,255,.08); color:#fff; }
+#v2Sidebar .sb-item.active { background:#0b5ce6; color:#fff; }
+#v2Sidebar .sb-label { color:#7f8fba; }
+#v2Sidebar .sb-q { color:#dbe4ff; } #v2Sidebar .sb-q i { color:#7f8fba; }
+#v2Sidebar .sb-card { background:rgba(255,255,255,.06); border-color:rgba(255,255,255,.12); color:#fff; }
+#v2Sidebar .sb-card p, #v2Sidebar .sb-card small, #v2Sidebar .sb-ver, #v2Sidebar .sb-ver a { color:#b4c0e0; }
+#v2Sidebar .sb-btn { background:rgba(255,255,255,.1); color:#fff; border-color:rgba(255,255,255,.2); }
+#v2Sidebar .sb-btn:hover { background:rgba(255,255,255,.18); }
+#v2Sidebar .sb-plan .sb-btn { background:#0b5ce6; color:#fff; border-color:transparent; }
+html[data-theme=dark] #v2Sidebar .sb-plan .sb-btn { color:#fff; }
+#v2Sidebar .sb-bar { background:rgba(255,255,255,.18); } #v2Sidebar .sb-bar i { background:#6ea8ff; }
+.d-kpi.k1 { background:#eaf1ff !important; border-color:#cfe0ff !important; } .d-kpi.k1 .ico { background:#0b5ce6; color:#fff; }
+.d-kpi.k2 { background:#e6f7ee !important; border-color:#c5ebd6 !important; } .d-kpi.k2 .ico { background:#17a35a; color:#fff; }
+.d-kpi.k3 { background:#fff1e3 !important; border-color:#fcd9b8 !important; } .d-kpi.k3 .ico { background:#f08a24; color:#fff; }
+.d-kpi.k4 { background:#f0ecff !important; border-color:#d9d0fb !important; } .d-kpi.k4 .ico { background:#7a5af8; color:#fff; }
+.d-kpi .ico svg { stroke:#fff; }
+.d-kpi, .d-kpi b, .d-kpi small, .d-kpi em { color:#0b1b3f; }
+html[data-theme=dark] .d-kpi.k1 { background:#10234d !important; border-color:#1d3a78 !important; }
+html[data-theme=dark] .d-kpi.k2 { background:#10301f !important; border-color:#1d5a38 !important; }
+html[data-theme=dark] .d-kpi.k3 { background:#3a2410 !important; border-color:#6b4318 !important; }
+html[data-theme=dark] .d-kpi.k4 { background:#241b4d !important; border-color:#3f3290 !important; }
+html[data-theme=dark] .d-kpi, html[data-theme=dark] .d-kpi b, html[data-theme=dark] .d-kpi small, html[data-theme=dark] .d-kpi em { color:#e6ecf8; }
+.d-hero-card { background:#0a1f55 !important; color:#fff !important; border-color:#0a1f55 !important; }
+.d-hero-card b { color:#fff; } .d-hero-card p, .d-hero-card small { color:#b4c0e0 !important; }
+</style>
 </head>
 <body>
 <a class="skip-link" href="#top">Skip to main content</a>
 <svg width="0" height="0" style="position:absolute;overflow:hidden" aria-hidden="true" focusable="false">
     <defs>
-      <symbol id="i-bolt" viewBox="0 0 24 24"><path d="M13 2 4 14h7l-1 8 9-12h-7z"/></symbol><symbol id="i-shieldcheck" viewBox="0 0 24 24"><path d="M12 3 5 6v6c0 4.2 2.9 7.4 7 9 4.1-1.6 7-4.8 7-9V6z"/><path d="m9 12 2.2 2.2L15.5 10"/></symbol><symbol id="i-plug" viewBox="0 0 24 24"><path d="M9 2v5M15 2v5M6 7h12v4a6 6 0 0 1-12 0z"/><path d="M12 17v5"/></symbol><symbol id="i-logo" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="4" fill="currentColor" stroke="none"/><path d="M8 15.5v-3M12 15.5V8.5M16 15.5v-5" stroke="#fff" stroke-width="2" stroke-linecap="round" fill="none"/></symbol>
+      <symbol id="i-upload" viewBox="0 0 24 24"><path d="M7 18a4.5 4.5 0 0 1-.6-8.96A6 6 0 0 1 17.9 8.6 4.8 4.8 0 0 1 17 18"/><path d="m12 11-3 3m3-3 3 3m-3-3v9"/></symbol><symbol id="i-bars" viewBox="0 0 24 24"><path d="M5 20V11m7 9V4m7 16v-6"/></symbol><symbol id="i-checkc" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="m8 12.3 2.7 2.7L16 9.5"/></symbol><symbol id="i-play" viewBox="0 0 24 24"><path d="M8 5v14l11-7z" fill="currentColor" stroke="none"/></symbol><symbol id="i-frag" viewBox="0 0 24 24"><rect x="3" y="3" width="8" height="8" rx="2"/><rect x="13" y="3" width="8" height="8" rx="2"/><rect x="3" y="13" width="8" height="8" rx="2"/><path d="M17 14v6m-3-3h6"/></symbol><symbol id="i-mess" viewBox="0 0 24 24"><path d="M6 3h8l4 4v14H6z"/><path d="M9 11h6M9 14h6M9 17h3"/></symbol><symbol id="i-hour" viewBox="0 0 24 24"><path d="M6 3h12M6 21h12M7 3c0 5 5 5 5 9s-5 4-5 9m10-18c0 5-5 5-5 9s5 4 5 9"/></symbol><symbol id="i-bolt" viewBox="0 0 24 24"><path d="M13 2 4 14h7l-1 8 9-12h-7z"/></symbol><symbol id="i-shieldcheck" viewBox="0 0 24 24"><path d="M12 3 5 6v6c0 4.2 2.9 7.4 7 9 4.1-1.6 7-4.8 7-9V6z"/><path d="m9 12 2.2 2.2L15.5 10"/></symbol><symbol id="i-plug" viewBox="0 0 24 24"><path d="M9 2v5M15 2v5M6 7h12v4a6 6 0 0 1-12 0z"/><path d="M12 17v5"/></symbol><symbol id="i-logo" viewBox="0 0 32 32"><rect x="4" y="4" width="5.2" height="24" rx="1.6"/><path d="M9.2 4h9.3a7.6 7.6 0 0 1 0 15.2H9.2v-4.6h9.3a3 3 0 0 0 0-6H9.2z"/><path d="M15.4 19.6h5.8L27.6 28h-6z"/><rect x="11.2" y="21.5" width="3.2" height="6.5" rx="1" opacity=".55"/></symbol>
       <symbol id="i-file" viewBox="0 0 24 24"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5M9 13h6M9 17h6"/></symbol>
       <symbol id="i-chat" viewBox="0 0 24 24"><path d="M21 12a8 8 0 0 1-11.6 7.1L4 20.5l1.4-4.6A8 8 0 1 1 21 12z"/></symbol>
       <symbol id="i-scale" viewBox="0 0 24 24"><path d="M12 4v16M6 20h12M5 7h14M5 7l-3 7a3.5 3.5 0 0 0 6 0zM19 7l-3 7a3.5 3.5 0 0 0 6 0z"/></symbol>
@@ -1143,11 +1262,11 @@ input:not([type=checkbox]):not([type=radio]):not([type=file]):not([type=color]):
 
   <header class="lp-nav">
     <div class="lp-wrap lp-nav-in">
-      <a class="lp-brand" href="#top" aria-label="Report Analyzer home"><svg class="lp-ic lp-logo-ic"><use href="#i-logo"/></svg><span>Report Analyzer</span></a>
+      <a class="lp-brand" href="#top" aria-label="Reconciliation Solutions home"><svg class="lp-ic lp-logo-ic" aria-hidden="true"><use href="#i-logo"/></svg><span class="lp-brand-t">Reconciliation<br>Solutions</span></a>
       <nav class="lp-links" aria-label="Page sections">
-        <a href="#features">Features</a><a href="#statement">Statement check</a><a href="#pricing">Pricing</a><a href="#about">About</a><a href="#faq">FAQ</a><a href="#contact">Contact</a>
+        <a href="#top" class="is-on">Home</a><a href="#features">Features</a><a href="#pricing">Pricing</a><a href="#about">About</a><a href="#faq">FAQ</a><a href="#contact">Contact</a>
       </nav>
-      <a class="lp-btn lp-btn-quiet lp-signin" href="#lpLogin" data-goto-login>Sign in</a>
+      <div class="lp-nav-cta"><a class="lp-btn lp-btn-outline lp-login-btn" href="#lpLogin" data-goto-login>Login</a><a class="lp-btn lp-btn-primary" href="#lpLogin" data-goto-login data-mode="register">Get Started <span aria-hidden="true">&rarr;</span></a></div>
     </div>
   </header>
 
@@ -1155,12 +1274,12 @@ input:not([type=checkbox]):not([type=radio]):not([type=file]):not([type=color]):
   <section class="lp-hero">
     <div class="lp-wrap lp-hero-in">
       <div class="lp-hero-copy">
-        <p class="lp-eyebrow">For ATM, POS and finance teams</p>
-        <h1>Reconcile ATM and POS reports in minutes, not days.</h1>
-        <p class="lp-lead">Upload your switch log, ledger or bank statement. Report Analyzer matches every row, shows exactly what is missing or different, and answers your questions in plain English. No formulas, no accounting degree needed.</p>
+        <p class="lp-eyebrow"><svg class="lp-ic" aria-hidden="true"><use href="#i-bolt"/></svg>Smart Reconciliation. Greater Clarity.</p>
+        <h1>Turn Complex Financial Reports into <span class="lp-hl">Clear Results</span></h1>
+        <p class="lp-lead">Analyze, compare and reconcile your ATM, POS and bank reports with ease. Find discrepancies, ensure accuracy and make better financial decisions.</p>
         <div class="lp-actions">
-          <a class="lp-btn lp-btn-primary" href="#lpLogin" data-goto-login>Request an account</a>
-          <a class="lp-btn lp-btn-outline" href="#statement">See a sample check</a>
+          <a class="lp-btn lp-btn-primary" href="#lpLogin" data-goto-login data-mode="register">Start Analyzing <span aria-hidden="true">&rarr;</span></a>
+          <a class="lp-btn lp-btn-outline" href="#features"><svg class="lp-ic" aria-hidden="true"><use href="#i-play"/></svg>Learn More</a>
         </div>
         <ul class="lp-facts">
           <li><svg class="lp-ic"><use href="#i-file"/></svg>CSV, Excel and PDF files</li>
@@ -1169,8 +1288,25 @@ input:not([type=checkbox]):not([type=radio]):not([type=file]):not([type=color]):
         </ul>
       </div>
 
-      <div class="lp-login" id="lpLogin">
-        <h2>Sign in</h2>
+      <div class="lp-hero-art" aria-hidden="true">
+        <i class="lp-glass g1"></i><i class="lp-glass g2"></i>
+        <div class="lp-device"><div class="lp-screen">
+          <div class="lp-scr-top"><b>Reconciliation overview</b><span>Sample view</span></div>
+          <svg viewBox="0 0 320 150" role="img" focusable="false">
+            <g stroke="#dbe3f2" stroke-width="1"><path d="M30 20h280M30 55h280M30 90h280M30 125h280"/></g>
+            <g fill="#8a98b8" font-size="9" font-family="Inter,sans-serif"><text x="2" y="23">100%</text><text x="6" y="58">75%</text><text x="6" y="93">50%</text><text x="6" y="128">25%</text></g>
+            <path d="M30 118 L70 92 L110 98 L150 70 L190 78 L230 48 L270 40 L310 24 L310 125 L30 125Z" fill="#0b5ce6" opacity=".10"/>
+            <polyline points="30,118 70,92 110,98 150,70 190,78 230,48 270,40 310,24" fill="none" stroke="#0b5ce6" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/>
+            <g fill="#fff" stroke="#0b5ce6" stroke-width="2.4"><circle cx="70" cy="92" r="4"/><circle cx="110" cy="98" r="4"/><circle cx="150" cy="70" r="4"/><circle cx="190" cy="78" r="4"/><circle cx="230" cy="48" r="4"/><circle cx="270" cy="40" r="4"/><circle cx="310" cy="24" r="4"/></g>
+          </svg>
+        </div></div>
+        <div class="lp-float"><span class="ok"><svg class="lp-ic"><use href="#i-checkc"/></svg></span><div><b>Matched</b><small>Sample result</small></div></div>
+      </div>
+
+      <div class="lp-back" id="lpBack"></div>
+      <div class="lp-login" id="lpLogin" role="dialog" aria-modal="true" aria-labelledby="lpLoginT">
+        <button type="button" class="lp-x" id="lpLoginX" aria-label="Close">&times;</button>
+        <h2 id="lpLoginT">Sign in</h2>
         <p class="lp-login-sub">Open your workspace.</p>
         <label class="lp-sr" for="lUser">Username</label>
         <input type="text" id="lUser" placeholder="Username" autocomplete="username" autocapitalize="none" autocorrect="off" spellcheck="false">
@@ -1212,20 +1348,22 @@ input:not([type=checkbox]):not([type=radio]):not([type=file]):not([type=color]):
     </div>
   </section>
 
-  <section class="lp-pillars" aria-label="Why teams use Report Analyzer">
-    <div class="lp-wrap lp-pillars-in">
-      <div class="lp-pillar"><span class="lp-pillar-ic"><svg aria-hidden="true"><use href="#i-bolt"/></svg></span><div><h3>Fast</h3><p>Every row of two reports compared in seconds, not an afternoon of VLOOKUP.</p></div></div>
-      <div class="lp-pillar"><span class="lp-pillar-ic"><svg aria-hidden="true"><use href="#i-shieldcheck"/></svg></span><div><h3>Exact</h3><p>Every figure is calculated from your own data and cross-checked. Nothing is guessed.</p></div></div>
-      <div class="lp-pillar"><span class="lp-pillar-ic"><svg aria-hidden="true"><use href="#i-plug"/></svg></span><div><h3>Simple</h3><p>Works with the CSV, Excel and PDF files you already have. Nothing to install.</p></div></div>
-    </div>
+  <section class="lp-badges" aria-label="Why teams use us">
+    <div class="lp-wrap"><div class="lp-badges-in">
+      <span><svg class="lp-ic" aria-hidden="true"><use href="#i-shieldcheck"/></svg>Secure &amp; Reliable</span>
+      <span><svg class="lp-ic" aria-hidden="true"><use href="#i-bolt"/></svg>Fast &amp; Accurate</span>
+      <span><svg class="lp-ic" aria-hidden="true"><use href="#i-bars"/></svg>Built for Businesses</span>
+    </div></div>
   </section>
 
-  <section class="lp-strip" aria-label="Summary">
-    <div class="lp-wrap lp-strip-in">
-      <span><svg class="lp-ic"><use href="#i-lock"/></svg>Encrypted storage</span>
-      <span><svg class="lp-ic"><use href="#i-shield"/></svg>Two-factor sign-in</span>
-      <span><svg class="lp-ic"><use href="#i-card"/></svg>Built for ATM and POS teams</span>
-      <span><svg class="lp-ic"><use href="#i-mail"/></svg><a href="mailto:reconciliationsolutionsupport@gmail.com">reconciliationsolutionsupport@gmail.com</a></span>
+  <section class="lp-sec lp-problem" id="problem">
+    <div class="lp-wrap">
+      <div class="lp-head"><p class="lp-kicker">Why it is hard</p><h2>Reconciliation is a pain for almost every finance team</h2><p>Three things make it slow. Report Analyzer is built to remove each one.</p></div>
+      <div class="lp-grid lp-grid-3">
+        <article class="lp-card"><span class="lp-ic-bubble"><svg aria-hidden="true"><use href="#i-frag"/></svg></span><h3>Fragmented systems</h3><p>The switch, the ledger and the bank each give you a different file. We compare them side by side, so you do not have to merge them by hand.</p></article>
+        <article class="lp-card"><span class="lp-ic-bubble"><svg aria-hidden="true"><use href="#i-mess"/></svg></span><h3>Messy, unstructured data</h3><p>Different column names, dates and formats are normal. Upload CSV, Excel or PDF and we read them as they are.</p></article>
+        <article class="lp-card"><span class="lp-ic-bubble"><svg aria-hidden="true"><use href="#i-hour"/></svg></span><h3>Hours of manual work</h3><p>No more VLOOKUP marathons. Ask in plain English, even Pidgin, and get the answer, the working and an export.</p></article>
+      </div>
     </div>
   </section>
 
@@ -1257,11 +1395,13 @@ input:not([type=checkbox]):not([type=radio]):not([type=file]):not([type=color]):
 
   <section class="lp-sec" id="how">
     <div class="lp-wrap">
-      <div class="lp-head"><h2>How reconciliation works</h2><p>Three steps, no spreadsheet formulas.</p></div>
-      <ol class="lp-steps">
-        <li><span class="lp-num">1</span><div><h3>Upload</h3><p>Add your two reports as CSV, Excel or PDF.</p></div></li>
-        <li><span class="lp-num">2</span><div><h3>Compare</h3><p>Every row is matched against the other report in seconds.</p></div></li>
-        <li><span class="lp-num">3</span><div><h3>Resolve</h3><p>See exactly what is missing or different, then export the result.</p></div></li>
+      <div class="lp-head"><p class="lp-kicker">How it works</p><h2>Get your reconciliation done in 3 simple steps</h2></div>
+      <ol class="lp-steps lp-steps-v">
+        <li><span class="lp-step-ic"><svg aria-hidden="true"><use href="#i-upload"/></svg></span><h3>1. Upload reports</h3><p>Upload your financial reports in supported formats: CSV, Excel or PDF.</p></li>
+        <li class="lp-arrow" aria-hidden="true">&rarr;</li>
+        <li><span class="lp-step-ic"><svg aria-hidden="true"><use href="#i-bars"/></svg></span><h3>2. Analyze transactions</h3><p>Our engine finds the matches and the discrepancies.</p></li>
+        <li class="lp-arrow" aria-hidden="true">&rarr;</li>
+        <li><span class="lp-step-ic"><svg aria-hidden="true"><use href="#i-checkc"/></svg></span><h3>3. Review results</h3><p>Get clear, detailed reports and resolve the issues.</p></li>
       </ol>
     </div>
   </section>
@@ -1305,16 +1445,16 @@ input:not([type=checkbox]):not([type=radio]):not([type=file]):not([type=color]):
       <div class="lp-plans">
         <article class="lp-plan"><h3>Free Trial</h3><p class="lp-price">₦0</p><p class="lp-per">2 days to try everything</p>
           <ul><li>5 analyses</li><li>1 team member</li><li>Reconciliation, charts, Excel and PDF exports</li></ul>
-          <button type="button" class="lp-btn lp-btn-outline lp-full" data-goto-login>Start free</button></article>
+          <button type="button" class="lp-btn lp-btn-outline lp-full" data-goto-login data-mode="register">Start free</button></article>
         <article class="lp-plan"><h3>Starter</h3><p class="lp-price">₦25,000<small> / month</small></p><p class="lp-per">30 days of access</p>
           <ul><li>50 analyses per month</li><li>Up to 3 team members</li><li>Everything in the trial</li></ul>
-          <button type="button" class="lp-btn lp-btn-outline lp-full" data-goto-login>Get Starter</button></article>
+          <button type="button" class="lp-btn lp-btn-outline lp-full" data-goto-login data-mode="register">Get Starter</button></article>
         <article class="lp-plan lp-plan-hot"><p class="lp-tag">Recommended</p><h3>Growth</h3><p class="lp-price">₦60,000<small> / month</small></p><p class="lp-per">30 days of access</p>
           <ul><li>200 analyses per month</li><li>Up to 5 team members</li><li>Everything in Starter</li></ul>
-          <button type="button" class="lp-btn lp-btn-primary lp-full" data-goto-login>Get Growth</button></article>
+          <button type="button" class="lp-btn lp-btn-primary lp-full" data-goto-login data-mode="register">Get Growth</button></article>
         <article class="lp-plan"><h3>Professional</h3><p class="lp-price">₦150,000<small> / month</small></p><p class="lp-per">30 days of access</p>
           <ul><li>750 analyses per month</li><li>Up to 10 team members</li><li>Everything in Growth</li></ul>
-          <button type="button" class="lp-btn lp-btn-outline lp-full" data-goto-login>Get Professional</button></article>
+          <button type="button" class="lp-btn lp-btn-outline lp-full" data-goto-login data-mode="register">Get Professional</button></article>
       </div>
       <div class="lp-biz">
         <div><h3>Business and above</h3><p>Need 1,500 or more analyses a month, 15 or more team members, or a setup built around your team? We agree the plan and price with you first.</p></div>
@@ -1389,18 +1529,25 @@ input:not([type=checkbox]):not([type=radio]):not([type=file]):not([type=color]):
   </section>
   </main>
 
+  <section class="lp-cta-band" aria-label="Get started">
+    <div class="lp-wrap"><div class="lp-cta-in">
+      <div><h2>Ready to simplify your reconciliation process?</h2><p>Create your account and run your first check today.</p></div>
+      <a class="lp-btn lp-btn-light" href="#lpLogin" data-goto-login data-mode="register">Get Started Free <span aria-hidden="true">&rarr;</span></a>
+    </div></div>
+  </section>
+
   <footer class="lp-foot">
     <div class="lp-wrap">
       <div class="lp-foot-top">
         <div>
-          <a class="lp-brand" href="#top"><svg class="lp-ic lp-logo-ic" aria-hidden="true"><use href="#i-logo"/></svg><span>Report Analyzer</span></a>
+          <a class="lp-brand" href="#top"><svg class="lp-ic lp-logo-ic" aria-hidden="true"><use href="#i-logo"/></svg><span>Reconciliation Solutions</span></a>
           <p>Reconcile ATM, POS and bank reports and check bank statements. Built for teams that handle sensitive financial data.</p>
         </div>
         <nav aria-label="Product"><h4>Product</h4><ul><li><a href="#features">Features</a></li><li><a href="#statement">Statement check</a></li><li><a href="#pricing">Pricing</a></li><li><a href="#about">About</a></li><li><a href="#faq">FAQ</a></li></ul></nav>
         <nav aria-label="Legal"><h4>Legal</h4><ul><li><button type="button" class="lp-foot-btn" data-legal="terms">Terms of Service</button></li><li><button type="button" class="lp-foot-btn" data-legal="privacy">Privacy Policy</button></li></ul></nav>
         <div><h4>Contact</h4><ul><li><a href="mailto:reconciliationsolutionsupport@gmail.com">reconciliationsolutionsupport@gmail.com</a></li><li><a href="#contact">Send us a message</a></li><li><a href="https://t.me/COLDFX26" target="_blank" rel="noopener">Telegram: t.me/COLDFX26</a></li></ul></div>
       </div>
-      <div class="lp-foot-bar"><span>&copy; <span id="ftYear">2026</span> Report Analyzer. All rights reserved.</span><span>Data encrypted &middot; Two-factor sign-in available</span></div>
+      <div class="lp-foot-bar"><span>&copy; <span id="ftYear">2026</span> Reconciliation Solutions. All rights reserved.</span><span>Data encrypted &middot; Two-factor sign-in available</span></div>
     </div>
   </footer>
 </div>
@@ -1408,7 +1555,7 @@ input:not([type=checkbox]):not([type=radio]):not([type=file]):not([type=color]):
 <!-- ======================= APP ======================= -->
 <div id="app" class="hidden" data-view="dashboard">
 <aside id="v2Sidebar" class="sb" aria-label="App sections">
-  <div class="sb-brand"><span class="sb-logo"><svg class="svg-ic" aria-hidden="true"><use href="#i-logo"/></svg></span><div><b>Report Analyzer</b><small>Smarter Reports. Better Decisions.</small></div></div>
+  <div class="sb-brand"><span class="sb-logo"><svg class="svg-ic" aria-hidden="true"><use href="#i-logo"/></svg></span><div><b>Reconciliation Solutions</b><small>Smart Reconciliation. Greater Clarity.</small></div></div>
   <nav class="sb-nav">
     <button type="button" class="sb-item" data-nav="dashboard"><span class="ic"><svg class="svg-ic" aria-hidden="true"><use href="#i-home"/></svg></span><span>Dashboard</span></button>
     <button type="button" class="sb-item admin-only hidden" data-nav="overview"><span class="ic"><svg class="svg-ic" aria-hidden="true"><use href="#i-chart"/></svg></span><span>Owner Overview</span></button>
@@ -1452,7 +1599,7 @@ input:not([type=checkbox]):not([type=radio]):not([type=file]):not([type=color]):
 <div class="shell">
 <header class="app">
   <button type="button" class="sb-burger" id="sbToggle" aria-label="Open menu"><svg class="svg-ic" aria-hidden="true"><use href="#i-menu"/></svg></button>
-  <span class="hdr-brand"><svg class="svg-ic" aria-hidden="true"><use href="#i-logo"/></svg><span>Report Analyzer</span></span>
+  <span class="hdr-brand"><svg class="svg-ic" aria-hidden="true"><use href="#i-logo"/></svg><span>Reconciliation Solutions</span></span>
   <div class="app-search"><svg class="svg-ic" aria-hidden="true"><use href="#i-search"/></svg><input type="text" id="dSearch" placeholder="Search your reports…" autocomplete="off" aria-label="Search reports"></div>
   <span class="hdr-spacer"></span>
   <button class="ghost admin-only hidden" id="adminBtn">Admin</button>
@@ -1703,7 +1850,7 @@ input:not([type=checkbox]):not([type=radio]):not([type=file]):not([type=color]):
     <div class="brand-grid">
       <label>Company<select id="bCo"></select></label>
       <label>Name shown on PDFs<input type="text" id="bName" placeholder="Your company name" maxlength="80"></label>
-      <label>Brand colour<input type="color" id="bColor" value="#0b6b4b"></label>
+      <label>Brand colour<input type="color" id="bColor" value="#0b5ce6"></label>
       <label>Logo (PNG or JPG, under 2 MB)<input type="file" id="bLogo" accept="image/png,image/jpeg"></label>
     </div>
     <div class="row"><button id="bBtn" type="button">Save logo and colour</button><span class="mute" id="bMsg" aria-live="polite"></span></div>
@@ -2345,7 +2492,7 @@ function renderResult(r) {
   $("title").textContent = r.title; $("download").href = `/api/download/${r.result_id}`; $("downloadPdf").href = `/api/download/${r.result_id}/pdf`;
   const ins = $("insight"); ins.textContent = r.insight || ""; ins.classList.toggle("hidden", !r.insight);
   const cv = $("chart"); if (S.chart) { S.chart.destroy(); S.chart = null; }
-  if (r.chart) { cv.classList.remove("hidden"); const c = r.chart; S.chart = new Chart(cv, { type: c.type, data: { labels: c.labels, datasets: [{ label: c.metric, data: c.values, borderWidth: 2, backgroundColor: "rgba(11,107,75,.55)", borderColor: "#0b6b4b", tension: .3 }] }, options: { responsive: true, plugins: { legend: { display: c.type === "pie" } } } }); } else cv.classList.add("hidden");
+  if (r.chart) { cv.classList.remove("hidden"); const c = r.chart; S.chart = new Chart(cv, { type: c.type, data: { labels: c.labels, datasets: [{ label: c.metric, data: c.values, borderWidth: 2, backgroundColor: "rgba(11,92,230,.55)", borderColor: "#0b5ce6", tension: .3 }] }, options: { responsive: true, plugins: { legend: { display: c.type === "pie" } } } }); } else cv.classList.add("hidden");
   fillTable($("table"), r.columns, r.rows);
   $("rowInfo").textContent = r.total_rows > r.rows.length ? `Showing ${r.rows.length} of ${r.total_rows} rows - download Excel for all.` : `${r.total_rows} row(s)`;
   $("resultCard").scrollIntoView({ behavior: "smooth" });
@@ -2424,8 +2571,8 @@ async function loadTrends() {
   if (window.Chart) {
     if(S.trendRunsChart) S.trendRunsChart.destroy();
     if(S.trendQualityChart) S.trendQualityChart.destroy();
-    S.trendRunsChart=new Chart($("trendRunsChart"),{type:"line",data:{labels,datasets:[{label:"Runs",data:runs,borderColor:"#0b6b4b",backgroundColor:"rgba(11,107,75,.12)",fill:true,tension:.28}]},options:{responsive:true,maintainAspectRatio:true,plugins:{legend:{display:false}},scales:{x:{ticks:{maxTicksLimit:7}},y:{beginAtZero:true,ticks:{precision:0}}}}});
-    S.trendQualityChart=new Chart($("trendQualityChart"),{type:"bar",data:{labels,datasets:[{label:"Matched",data:matchedSeries,backgroundColor:"rgba(11,107,75,.75)"},{label:"Discrepancies",data:discrepSeries,backgroundColor:"rgba(180,35,24,.7)"}]},options:{responsive:true,scales:{x:{stacked:false,ticks:{maxTicksLimit:7}},y:{beginAtZero:true}}}});
+    S.trendRunsChart=new Chart($("trendRunsChart"),{type:"line",data:{labels,datasets:[{label:"Runs",data:runs,borderColor:"#0b5ce6",backgroundColor:"rgba(11,92,230,.12)",fill:true,tension:.28}]},options:{responsive:true,maintainAspectRatio:true,plugins:{legend:{display:false}},scales:{x:{ticks:{maxTicksLimit:7}},y:{beginAtZero:true,ticks:{precision:0}}}}});
+    S.trendQualityChart=new Chart($("trendQualityChart"),{type:"bar",data:{labels,datasets:[{label:"Matched",data:matchedSeries,backgroundColor:"rgba(11,92,230,.75)"},{label:"Discrepancies",data:discrepSeries,backgroundColor:"rgba(180,35,24,.7)"}]},options:{responsive:true,scales:{x:{stacked:false,ticks:{maxTicksLimit:7}},y:{beginAtZero:true}}}});
   }
   fillTable($("trendTable") || makeTrendTable(), ["day","runs","rows","matched","discrepancies","net_difference"], data.series);
 }
@@ -2691,7 +2838,7 @@ api("/api/me").then(start).catch(showLanding);
     settings: "Notifications & integrations"
   };
   const OPS_VIEWS = ["reconciliation", "discrepancies", "insights", "plan", "settings"];
-  const COLORS = ["#0b6b4b", "#4f9a80", "#9cc7b6", "#c9d3ce", "#8a958f"];
+  const COLORS = ["#0b5ce6", "#4c8dff", "#9dc1ff", "#c9d9f5", "#8a98b8"];
 
   const fmt = n => Number(n || 0).toLocaleString(undefined, { maximumFractionDigits: 0 });
   const extOf = name => { const m = /\.([a-z0-9]+)$/i.exec(name || ""); return m ? m[1].toLowerCase() : ""; };
@@ -2822,7 +2969,7 @@ api("/api/me").then(start).catch(showLanding);
     $("kv1").textContent = fmt(reports.length); $("ks1").textContent = "uploaded for this company";
     const byDay = {}; reports.forEach(r => { const d = (r.uploaded_at || "").slice(0, 10); if (d) byDay[d] = (byDay[d] || 0) + 1; });
     let cum = 0; const upSeries = Object.keys(byDay).sort().map(d => (cum += byDay[d]));
-    $("sp1").innerHTML = spark(upSeries, "#0b6b4b");
+    $("sp1").innerHTML = spark(upSeries, "#0b5ce6");
 
     const cid = Number($("company").value);
     if (!cid) { $("kv2").textContent = $("kv3").textContent = $("kv4").textContent = "-"; return; }
@@ -2839,43 +2986,43 @@ api("/api/me").then(start).catch(showLanding);
     $("kv2").textContent = rate === null ? "-" : rate.toFixed(1) + "%";
     $("ks2").textContent = rate === null ? "no reconciliation runs yet" : fmt(totals.runs) + " runs · last 90 days";
     const rates = series.map(x => { const t = Number(x.matched || 0) + Number(x.discrepancies || 0); return t ? Number(x.matched || 0) / t * 100 : null; }).filter(v => v !== null);
-    $("sp2").innerHTML = spark(rates, "#0b6b4b");
+    $("sp2").innerHTML = spark(rates, "#0b5ce6");
 
     const list = cases || [];
     const openCount = list.filter(c => c.status === "open" || c.status === "in_review").length;
     $("kv3").textContent = fmt(openCount);
     $("ks3").textContent = list.length ? fmt(list.length) + " cases in total" : "no cases yet";
-    $("sp3").innerHTML = spark(series.map(x => Number(x.discrepancies || 0)), "#0b6b4b");
+    $("sp3").innerHTML = spark(series.map(x => Number(x.discrepancies || 0)), "#0b5ce6");
 
     const net = series.reduce((a, x) => a + Number(x.net_difference || 0), 0);
     $("kv4").textContent = fmt(Math.abs(net));
     $("ks4").textContent = "difference across runs · 90 days";
-    $("sp4").innerHTML = spark(series.map(x => Number(x.net_difference || 0)), "#0b6b4b");
+    $("sp4").innerHTML = spark(series.map(x => Number(x.net_difference || 0)), "#0b5ce6");
 
     // Performance chart
     const perf = series.map(x => { const t = Number(x.matched || 0) + Number(x.discrepancies || 0); return t ? { d: String(x.day).slice(5), v: Math.round(Number(x.matched || 0) / t * 1000) / 10 } : null; }).filter(Boolean);
     $("perfEmpty").classList.toggle("hidden", perf.length > 0);
-    if (perf.length) mkChart("perf", "perfChart", { type: "line", data: { labels: perf.map(p => p.d), datasets: [{ data: perf.map(p => p.v), borderColor: "#0b6b4b", backgroundColor: "rgba(11,107,75,.12)", fill: true, tension: .3, pointRadius: 3, pointBackgroundColor: "#0b6b4b" }] }, options: { scales: { y: { min: 0, max: 100, ticks: { callback: v => v + "%" } }, x: { ticks: { maxTicksLimit: 7 } } } } });
+    if (perf.length) mkChart("perf", "perfChart", { type: "line", data: { labels: perf.map(p => p.d), datasets: [{ data: perf.map(p => p.v), borderColor: "#0b5ce6", backgroundColor: "rgba(11,92,230,.12)", fill: true, tension: .3, pointRadius: 3, pointBackgroundColor: "#0b5ce6" }] }, options: { scales: { y: { min: 0, max: 100, ticks: { callback: v => v + "%" } }, x: { ticks: { maxTicksLimit: 7 } } } } });
     else if (D.perf) { D.perf.destroy(); D.perf = null; }
 
     // Activity chart
     $("actEmpty").classList.toggle("hidden", series.length > 0);
-    if (series.length) mkChart("act", "actChart", { type: "bar", data: { labels: series.map(x => String(x.day).slice(5)), datasets: [{ data: series.map(x => Number(x.runs || 0)), backgroundColor: "rgba(11,107,75,.75)", borderRadius: 6 }] }, options: { scales: { y: { beginAtZero: true, ticks: { precision: 0 } }, x: { ticks: { maxTicksLimit: 7 } } } } });
+    if (series.length) mkChart("act", "actChart", { type: "bar", data: { labels: series.map(x => String(x.day).slice(5)), datasets: [{ data: series.map(x => Number(x.runs || 0)), backgroundColor: "rgba(11,92,230,.75)", borderRadius: 6 }] }, options: { scales: { y: { beginAtZero: true, ticks: { precision: 0 } }, x: { ticks: { maxTicksLimit: 7 } } } } });
     else if (D.act) { D.act.destroy(); D.act = null; }
 
     // Category chart
     const cat = {}; list.forEach(c => { const k = String(c.discrepancy_type || "other").replace(/_/g, " "); cat[k] = (cat[k] || 0) + 1; });
     const ck = Object.keys(cat).sort((a, b) => cat[b] - cat[a]).slice(0, 6);
     $("catEmpty").classList.toggle("hidden", ck.length > 0);
-    if (ck.length) mkChart("cat", "catChart", { type: "bar", data: { labels: ck.map(k => k.charAt(0).toUpperCase() + k.slice(1)), datasets: [{ data: ck.map(k => cat[k]), backgroundColor: ["#0b6b4b", "#2f8465", "#4f9a80", "#7db5a0", "#9cc7b6", "#c4dcd1"], borderRadius: 8 }] }, options: { scales: { y: { beginAtZero: true, ticks: { precision: 0 } } } } });
+    if (ck.length) mkChart("cat", "catChart", { type: "bar", data: { labels: ck.map(k => k.charAt(0).toUpperCase() + k.slice(1)), datasets: [{ data: ck.map(k => cat[k]), backgroundColor: ["#0b5ce6", "#2f8465", "#4c8dff", "#7db5a0", "#9dc1ff", "#c4dcd1"], borderRadius: 8 }] }, options: { scales: { y: { beginAtZero: true, ticks: { precision: 0 } } } } });
     else if (D.cat) { D.cat.destroy(); D.cat = null; }
 
     // Company insights minis
     const minis = [
-      ["Reports uploaded", fmt(reports.length), upSeries, "#0b6b4b"],
-      ["Match rate", rate === null ? "-" : rate.toFixed(1) + "%", rates, "#0b6b4b"],
+      ["Reports uploaded", fmt(reports.length), upSeries, "#0b5ce6"],
+      ["Match rate", rate === null ? "-" : rate.toFixed(1) + "%", rates, "#0b5ce6"],
       ["Discrepancy rows", fmt(disc), series.map(x => Number(x.discrepancies || 0)), "#b42318"],
-      ["Reconciliation runs", fmt(totals.runs), series.map(x => Number(x.runs || 0)), "#0b6b4b"]
+      ["Reconciliation runs", fmt(totals.runs), series.map(x => Number(x.runs || 0)), "#0b5ce6"]
     ];
     $("dMinis").innerHTML = "";
     minis.forEach(m => {
@@ -3241,8 +3388,8 @@ api("/api/me").then(start).catch(showLanding);
       .map(([a, b]) => { const d = el("div", "", "ss-kpi"); d.append(el("small", a), el("b", b)); return d; }));
     if (S.ssChart) S.ssChart.destroy();
     S.ssChart = new Chart($("ssChart"), { type: "bar", data: { labels: r.chart.labels, datasets: [
-      { label: "Income", data: r.chart.income, backgroundColor: "rgba(11,107,75,.75)" }, { label: "Spending", data: r.chart.expenses, backgroundColor: "rgba(180,35,24,.7)" },
-      { type: "line", label: "Left over", data: r.chart.left, borderColor: "#0b6b4b", backgroundColor: "#0b6b4b", tension: .25 }] }, options: { responsive: true } });
+      { label: "Income", data: r.chart.income, backgroundColor: "rgba(11,92,230,.75)" }, { label: "Spending", data: r.chart.expenses, backgroundColor: "rgba(180,35,24,.7)" },
+      { type: "line", label: "Left over", data: r.chart.left, borderColor: "#0b5ce6", backgroundColor: "#0b5ce6", tension: .25 }] }, options: { responsive: true } });
     const tbl = el("table", "", "ss-table"), head = el("tr");
     r.columns.forEach(c => head.append(el("th", c))); tbl.append(head);
     r.rows.forEach(row => { const tr = el("tr"); r.columns.forEach(c => {
@@ -3818,15 +3965,26 @@ api("/api/me").then(start).catch(showLanding);
 })();
 </script>
 <script>
-/* landing: any element marked data-goto-login scrolls to the sign-in card */
-document.addEventListener("click", function (ev) {
-  var t = ev.target.closest ? ev.target.closest("[data-goto-login]") : null;
-  if (!t) return;
-  ev.preventDefault();
-  var box = document.getElementById("lpLogin"); if (!box) return;
-  box.scrollIntoView({ behavior: "smooth", block: "start" });
-  var u = document.getElementById("lUser"); if (u) { try { u.focus({ preventScroll: true }); } catch (e) { u.focus(); } }
-});
+/* landing: sign-in / sign-up open as a pop-up card */
+(function () {
+  var box = document.getElementById("lpLogin"), back = document.getElementById("lpBack"), x = document.getElementById("lpLoginX"), last = null;
+  if (!box) return;
+  function open(mode) {
+    last = document.activeElement; box.classList.add("open"); if (back) back.classList.add("open");
+    var det = box.querySelectorAll("details.lp-details"), reg = det[det.length - 1];
+    if (mode === "register" && reg) { reg.open = true; var f = document.getElementById("regCompany"); if (f) f.focus(); }
+    else { var u = document.getElementById("lUser"); if (u) u.focus(); }
+  }
+  function close() { box.classList.remove("open"); if (back) back.classList.remove("open"); if (last && last.focus) { try { last.focus(); } catch (e) {} } }
+  document.addEventListener("click", function (ev) {
+    var t = ev.target.closest ? ev.target.closest("[data-goto-login]") : null;
+    if (!t) return;
+    ev.preventDefault(); open(t.getAttribute("data-mode"));
+  });
+  if (x) x.addEventListener("click", close);
+  if (back) back.addEventListener("click", close);
+  document.addEventListener("keydown", function (ev) { if (ev.key === "Escape" && box.classList.contains("open")) close(); });
+})();
 </script>
 <script>
 /* mobile: theme and log-out live in the menu */
@@ -3878,8 +4036,10 @@ document.addEventListener("click", function (ev) {
       list.forEach(function (m) {
         var b = m.target; if (!b || b.tagName !== "BUTTON") return;
         if (b.disabled && m.oldValue === null) {
-          b.classList.add("ra-busy");
-          clearTimeout(timers.get(b)); timers.set(b, setTimeout(function () { b.classList.remove("ra-busy"); }, 60000));
+          if (b.closest(".v2-tour-card, .pager, [data-nospin]")) return;   /* greyed-out, not working */
+          clearTimeout(timers.get(b));
+          timers.set(b, setTimeout(function () { if (b.disabled) b.classList.add("ra-busy"); }, 350));   /* only show it if the wait is real */
+          setTimeout(function () { b.classList.remove("ra-busy"); }, 60000);
         } else if (!b.disabled) { b.classList.remove("ra-busy"); clearTimeout(timers.get(b)); }
       });
     }).observe(document.body, { subtree: true, attributes: true, attributeFilter: ["disabled"], attributeOldValue: true });
@@ -3893,7 +4053,7 @@ document.addEventListener("click", function (ev) {
   function open() {
     var land = document.getElementById("landing");
     if (opened || seen() || !land || land.classList.contains("hidden")) return;
-    if (document.querySelector(".legal:not(.hidden)")) return;
+    if (document.querySelector(".legal:not(.hidden)") || document.querySelector("#lpLogin.open")) return;
     opened = true; mark(false); lastFocus = document.activeElement;
     box.classList.remove("hidden"); var e = document.getElementById("exitEmail"); if (e) e.focus();
   }

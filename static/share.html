@@ -9,8 +9,8 @@
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap">
 <style>
-  :root { --bg:#f5f7f6; --card:#fff; --ink:#17211c; --mute:#5b6760; --line:#dde3df; --brand:#0b6b4b; --ok:#0b6b4b; --warn:#b54708; --bad:#b42318; }
-  @media (prefers-color-scheme: dark) { :root { --bg:#0f1512; --card:#16201c; --ink:#e6ece9; --mute:#9aa8a1; --line:#2a3732; --brand:#4cc19a; --ok:#4cc19a; --warn:#f0b36b; --bad:#f2877b; } }
+  :root { --bg:#f4f7fd; --card:#fff; --ink:#0b1b3f; --mute:#55627f; --line:#dbe3f2; --brand:#0b5ce6; --ok:#0b5ce6; --warn:#b54708; --bad:#b42318; }
+  @media (prefers-color-scheme: dark) { :root { --bg:#0c1426; --card:#121c35; --ink:#e6ecf8; --mute:#9fb0d3; --line:#26335a; --brand:#6ea8ff; --ok:#6ea8ff; --warn:#f0b36b; --bad:#f2877b; } }
   * { box-sizing:border-box; }
   body { margin:0; background:var(--bg); color:var(--ink); font:15px/1.5 "Inter",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif; }
   .wrap { max-width:900px; margin:0 auto; padding:16px; }
@@ -19,7 +19,7 @@
   .card { background:var(--card); border:1px solid var(--line); border-radius:10px; padding:16px; margin-bottom:14px; min-width:0; }
   h2 { margin:0 0 6px; font-size:19px; } h3 { margin:14px 0 6px; font-size:16px; }
   .hero { display:flex; gap:18px; align-items:center; flex-wrap:wrap; }
-  .gauge { --p:0; --c:#0b6b4b; width:128px; height:128px; border-radius:50%; display:grid; place-items:center; position:relative; flex:0 0 auto; background:conic-gradient(var(--c) calc(var(--p) * 1%), var(--line) 0); }
+  .gauge { --p:0; --c:#0b5ce6; width:128px; height:128px; border-radius:50%; display:grid; place-items:center; position:relative; flex:0 0 auto; background:conic-gradient(var(--c) calc(var(--p) * 1%), var(--line) 0); }
   .gauge::before { content:""; position:absolute; inset:12px; border-radius:50%; background:var(--card); }
   .gauge div { position:relative; text-align:center; line-height:1.05; } .gauge b { font-size:36px; display:block; } .gauge small { color:var(--mute); font-size:12px; }
   .verdict { display:inline-block; padding:4px 14px; border-radius:99px; font-weight:800; font-size:14px; color:#fff; }
@@ -28,7 +28,7 @@
   .scroll { overflow-x:auto; max-width:100%; -webkit-overflow-scrolling:touch; }
   table { width:100%; border-collapse:collapse; font-size:13.5px; } th, td { padding:8px 10px; border-bottom:1px solid var(--line); text-align:right; white-space:nowrap; }
   th:first-child, td:first-child { text-align:left; } .neg { color:var(--bad); font-weight:700; }
-  .banner { border-radius:12px; padding:10px 14px; margin:10px 0; border-left:5px solid var(--ok); background:rgba(11,107,75,.08); }
+  .banner { border-radius:12px; padding:10px 14px; margin:10px 0; border-left:5px solid var(--ok); background:rgba(11,92,230,.08); }
   .banner.warning { border-color:var(--warn); background:rgba(181,71,8,.08); } .banner.failed { border-color:var(--bad); background:rgba(180,35,24,.08); } .banner.unavailable { border-color:var(--mute); background:rgba(120,130,150,.1); }
   ul { margin:4px 0; padding-left:20px; } .mute { color:var(--mute); } .small { font-size:12.5px; }
   .bar { display:grid; grid-template-columns:minmax(110px,1.2fr) 2fr auto; gap:10px; align-items:center; margin:5px 0; font-size:13.5px; }
@@ -60,7 +60,7 @@
   function render(d) {
     $("msg").hidden = true; $("out").hidden = false;
     $("exp").textContent = "Link works until " + d.expires_at.replace("T", " ").slice(0, 16) + " UTC";
-    var col = d.score >= 75 ? "#0b6b4b" : d.score >= 60 ? "#3f8f73" : d.score >= 45 ? "#b54708" : "#b42318";
+    var col = d.score >= 75 ? "#0b5ce6" : d.score >= 60 ? "#3f8f73" : d.score >= 45 ? "#b54708" : "#b42318";
     var c = box(), hero = el("div", "", "hero"), g = el("div", "", "gauge"), gi = el("div");
     g.style.setProperty("--p", d.score); g.style.setProperty("--c", col); gi.append(el("b", d.score), el("small", "out of 100")); g.append(gi);
     var side = el("div"); var v = el("span", d.verdict, "verdict"); v.style.background = col;
