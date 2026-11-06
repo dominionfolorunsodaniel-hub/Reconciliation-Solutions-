@@ -60,3 +60,21 @@ Cause of 1-2 minute answers: each question makes two Gemini calls (plan, then wr
 - Telegram t.me/COLDFX26 added to the About section, FAQ ("Do you have a WhatsApp number?"), contact note and footer; WhatsApp stated as not used.
 - Search-engine data (JSON-LD for Organization and SoftwareApplication), press-down feedback on buttons, green/red field states for valid/invalid input.
 - Not added: "Trusted by 500+ teams", SOC2 claim, fake logos/ticker, custom cursor, dark default (not true or not wanted).
+
+# Round 7 (Nov 6, night): blue rebrand from the Reconciliation Solutions mockup
+- Whole site moved from green to the mockup's blue (#0b5ce6) with navy (#08153a); light and dark themes both updated.
+- New R logo (SVG symbol i-logo) and "Reconciliation Solutions" brand lockup in the nav, sidebar and footer.
+- Landing: nav (Home, Features, Pricing, About, FAQ, Contact + Login and Get Started), new hero ("Turn Complex Financial Reports into Clear Results") with a tilted dashboard preview marked "Sample view / Sample result", rounded Secure/Fast/Built for Businesses bar, new "Why it is hard" section (fragmented systems, messy data, manual work), 3-step "How it works" with icons and arrows, navy call-to-action band, navy footer.
+- Sign-in and sign-up now open as a pop-up card from Login / Get Started / pricing buttons (same fields and ids as before).
+- App: dark navy sidebar with blue active item, coloured KPI cards (blue, green, orange, purple), navy hero card, blue charts.
+- Spinner no longer shows on greyed-out buttons (for example the tour's Back button) and only appears after 350 ms of waiting.
+- The numbers in the hero preview are decorative; it is labelled "Sample". Do not add real-looking statistics there unless they are real.
+
+# Round 8 (Nov 6, night): owner's core.py + more speed
+- core.py is the owner's edited version (gemini-3.8-flash, thinkingLevel "low", default temperature), plus:
+  - thinkingLevel is sent only to gemini-3.x models, so backup models (flash-lite etc.) are not rejected and retried.
+  - Backups are now gemini-flash-lite-latest then gemini-3.7-flash (3.8 was listed twice before).
+  - GEMINI_SUMMARY_MODEL (optional): use a faster model such as gemini-flash-lite-latest just for the short written summary.
+  - GEMINI_THINKING_LEVEL: low (default), medium or high. 3.8 Flash has no "minimal" or "off" level.
+- web.py: the Excel file and the chart picture are now built at the same time after each answer.
+- The app's top bar and the page title now say Reconciliation Solutions.

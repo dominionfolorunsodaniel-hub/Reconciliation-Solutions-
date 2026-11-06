@@ -746,9 +746,10 @@ async def analyze(body: AnalyzeIn, user: dict = Depends(current_user)):
     res = out["res"]
     db.log_query(body.company_id, body.report_id, body.question, out["plan"], user["id"])
     db.audit(user, "analyze", body.company_id, body.question[:200])
-    xlsx = await asyncio.to_thread(core.make_excel, res, out["filtered"], out["plan"], out["insight"])
-    chart_png = await asyncio.to_thread(core.make_chart_png, res, out["keys"], out["metric"],
-                                        out["plan"].get("chart", "bar"), out["title"])
+    xlsx, chart_png = await asyncio.gather(     # build the Excel file and the chart picture at the same time
+        asyncio.to_thread(core.make_excel, res, out["filtered"], out["plan"], out["insight"]),
+        asyncio.to_thread(core.make_chart_png, res, out["keys"], out["metric"], out["plan"].get("chart", "bar"), out["title"]),
+    )
     pdf = {"title": out["title"], "question": body.question, "insight": out["insight"], "table": res.head(40),
            "chart": chart_png.getvalue() if chart_png else None, "total_rows": len(res)}
     response = {

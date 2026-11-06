@@ -109,12 +109,11 @@ async def _ask(**kwargs):
     # The planner and report description must return JSON; summaries should remain plain text.
     if "JSON object" in system or "JSON plan" in system:
         payload["generationConfig"]["responseMimeType"] = "application/json"
-    if THINKING_LEVEL in ("low", "medium", "high"):
-        payload["generationConfig"]["thinkingConfig"] = {"thinkingLevel": THINKING_LEVEL}
     payload = {key: value for key, value in payload.items() if value is not None}
+    base_gen = dict(payload["generationConfig"])
     headers = {"x-goog-api-key": api_key, "content-type": "application/json"}
     # When Google is busy (503/500/timeouts) wait and retry, then fall back to backup models.
-    backups = [m.strip() for m in os.getenv("GEMINI_FALLBACK_MODELS", "gemini-3.8-flash,gemini-flash-lite-latest").split(",") if m.strip()]
+    backups = [m.strip() for m in os.getenv("GEMINI_FALLBACK_MODELS", "gemini-flash-lite-latest,gemini-3.7-flash").split(",") if m.strip()]
     plan = [model] + [m for m in backups if m != model]   # a slow model is replaced by a backup at once, not asked again
     data, last_busy = None, "The AI service is slow right now. Please try again in a moment."
     per_call = float(kwargs.get("timeout") or AI_CALL_TIMEOUT)
@@ -128,6 +127,10 @@ async def _ask(**kwargs):
             print("[gemini] time budget used up, giving up on this call", flush=True)
             break
         url = f"https://generativelanguage.googleapis.com/v1beta/models/{current}:generateContent"
+        # thinkingLevel is only understood by Gemini 3.x models; other models are sent without it (no failed first try).
+        payload["generationConfig"] = dict(base_gen)
+        if THINKING_LEVEL in ("low", "medium", "high") and current.startswith("gemini-3"):
+            payload["generationConfig"]["thinkingConfig"] = {"thinkingLevel": THINKING_LEVEL}
         try:
             async with httpx.AsyncClient(timeout=httpx.Timeout(min(per_call, left), connect=min(8.0, left))) as client:
                 response = await client.post(url, headers=headers, json=payload)
@@ -806,11 +809,11 @@ def unverified_figures(text: str, allowed_text: str) -> list[str]:
     return bad[:6]
 
 
-async def summarize(question: str, res: pd.DataFrame, extra: str = "", system: str = None) -> str | None:
+async def summarize(question: str, res: pd.DataFrame, extra: str = "", system: str = None, model_override: str | None = None) -> str | None:
     try:
         table = res.head(60).to_string(index=False, max_colwidth=40)
         resp = await _ask(
-            model=MODEL, max_tokens=2200, system=system or INSIGHT_PROMPT, timeout=12,
+            model=MODEL, model_override=model_override, max_tokens=2200, system=system or INSIGHT_PROMPT, timeout=12,
             messages=[{"role": "user", "content": f"Question: {question}\n\nResult table (exact):\n{table}\n\n{extra}"}],
         )
         return _text_of(resp).strip() or None
@@ -1195,7 +1198,7 @@ async def analyze(df: pd.DataFrame, question: str, prev_plan: dict | None = None
     if insights:
         extra = ("Key figures (exact, computed by code):\n" + "\n".join(figures) + "\n\nHow it was worked out:\n" + "\n".join(method)
                  + ("\n\nAssumptions:\n" + "\n".join(notes) if notes else ""))
-        text = await summarize(question, res, extra)
+        text = await summarize(question, res, extra, model_override=os.getenv("GEMINI_SUMMARY_MODEL", "").strip() or None)
         if text:
             allowed = res.head(60).to_string(index=False) + " " + extra + " " + question + " " + json.dumps(plan, default=str)
             bad = unverified_figures(text, allowed)
