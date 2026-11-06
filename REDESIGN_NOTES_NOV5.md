@@ -31,3 +31,12 @@ Look: light/neutral theme, one green brand colour (#0b6b4b), no gradients, glow,
 - Optional analytics, OFF by default: set PLAUSIBLE_DOMAIN or GA_MEASUREMENT_ID in Render.
 - Not done on purpose: fake "trusted by" logos, fake scarcity, 99.9% claims, Vercel/Netlify move (backend is Python + database).
 - Keep Render awake for free: point UptimeRobot at /api/health every 5 minutes.
+
+# Round 3 (Nov 6)
+- Sections fade in as you scroll (off for people who prefer reduced motion); nav gets a soft shadow on scroll; thin styled scrollbar; buttons lift 1px on hover.
+- Theme follows the phone/computer setting until the user picks one (then remembered).
+- Mic button in "Ask a question" (shows only in browsers that support speech input).
+- Friendly 404 page for mistyped addresses (API errors unchanged).
+- Optional free Microsoft Clarity heatmaps: set CLARITY_PROJECT_ID in Render.
+- Fixed: grey sections on the landing page were narrower than the header (a global `main` style leaked in).
+- Not added on purpose: custom cursor, glow/glass/gradient/particle backgrounds, fake live-activity ticker, countdown timers, fake client logos, 3D hero.

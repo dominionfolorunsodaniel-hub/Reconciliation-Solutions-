@@ -19,6 +19,8 @@ from pathlib import Path
 
 import pandas as pd
 from fastapi import Depends, FastAPI, File, Form, HTTPException, Request, Response, UploadFile
+from fastapi.exception_handlers import http_exception_handler
+from starlette.exceptions import HTTPException as StarletteHTTPException
 from fastapi.responses import FileResponse, JSONResponse, StreamingResponse
 from pydantic import BaseModel
 
@@ -73,22 +75,39 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(title="Report Analyzer", lifespan=lifespan)
 
+
+@app.exception_handler(StarletteHTTPException)
+async def _friendly_404(request: Request, exc: StarletteHTTPException):
+    """Browsers get a friendly page for unknown addresses; the API keeps its normal JSON errors."""
+    p = request.url.path
+    if exc.status_code == 404 and request.method == "GET" and not p.startswith(("/api/", "/share/")) \
+            and "text/html" in request.headers.get("accept", ""):
+        return FileResponse(Path(__file__).parent / "static" / "404.html", status_code=404, media_type="text/html")
+    return await http_exception_handler(request, exc)
+
 # Optional website analytics, OFF unless you set one of these in Render (Environment):
 #   PLAUSIBLE_DOMAIN = your-site-domain      (Plausible; paid after a free trial, or self-hosted)
 #   GA_MEASUREMENT_ID = G-XXXXXXXXXX         (Google Analytics 4; free)
 _PLAUSIBLE = os.getenv("PLAUSIBLE_DOMAIN", "").strip()
 _GA_ID = os.getenv("GA_MEASUREMENT_ID", "").strip()
+_CLARITY = os.getenv("CLARITY_PROJECT_ID", "").strip()   # Microsoft Clarity (free heatmaps and recordings)
+if not re.fullmatch(r"[a-z0-9]{6,20}", _CLARITY):
+    _CLARITY = ""
 if not re.fullmatch(r"[A-Za-z0-9.\-]{3,100}", _PLAUSIBLE):
     _PLAUSIBLE = ""
 if not re.fullmatch(r"G-[A-Z0-9]{4,20}", _GA_ID):
     _GA_ID = ""
-_ANALYTICS_SCRIPT_SRC = (" https://plausible.io" if _PLAUSIBLE else "") + (" https://www.googletagmanager.com" if _GA_ID else "")
-_ANALYTICS_IMG_SRC = (" https://www.google-analytics.com https://www.googletagmanager.com" if _GA_ID else "")
-_ANALYTICS_CONNECT_SRC = (" https://plausible.io" if _PLAUSIBLE else "") + (
+_ANALYTICS_SCRIPT_SRC = (" https://plausible.io" if _PLAUSIBLE else "") + (" https://www.googletagmanager.com" if _GA_ID else "") + (" https://www.clarity.ms https://scripts.clarity.ms" if _CLARITY else "")
+_ANALYTICS_IMG_SRC = (" https://www.google-analytics.com https://www.googletagmanager.com" if _GA_ID else "") + (" https://*.clarity.ms https://c.bing.com" if _CLARITY else "")
+_ANALYTICS_CONNECT_SRC = (" https://plausible.io" if _PLAUSIBLE else "") + (" https://*.clarity.ms https://c.bing.com" if _CLARITY else "") + (
     " https://www.google-analytics.com https://*.google-analytics.com https://*.analytics.google.com https://www.googletagmanager.com" if _GA_ID else "")
 
 
 def _analytics_snippet() -> str:
+    if _CLARITY:
+        return ('<script>(function(c,l,a,r,i,t,y){c[a]=c[a]||function(){(c[a].q=c[a].q||[]).push(arguments)};t=l.createElement(r);t.async=1;'
+                't.src="https://www.clarity.ms/tag/"+i;y=l.getElementsByTagName(r)[0];y.parentNode.insertBefore(t,y);})'
+                f'(window,document,"clarity","script","{_CLARITY}");</script>')
     if _PLAUSIBLE:
         return f'<script defer data-domain="{_PLAUSIBLE}" src="https://plausible.io/js/script.js"></script>'
     if _GA_ID:
