@@ -73,6 +73,29 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(title="Report Analyzer", lifespan=lifespan)
 
+# Optional website analytics, OFF unless you set one of these in Render (Environment):
+#   PLAUSIBLE_DOMAIN = your-site-domain      (Plausible; paid after a free trial, or self-hosted)
+#   GA_MEASUREMENT_ID = G-XXXXXXXXXX         (Google Analytics 4; free)
+_PLAUSIBLE = os.getenv("PLAUSIBLE_DOMAIN", "").strip()
+_GA_ID = os.getenv("GA_MEASUREMENT_ID", "").strip()
+if not re.fullmatch(r"[A-Za-z0-9.\-]{3,100}", _PLAUSIBLE):
+    _PLAUSIBLE = ""
+if not re.fullmatch(r"G-[A-Z0-9]{4,20}", _GA_ID):
+    _GA_ID = ""
+_ANALYTICS_SCRIPT_SRC = (" https://plausible.io" if _PLAUSIBLE else "") + (" https://www.googletagmanager.com" if _GA_ID else "")
+_ANALYTICS_IMG_SRC = (" https://www.google-analytics.com https://www.googletagmanager.com" if _GA_ID else "")
+_ANALYTICS_CONNECT_SRC = (" https://plausible.io" if _PLAUSIBLE else "") + (
+    " https://www.google-analytics.com https://*.google-analytics.com https://*.analytics.google.com https://www.googletagmanager.com" if _GA_ID else "")
+
+
+def _analytics_snippet() -> str:
+    if _PLAUSIBLE:
+        return f'<script defer data-domain="{_PLAUSIBLE}" src="https://plausible.io/js/script.js"></script>'
+    if _GA_ID:
+        return (f'<script async src="https://www.googletagmanager.com/gtag/js?id={_GA_ID}"></script>'
+                f'<script>window.dataLayer=window.dataLayer||[];function gtag(){{dataLayer.push(arguments);}}gtag("js",new Date());gtag("config","{_GA_ID}",{{anonymize_ip:true}});</script>')
+    return ""
+
 
 @app.middleware("http")
 async def security_headers(request: Request, call_next):
@@ -81,8 +104,9 @@ async def security_headers(request: Request, call_next):
     resp.headers["X-Frame-Options"] = "DENY"
     resp.headers["Referrer-Policy"] = "no-referrer"
     resp.headers["Content-Security-Policy"] = (
-        "default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; "
-        "style-src 'self' 'unsafe-inline'; img-src 'self' data:; connect-src 'self'; frame-ancestors 'none'")
+        "default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net" + _ANALYTICS_SCRIPT_SRC + "; "
+        "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; "
+        "img-src 'self' data:" + _ANALYTICS_IMG_SRC + "; connect-src 'self'" + _ANALYTICS_CONNECT_SRC + "; frame-ancestors 'none'")
     if request.url.path.startswith("/api/") or request.url.path.startswith("/share/"):
         resp.headers["Cache-Control"] = "no-store"
     if request.url.path.startswith("/share/") or request.url.path.startswith("/api/shared/"):
@@ -500,7 +524,7 @@ def public_base(request: Request) -> str:
 
 @app.get("/")
 def index(request: Request):
-    html = (Path(__file__).parent / "static" / "index.html").read_text(encoding="utf-8").replace("__BASE__", public_base(request))
+    html = (Path(__file__).parent / "static" / "index.html").read_text(encoding="utf-8").replace("__BASE__", public_base(request)).replace("<!--ANALYTICS-->", _analytics_snippet())
     return Response(content=html, media_type="text/html; charset=utf-8")
 
 

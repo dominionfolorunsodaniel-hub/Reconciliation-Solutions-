@@ -22,3 +22,12 @@ Look: light/neutral theme, one green brand colour (#0b6b4b), no gradients, glow,
 ## Not changed / notes
 - Charts still load Chart.js from cdn.jsdelivr.net (could not be tested here because that address is blocked in the build workspace; it works normally on the internet).
 - Old unused landing styles remain in index.html (harmless, can be removed later).
+
+# Round 2 (Nov 6): polish pass
+- Inter font (Google Fonts) everywhere; CSP in web.py now allows fonts.googleapis.com / fonts.gstatic.com.
+- New headline, Fast/Exact/Simple highlights band, dark footer (product, legal, contact, (c) year), skip link, better placeholder contrast, more section spacing.
+- Spinner on any button the page disables while working.
+- Exit-intent offer (desktop only, once per visit): free 8-point reconciliation checklist; the email lands in the admin contact inbox.
+- Optional analytics, OFF by default: set PLAUSIBLE_DOMAIN or GA_MEASUREMENT_ID in Render.
+- Not done on purpose: fake "trusted by" logos, fake scarcity, 99.9% claims, Vercel/Netlify move (backend is Python + database).
+- Keep Render awake for free: point UptimeRobot at /api/health every 5 minutes.
