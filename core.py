@@ -56,9 +56,9 @@ LIMIT_CHECK = None
 _deadline: contextvars.ContextVar = contextvars.ContextVar("ai_deadline", default=None)
 ANALYZE_BUDGET = float(os.getenv("ANALYZE_TIME_BUDGET", "30"))      # seconds for a whole question
 AI_CALL_TIMEOUT = float(os.getenv("GEMINI_CALL_TIMEOUT", "14"))     # seconds for ONE call to Gemini
-# Gemini "thinking" makes answers 10-60 s slower; this app needs a quick JSON plan and a short summary, so it is off by default.
-# Set GEMINI_THINKING_BUDGET to a number (e.g. 512) to turn some thinking back on, or to "off" to never send the setting.
-THINKING_BUDGET = os.getenv("GEMINI_THINKING_BUDGET", "0").strip()
+# Gemini 3.8 Flash uses thinkingLevel (not the older thinkingBudget setting).
+# Low is selected to keep analysis responsive while retaining reasoning support.
+THINKING_LEVEL = os.getenv("GEMINI_THINKING_LEVEL", "low").strip().lower()
 USAGE_RECORD = None
 
 
@@ -103,17 +103,14 @@ async def _ask(**kwargs):
     payload = {
         "systemInstruction": {"parts": [{"text": system}]} if system else None,
         "contents": contents,
-        "generationConfig": {"maxOutputTokens": max_tokens, "temperature": 0.1},
+        # Gemini 3.8 Flash recommends leaving sampling parameters at their defaults.
+        "generationConfig": {"maxOutputTokens": max_tokens},
     }
     # The planner and report description must return JSON; summaries should remain plain text.
     if "JSON object" in system or "JSON plan" in system:
         payload["generationConfig"]["responseMimeType"] = "application/json"
-    use_thinking_cfg = THINKING_BUDGET.lower() not in ("off", "none", "")
-    if use_thinking_cfg:
-        try:
-            payload["generationConfig"]["thinkingConfig"] = {"thinkingBudget": int(THINKING_BUDGET)}
-        except ValueError:
-            use_thinking_cfg = False
+    if THINKING_LEVEL in ("low", "medium", "high"):
+        payload["generationConfig"]["thinkingConfig"] = {"thinkingLevel": THINKING_LEVEL}
     payload = {key: value for key, value in payload.items() if value is not None}
     headers = {"x-goog-api-key": api_key, "content-type": "application/json"}
     # When Google is busy (503/500/timeouts) wait and retry, then fall back to backup models.
