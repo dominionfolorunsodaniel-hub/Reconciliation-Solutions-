@@ -54,3 +54,9 @@ Cause of 1-2 minute answers: each question makes two Gemini calls (plan, then wr
 - PDF reports (report_pdf.py): coloured top edge, logo at the top, and a faint copy of the logo as the page background (shows through the table). No logo = no background; a broken logo never stops the PDF.
 - Landing page: About ("The story behind Report Analyzer") section with nav + footer links, and three new FAQ items (getting started, logo on reports, who built it). OWNER: replace the About text (search for "OWNER:" in static/index.html) with your own story.
 - Files changed: static/index.html, web.py, report_pdf.py.
+
+# Round 6 (Nov 6)
+- About section is now "Our story": a short intro plus a "Read the full story" chapter book (dream, TikTok, hard start, the question to his dad, day and night, where to find me, what comes next). Exact age and family workplace details are deliberately not published.
+- Telegram t.me/COLDFX26 added to the About section, FAQ ("Do you have a WhatsApp number?"), contact note and footer; WhatsApp stated as not used.
+- Search-engine data (JSON-LD for Organization and SoftwareApplication), press-down feedback on buttons, green/red field states for valid/invalid input.
+- Not added: "Trusted by 500+ teams", SOC2 claim, fake logos/ticker, custom cursor, dark default (not true or not wanted).
