@@ -1063,6 +1063,24 @@ html[data-theme=dark] ::-webkit-scrollbar-thumb { background:#3a4b43; background
   #landing.lp .rv { opacity:1; transform:none; }
 }
 </style>
+
+<style id="polish3">
+.setup-card { border-left:4px solid var(--a-brand) !important; }
+.setup-steps { list-style:none; margin:12px 0 14px; padding:0; display:grid; gap:10px; }
+.setup-steps li { display:flex; gap:12px; align-items:flex-start; }
+.setup-steps li.hidden { display:none; }
+.setup-steps small { display:block; color:var(--a-mute); font-size:13.5px; }
+.st-dot { flex:0 0 22px; width:22px; height:22px; margin-top:1px; border-radius:50%; border:2px solid var(--a-line); display:grid; place-items:center; }
+.setup-steps li.done .st-dot { background:var(--a-brand); border-color:var(--a-brand); }
+.setup-steps li.done .st-dot::after { content:""; width:5px; height:10px; border-right:2px solid #fff; border-bottom:2px solid #fff; transform:rotate(45deg) translate(-1px,-1px); }
+.setup-steps li.done b { text-decoration:none; color:var(--a-mute); }
+.brand-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); gap:14px; margin:14px 0; }
+.brand-grid label { display:grid; gap:6px; font-weight:600; font-size:14px; min-width:0; }
+.brand-grid input[type=color] { min-height:42px; width:100%; padding:3px; }
+#landing.lp .lp-story { max-width:680px; margin:0 auto; display:grid; gap:14px; font-size:17px; line-height:1.7; color:var(--lp-ink); }
+#landing.lp .lp-story p { color:var(--lp-ink); }
+#landing.lp .lp-story-sign { font-weight:600; }
+</style>
 </head>
 <body>
 <a class="skip-link" href="#top">Skip to main content</a>
@@ -1109,7 +1127,7 @@ html[data-theme=dark] ::-webkit-scrollbar-thumb { background:#3a4b43; background
     <div class="lp-wrap lp-nav-in">
       <a class="lp-brand" href="#top" aria-label="Report Analyzer home"><svg class="lp-ic lp-logo-ic"><use href="#i-logo"/></svg><span>Report Analyzer</span></a>
       <nav class="lp-links" aria-label="Page sections">
-        <a href="#features">Features</a><a href="#statement">Statement check</a><a href="#pricing">Pricing</a><a href="#faq">FAQ</a><a href="#contact">Contact</a>
+        <a href="#features">Features</a><a href="#statement">Statement check</a><a href="#pricing">Pricing</a><a href="#about">About</a><a href="#faq">FAQ</a><a href="#contact">Contact</a>
       </nav>
       <a class="lp-btn lp-btn-quiet lp-signin" href="#lpLogin" data-goto-login>Sign in</a>
     </div>
@@ -1169,7 +1187,7 @@ html[data-theme=dark] ::-webkit-scrollbar-thumb { background:#3a4b43; background
             <button id="regBtn" type="button" class="lp-btn lp-btn-primary lp-full">Request access</button>
             <div class="lp-note">By requesting access you agree to our <a href="#" data-legal="terms">Terms</a> and <a href="#" data-legal="privacy">Privacy Policy</a>.</div>
             <div class="err lp-err" id="regMsg" aria-live="polite"></div>
-            <div class="lp-note">An administrator reviews each request. You can sign in once it is approved.</div>
+            <div class="lp-note">An administrator reviews each request. Once it is approved, sign in and open Settings first to save your email and add your company logo.</div>
           </div>
         </details>
       </div>
@@ -1202,7 +1220,7 @@ html[data-theme=dark] ::-webkit-scrollbar-thumb { background:#3a4b43; background
         <article class="lp-card"><svg class="lp-ic lp-ic-l"><use href="#i-scale"/></svg><h3>Reconcile two reports</h3><p>Match a switch log against the ledger and see what is missing or different.</p></article>
         <article class="lp-card"><svg class="lp-ic lp-ic-l"><use href="#i-trend"/></svg><h3>ATM cash forecast</h3><p>See how much cash each ATM will need and the day it is likely to run out.</p></article>
         <article class="lp-card"><svg class="lp-ic lp-ic-l"><use href="#i-bell"/></svg><h3>Alerts and reminders</h3><p>Scheduled reconciliation results, usage warnings and renewal reminders reach your email.</p></article>
-        <article class="lp-card"><svg class="lp-ic lp-ic-l"><use href="#i-pdf"/></svg><h3>PDF and Excel reports</h3><p>Share a clean summary with your own logo and colours.</p></article>
+        <article class="lp-card"><svg class="lp-ic lp-ic-l"><use href="#i-pdf"/></svg><h3>PDF and Excel reports</h3><p>Share a clean summary with your own logo, colour and page background.</p></article>
       </div>
     </div>
   </section>
@@ -1288,6 +1306,19 @@ html[data-theme=dark] ::-webkit-scrollbar-thumb { background:#3a4b43; background
     </div>
   </section>
 
+  <section class="lp-sec lp-alt" id="about">
+    <div class="lp-wrap lp-narrow">
+      <div class="lp-head"><h2>The story behind Report Analyzer</h2><p>Why it exists and who is behind it.</p></div>
+      <!-- OWNER: replace the text in this block with your own story, your name and a photo if you like. -->
+      <div class="lp-story">
+        <p>Report Analyzer is built in Nigeria for the people who match ATM, POS and bank reports by hand and answer for the numbers at the end of the month.</p>
+        <p>The idea is simple: you should not need to be a spreadsheet expert to find what is missing. You upload your reports, the tool compares them, and every figure it shows is calculated from your own data.</p>
+        <p>It is built and supported directly by its maker. When you write to us, you get a reply from the person who builds it, and your feedback decides what is improved next.</p>
+        <p class="lp-story-sign"><a href="mailto:reconciliationsolutionsupport@gmail.com">Write to us</a></p>
+      </div>
+    </div>
+  </section>
+
   <section class="lp-sec" id="faq">
     <div class="lp-wrap lp-narrow">
       <div class="lp-head"><h2>Common questions</h2></div>
@@ -1297,7 +1328,9 @@ html[data-theme=dark] ::-webkit-scrollbar-thumb { background:#3a4b43; background
         <details><summary>Which bank statements and files work?</summary><p>Statements and reports as CSV, Excel or PDF, including GTBank, Access, Zenith, UBA, First Bank, OPay, Moniepoint, Kuda and PalmPay layouts, plus other common formats. Scanned PDFs are read too.</p></details>
         <details><summary>How do I pay?</summary><p>For now by bank transfer to the account shown on the Plan &amp; Billing page. Your plan starts once we confirm the payment. Card payment is coming soon.</p></details>
         <details><summary>Can I talk to someone before I sign up?</summary><p>Yes. Use the contact form on this page or email <a href="mailto:reconciliationsolutionsupport@gmail.com">reconciliationsolutionsupport@gmail.com</a> and we will reply.</p></details>
-        <details><summary>How do I get started?</summary><p>Choose "Request an account" in the sign-in box. Once an administrator approves it, you can sign in.</p></details>
+        <details><summary>How do I get started?</summary><p>Choose "Request an account" in the sign-in box. Once an administrator approves it, sign in and open <b>Settings</b> first. Save your email there (it is used for password resets and plan reminders) and add your company logo so it appears on your PDF reports. Then upload your first report.</p></details>
+        <details><summary>Can I put my company logo on my reports?</summary><p>Yes, every customer can. In Settings, add your company name, logo and brand colour once. Your PDF reports then show your logo and colour, with a faint copy of the logo as the page background.</p></details>
+        <details><summary>Who built Report Analyzer?</summary><p>Report Analyzer is built in Nigeria for ATM, POS and finance teams. <a href="#about">Read the story behind it</a> or write to us at <a href="mailto:reconciliationsolutionsupport@gmail.com">reconciliationsolutionsupport@gmail.com</a>.</p></details>
       </div>
     </div>
   </section>
@@ -1326,7 +1359,7 @@ html[data-theme=dark] ::-webkit-scrollbar-thumb { background:#3a4b43; background
           <a class="lp-brand" href="#top"><svg class="lp-ic lp-logo-ic" aria-hidden="true"><use href="#i-logo"/></svg><span>Report Analyzer</span></a>
           <p>Reconcile ATM, POS and bank reports and check bank statements. Built for teams that handle sensitive financial data.</p>
         </div>
-        <nav aria-label="Product"><h4>Product</h4><ul><li><a href="#features">Features</a></li><li><a href="#statement">Statement check</a></li><li><a href="#pricing">Pricing</a></li><li><a href="#faq">FAQ</a></li></ul></nav>
+        <nav aria-label="Product"><h4>Product</h4><ul><li><a href="#features">Features</a></li><li><a href="#statement">Statement check</a></li><li><a href="#pricing">Pricing</a></li><li><a href="#about">About</a></li><li><a href="#faq">FAQ</a></li></ul></nav>
         <nav aria-label="Legal"><h4>Legal</h4><ul><li><button type="button" class="lp-foot-btn" data-legal="terms">Terms of Service</button></li><li><button type="button" class="lp-foot-btn" data-legal="privacy">Privacy Policy</button></li></ul></nav>
         <div><h4>Contact</h4><ul><li><a href="mailto:reconciliationsolutionsupport@gmail.com">reconciliationsolutionsupport@gmail.com</a></li><li><a href="#contact">Send us a message</a></li></ul></div>
       </div>
@@ -1396,6 +1429,15 @@ html[data-theme=dark] ::-webkit-scrollbar-thumb { background:#3a4b43; background
 </header>
 <main id="v2-home">
   <div id="newsBanner" class="news-banner hidden"></div>
+  <section class="card setup-card hidden" id="setupCard" data-views="dashboard settings" aria-live="polite">
+    <h2>Welcome. Set up your account first</h2>
+    <p class="mute">Two quick steps in Settings make the rest work properly.</p>
+    <ol class="setup-steps">
+      <li id="stEmail"><span class="st-dot" aria-hidden="true"></span><div><b>Save your email</b><small>For password resets, plan reminders and payment updates.</small></div></li>
+      <li id="stLogo"><span class="st-dot" aria-hidden="true"></span><div><b>Add your company logo</b><small>It shows on every PDF you download.</small></div></li>
+    </ol>
+    <div class="row"><button type="button" id="setupGo">Go to Settings</button><button type="button" class="ghost" id="setupSkip">Skip the logo for now</button></div>
+  </section>
   <section class="d-hero" data-views="dashboard">
     <div>
       <div class="d-greet" id="dGreet">Welcome </div>
@@ -1616,6 +1658,18 @@ html[data-theme=dark] ::-webkit-scrollbar-thumb { background:#3a4b43; background
     <p>Report Analyzer exists to make financial reconciliation simple and affordable for teams like yours. Your support helps cover hosting, security and new features.</p>
     <p class="mute">Online donations are still being set up. If you would like to support the project today, email us and we will share the details.</p>
     <a class="d-btn" href="mailto:reconciliationsolutionsupport@gmail.com?subject=Supporting%20Report%20Analyzer">Email us</a>
+  </section>
+
+  <section class="card hidden analyst-up" id="brandCard" data-views="settings">
+    <h2>Company logo and colour</h2>
+    <div class="mute">Add your logo once. It then appears at the top of every PDF you download, with a coloured top edge and a faint copy of the logo as the page background.</div>
+    <div class="brand-grid">
+      <label>Company<select id="bCo"></select></label>
+      <label>Name shown on PDFs<input type="text" id="bName" placeholder="Your company name" maxlength="80"></label>
+      <label>Brand colour<input type="color" id="bColor" value="#0b6b4b"></label>
+      <label>Logo (PNG or JPG, under 2 MB)<input type="file" id="bLogo" accept="image/png,image/jpeg"></label>
+    </div>
+    <div class="row"><button id="bBtn" type="button">Save logo and colour</button><span class="mute" id="bMsg" aria-live="polite"></span></div>
   </section>
 
   <section class="card" id="accountCard" data-views="settings">
@@ -1922,8 +1976,6 @@ html[data-theme=dark] ::-webkit-scrollbar-thumb { background:#3a4b43; background
 
     </div>
     <div data-views="settings">
-    <h2 style="margin-top:18px">Company branding (for PDFs)</h2>
-    <div class="row"><select id="bCo"></select><input type="text" id="bName" placeholder="Name shown on PDFs"><input type="color" id="bColor" value="#0b6b4b" title="Brand colour"><input type="file" id="bLogo" accept="image/png,image/jpeg"><button id="bBtn">Save branding</button><span class="mute" id="bMsg"></span></div>
 
     <h2 style="margin-top:18px">AI usage today</h2>
     <div class="mute" id="usageInfo"></div>
@@ -2127,7 +2179,33 @@ async function start() {
     $("twofaCard").classList.remove("hidden"); $("twofaMsg").textContent = "Admin accounts must turn on two-factor login before continuing."; renderTwofa(); return;
   }
   await loadCompanies();
+  try { fill($("bCo"), S.companies, c => c.name, c => c.id); await loadBranding(); } catch (e) { /* branding is optional */ }
+  if (window.refreshSetup) window.refreshSetup();
+  /* new customers go to Settings first (until they have saved an email) */
+  let tourSeen = false; try { tourSeen = localStorage.getItem("ra_v2_tour_seen") === "1"; } catch (e) {}
+  if (tourSeen && !admin && canUp && !S.user.email && window.navigate) { try { window.navigate("settings"); setTimeout(() => { const a = document.getElementById("accountCard"); if (a) a.scrollIntoView({ block: "start" }); }, 60); } catch (e) {} }
 }
+
+/* ---------- setup card ---------- */
+window.refreshSetup = function () {
+  const card = document.getElementById("setupCard"); if (!card || !S.user) return;
+  const owner = S.user.role === "admin", viewer = S.user.role === "viewer";
+  let skipped = false; try { skipped = localStorage.getItem("ra_skip_logo_" + S.user.id) === "1"; } catch (e) {}
+  const hasEmail = !!S.user.email, hasLogo = !!S.hasLogo || viewer;
+  document.getElementById("stEmail").classList.toggle("done", hasEmail);
+  document.getElementById("stLogo").classList.toggle("done", hasLogo);
+  document.getElementById("stLogo").classList.toggle("hidden", viewer);
+  document.getElementById("setupSkip").classList.toggle("hidden", hasEmail === false || hasLogo);
+  card.classList.toggle("hidden", owner || (hasEmail && (hasLogo || skipped)));
+};
+(function () {
+  const go = document.getElementById("setupGo"), skip = document.getElementById("setupSkip");
+  if (go) go.addEventListener("click", () => {
+    if (window.navigate) window.navigate("settings");
+    setTimeout(() => { const t = S.user && !S.user.email ? document.getElementById("accountCard") : document.getElementById("brandCard"); if (t) t.scrollIntoView({ behavior: "smooth", block: "start" }); }, 80);
+  });
+  if (skip) skip.addEventListener("click", () => { try { localStorage.setItem("ra_skip_logo_" + S.user.id, "1"); } catch (e) {} window.refreshSetup(); });
+})();
 
 /* ---------- two-factor ---------- */
 function renderTwofa() {
@@ -2208,11 +2286,13 @@ $("question").addEventListener("keydown", e => { if (e.key === "Enter") $("ask")
 $("ask").onclick = async () => {
   const q = $("question").value.trim(); if (!q) return;
   $("error").textContent = ""; $("ask").disabled = true; $("ask").textContent = "Analyzing…";
+  const t0 = Date.now(), tick = setInterval(() => { $("ask").textContent = "Analyzing… " + Math.round((Date.now() - t0) / 1000) + "s"; }, 1000);
   try {
     const rid = $("report").value;
     const r = await jpost("/api/analyze", { company_id: Number($("company").value), report_id: rid === "all" ? null : Number(rid), question: q, prev_plan: $("followup").checked ? S.plan : null });
     if (r.clarify) $("error").textContent = " " + r.clarify; else { S.plan = r.plan; renderResult(r); loadHistory(); }
   } catch (e) { $("error").textContent = e.message; }
+  clearInterval(tick);
   $("ask").disabled = false; $("ask").textContent = "Analyze";
 };
 $("fBtn").onclick = async () => {
@@ -2511,12 +2591,13 @@ async function loadBranding() {
   const cid = $("bCo").value; if (!cid) return;
   const b = await api(`/api/companies/${cid}/branding`);
   $("bName").value = b.display_name; $("bColor").value = b.color; $("bMsg").textContent = b.has_logo ? "Logo saved ✓" : "No logo yet";
+  S.hasLogo = !!b.has_logo; if (window.refreshSetup) window.refreshSetup();
 }
 $("bCo").onchange = loadBranding;
 $("bBtn").onclick = async () => {
   const fd = new FormData(); fd.append("display_name", $("bName").value); fd.append("color", $("bColor").value);
   if ($("bLogo").files[0]) fd.append("logo", $("bLogo").files[0]);
-  try { await api(`/api/companies/${$("bCo").value}/branding`, { method: "PUT", body: fd }); $("bMsg").textContent = "Saved ✓"; $("bLogo").value = ""; } catch (e) { $("bMsg").textContent = e.message; }
+  try { await api(`/api/companies/${$("bCo").value}/branding`, { method: "PUT", body: fd }); $("bMsg").textContent = "Saved ✓"; $("bLogo").value = ""; await loadBranding(); } catch (e) { $("bMsg").textContent = e.message; }
 };
 $("backupBtn").onclick = async () => { $("backupBtn").disabled = true; try { const r = await api("/api/backup", { method: "POST" }); $("backupMsg").textContent = `Saved ${r.file} (${(r.size / 1024).toFixed(0)} KB) in ${r.folder}/ - copy it off the server too.`; } catch (e) { $("backupMsg").textContent = e.message; } $("backupBtn").disabled = false; };
 
@@ -2525,7 +2606,7 @@ api("/api/me").then(start).catch(showLanding);
 /* Beginner-friendly guided tour and sidebar helpers */
 (function(){
  const steps=[
-  {title:"Welcome to Report Analyzer!",body:"This is your work area. Use the menu to jump to any part of the app. You can come back to this guide any time.",target:"#v2-home"},
+  {title:"Welcome to Report Analyzer!",body:"First, open Settings in the menu: save your email and add your company logo. Then use the menu to jump to any part of the app. You can come back to this guide any time.",target:"#v2-home"},
   {title:"Add your files",body:"Choose your company, then upload the report you want to check. You can also pick a report you already added.",target:"#v2-files"},
   {title:"Ask a question",body:"Ask a question about your report using everyday words. For example: “Which payments failed?”",target:"#v2-ask"},
   {title:"Compare two files",body:"Use this part to compare two reports and find numbers that do not match.",target:"#v2-compare"},
@@ -2544,7 +2625,8 @@ api("/api/me").then(start).catch(showLanding);
   overlay.querySelector("#v2TourBack").onclick=()=>showStep(step-1);
   overlay.querySelector("#v2TourNext").onclick=()=>step===steps.length-1?closeTour():showStep(step+1);
  }
- function closeTour(){if(overlay){overlay.remove();overlay=null;}try{localStorage.setItem("ra_v2_tour_seen","1");}catch(e){}}
+ function closeTour(){if(overlay){overlay.remove();overlay=null;}try{localStorage.setItem("ra_v2_tour_seen","1");}catch(e){}
+  try{ if(window.S||typeof S!=="undefined"){ if(S.user && S.user.role!=="admin" && S.user.role!=="viewer" && !S.user.email && window.navigate){ window.navigate("settings"); setTimeout(function(){var a=document.getElementById("accountCard"); if(a) a.scrollIntoView({block:"start"});},60); } } }catch(e){} }
  function ready(){
   const app=document.getElementById("app");
   if(app){let navDone=false;const obs=new MutationObserver(()=>{if(navDone&&app.classList.contains("v2-nav-ready"))return;if(!app.classList.contains("hidden")){navDone=true;if(!app.classList.contains("v2-nav-ready"))app.classList.add("v2-nav-ready");let seen=false;try{seen=localStorage.getItem("ra_v2_tour_seen")==="1";}catch(e){}if(!seen&&!overlay)setTimeout(()=>{if(!app.classList.contains("hidden")&&!overlay)showStep(0);},900);}});obs.observe(app,{attributes:true,attributeFilter:["class"]});if(!app.classList.contains("hidden"))app.classList.add("v2-nav-ready");}
@@ -3418,7 +3500,7 @@ api("/api/me").then(start).catch(showLanding);
     $("acctMsg").textContent = "";
     try {
       const r = await jsend("PUT", "/api/me/email", { email: $("acctEmail").value.trim() });
-      S.user.email = r.email;
+      S.user.email = r.email; if (window.refreshSetup) window.refreshSetup();
       $("acctMsg").textContent = r.email ? "Saved. We will use it for password resets and plan reminders." : "Email removed.";
     } catch (e) { $("acctMsg").textContent = e.message; }
   };
