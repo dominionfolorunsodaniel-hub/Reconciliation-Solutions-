@@ -138,5 +138,15 @@ def decide_registration(request_id: int, decision: str, admin: dict, note: str =
             "UPDATE registration_requests SET status='approved', reviewed_at=?, reviewed_by=?, review_note=? "
             "WHERE id=? AND status='pending'",
             (_now(), admin["id"], (note or "Approved")[:300], request_id))
-        return {"id": request_id, "status": "approved", "username": req["username"],
-                "company_name": req["company_name"], "user_id": user_id, "company_id": company_id}
+        result = {"id": request_id, "status": "approved", "username": req["username"],
+                  "company_name": req["company_name"], "user_id": user_id, "company_id": company_id}
+    try:
+        if req["email"]:
+            extras._mail_async(req["email"], "Welcome to Reconciliation Solutions",
+                f"Hello {req['username']},\n\nYour account for {req['company_name']} has been approved and you can sign in now.\n\n"
+                "First step: open Settings and save your email, company name, logo and brand colour. Your logo then appears on every PDF you download.\n"
+                "Then upload your bank statement and sales report and ask your first question.\n\n"
+                "Need help? Message us on Telegram: https://t.me/COLDFX26\n\nReconciliation Solutions")
+    except Exception:  # noqa: BLE001
+        pass
+    return result

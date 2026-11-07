@@ -78,3 +78,10 @@ Cause of 1-2 minute answers: each question makes two Gemini calls (plan, then wr
   - GEMINI_THINKING_LEVEL: low (default), medium or high. 3.8 Flash has no "minimal" or "off" level.
 - web.py: the Excel file and the chart picture are now built at the same time after each answer.
 - The app's top bar and the page title now say Reconciliation Solutions.
+
+## Round 9 (FINAL_16)
+- Owner dashboard: questions this month/7d, active users, busiest companies, sign-ups and questions per day (extras.overview + Overview tab).
+- Welcome email after account approval (needs RESEND_API_KEY or SMTP_*; skipped silently otherwise). Expiry reminders already existed.
+- /api/site-extras: testimonials from static/testimonials.json (only entries with "approved": true), demo video from static/demo.mp4/.webm, real hero screenshot from static/hero-screenshot.png. Sections stay hidden until you add real files.
+- "Made for Nigerian businesses" bank strip (bank detection already existed in statement.py).
+- Shareable report links already existed (Share in the results screen).

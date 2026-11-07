@@ -501,6 +501,31 @@ def pwa_service_worker():
     return FileResponse(_STATIC / "sw.js", media_type="application/javascript", headers={"Cache-Control": "no-cache", "Service-Worker-Allowed": "/"})
 
 
+@app.get("/api/site-extras")
+def site_extras():
+    """Public. Only returns things the owner really supplied: approved testimonials, a demo video, a real screenshot."""
+    import json as _json
+    items = []
+    try:
+        data = _json.loads((_STATIC / "testimonials.json").read_text(encoding="utf-8"))
+        for t in data if isinstance(data, list) else []:
+            if isinstance(t, dict) and t.get("approved") and str(t.get("quote", "")).strip() and str(t.get("name", "")).strip():
+                items.append({"quote": str(t["quote"])[:400], "name": str(t["name"])[:80], "role": str(t.get("role", ""))[:80]})
+    except Exception:  # noqa: BLE001
+        pass
+    demo = next((n for n in ("demo.mp4", "demo.webm") if (_STATIC / n).is_file()), None)
+    shot = next((n for n in ("hero-screenshot.png", "hero-screenshot.jpg", "hero-screenshot.webp") if (_STATIC / n).is_file()), None)
+    return {"testimonials": items[:6], "demo": "/media/" + demo if demo else None, "screenshot": "/media/" + shot if shot else None}
+
+
+@app.get("/media/{name}")
+def site_media(name: str):
+    if name not in ("demo.mp4", "demo.webm", "hero-screenshot.png", "hero-screenshot.jpg", "hero-screenshot.webp") or not (_STATIC / name).is_file():
+        raise HTTPException(404, "Not found")
+    mt = {"mp4": "video/mp4", "webm": "video/webm", "png": "image/png", "jpg": "image/jpeg", "webp": "image/webp"}[name.rsplit(".", 1)[1]]
+    return FileResponse(_STATIC / name, media_type=mt, headers={"Cache-Control": "public, max-age=3600"})
+
+
 @app.get("/offline.html")
 def pwa_offline():
     return FileResponse(_STATIC / "offline.html", media_type="text/html", headers=_PWA_HEADERS)

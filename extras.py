@@ -360,7 +360,19 @@ def overview() -> dict:
             except ValueError:
                 pass
     fb = list_feedback(0)
-    return {"customers": int(customers), "companies": len(companies), "new_customers_7d": int(new7),
+    day14 = (now - dt.timedelta(days=14)).strftime(FMT)
+    with db._db() as con:
+        q_month = con.execute("SELECT COUNT(*) AS n FROM queries WHERE created_at >= ?", (month_start,)).fetchone()["n"]
+        q_7d = con.execute("SELECT COUNT(*) AS n FROM queries WHERE created_at > ?", (week_ago,)).fetchone()["n"]
+        active_7d = con.execute("SELECT COUNT(DISTINCT user_id) AS n FROM queries WHERE created_at > ? AND user_id IS NOT NULL", (week_ago,)).fetchone()["n"]
+        top = con.execute("SELECT c.name AS name, COUNT(*) AS n FROM queries q JOIN companies c ON c.id = q.company_id "
+                          "WHERE q.created_at >= ? GROUP BY c.id ORDER BY n DESC LIMIT 5", (month_start,)).fetchall()
+        su = con.execute("SELECT substr(created_at,1,10) AS d, COUNT(*) AS n FROM users WHERE role <> 'admin' AND created_at > ? GROUP BY d ORDER BY d", (day14,)).fetchall()
+        qd = con.execute("SELECT substr(created_at,1,10) AS d, COUNT(*) AS n FROM queries WHERE created_at > ? GROUP BY d ORDER BY d", (day14,)).fetchall()
+    return {"questions_this_month": int(q_month), "questions_7d": int(q_7d), "active_users_7d": int(active_7d),
+            "top_companies": [{"company": r["name"], "questions": r["n"]} for r in top],
+            "signups_14d": [{"day": r["d"], "n": r["n"]} for r in su], "questions_14d": [{"day": r["d"], "n": r["n"]} for r in qd],
+            "customers": int(customers), "companies": len(companies), "new_customers_7d": int(new7),
             "pending_payments": int(pending_pay), "pending_registrations": int(pending_reg),
             "income_this_month_ngn": income_month, "income_total_ngn": sum(by_month.values()),
             "income_by_month": [{"month": m, "ngn": by_month[m]} for m in months],
