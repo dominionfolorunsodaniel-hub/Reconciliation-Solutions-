@@ -149,6 +149,39 @@ def _prefixed(df: pd.DataFrame, cols: list[str], prefix: str) -> pd.DataFrame:
     return out
 
 
+
+def _add_evidence(m: pd.DataFrame, status: pd.Series, keys: list, amt) -> pd.DataFrame:
+    """Adds two plain-language columns, worked out only from the rows themselves (no AI):
+    Confidence - how strong the evidence for the match is; Finding - what kind of difference it is."""
+    strong = any(REF_RE.search(str(k.get("a", ""))) or REF_RE.search(str(k.get("b", ""))) for k in keys)
+    n_keys = len(keys)
+    conf = pd.Series("", index=m.index, dtype=object)
+    finding = pd.Series("", index=m.index, dtype=object)
+    both = (m["_merge"] == "both").to_numpy()
+    conf[both] = "High" if strong else ("Medium" if n_keys >= 2 else "Low")
+    if "Difference (A-B)" in m.columns:
+        av = pd.to_numeric(m[f"A: {amt['a']}"], errors="coerce").astype(float)
+        bv = pd.to_numeric(m[f"B: {amt['b']}"], errors="coerce").astype(float)
+        mism = (status == "Amount mismatch").to_numpy()
+        conf[mism] = "Medium" if strong else "Low"
+        part = mism & (bv > 0).to_numpy() & (av > bv).to_numpy()
+        over = mism & (bv > av).to_numpy()
+        finding[part] = "Possible partial settlement (B is less than A)"
+        finding[over] = "B is more than A (possible overpayment)"
+        finding[mism & ~part & ~over] = "Amount differs"
+    # the same key present in both reports but counted more times in one of them = likely duplicate
+    for side, tag in (("A: ", "Only in A"), ("B: ", "Only in B")):
+        only = (status == tag).to_numpy()
+        if only.any():
+            matched_keys = set(m.loc[both, "_key"].astype(str))
+            dup = only & m["_key"].astype(str).isin(matched_keys).to_numpy()
+            finding[dup] = f"Possible duplicate in report {tag[-1]} (same key already matched)"
+            miss = only & ~dup
+            finding[miss] = f"Missing from report {'B' if tag[-1] == 'A' else 'A'}"
+    m.insert(1, "Confidence", conf)
+    m.insert(2, "Finding", finding)
+    return m
+
 def run_recon(a: pd.DataFrame, b: pd.DataFrame, plan: dict) -> dict:
     if not _valid(plan, a, b):
         raise ValueError("Those columns don't exist in the reports.")
@@ -172,6 +205,10 @@ def run_recon(a: pd.DataFrame, b: pd.DataFrame, plan: dict) -> dict:
         bad = ((m["_merge"] == "both") & (diff.abs() > tol)).to_numpy()
         status[bad] = "Amount mismatch"
     m.insert(0, "Status", status)
+    try:
+        m = _add_evidence(m, status, keys, amt)
+    except Exception:  # noqa: BLE001  evidence columns are a bonus; never let them break a reconciliation
+        pass
     m = m.drop(columns=["_merge", "_n"]).rename(columns={"_key": "Match key"})
 
     rows = []

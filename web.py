@@ -34,6 +34,7 @@ import forecast
 import enterprise_features as ef
 import extras
 import landing
+import jobs
 import notify
 import pages
 import portal
@@ -730,6 +731,52 @@ async def upload(company_id: int, file: UploadFile = File(...), user: dict = Dep
     if push:
         _keep(asyncio.create_task(asyncio.to_thread(notify.alert_company, company_id, push, user["id"])))
     return {"id": rid, "rows": len(df), "columns": list(df.columns), "notes": notes, "description": desc}
+
+
+async def _process_upload(company_id: int, name: str, data: bytes, user: dict, progress) -> dict:
+    progress("Validating", 20, "Reading your file...")
+    try:
+        df, notes, _ = await asyncio.to_thread(core.load_report, data, name)
+    except Exception as e:  # noqa: BLE001
+        raise ValueError(f"Couldn't read that file: {e}")
+    progress("Processing", 50, f"Read {len(df):,} rows. Checking the columns...")
+    desc = await core.describe_report(df, name)
+    progress("Processing", 80, "Saving...")
+    rid = await asyncio.to_thread(db.save_upload, company_id, name, data, df, user["id"])
+    db.save_description(rid, desc)
+    db.audit(user, "upload", company_id, f"#{rid} {name} ({len(df)} rows)")
+    push = anomaly.push_text(db.get_company(company_id)["name"], name, desc.get("alerts", []))
+    if push:
+        _keep(asyncio.create_task(asyncio.to_thread(notify.alert_company, company_id, push, user["id"])))
+    return {"id": rid, "rows": len(df), "columns": list(df.columns), "notes": notes, "description": desc}
+
+
+@app.post("/api/companies/{company_id}/reports/async")
+async def upload_async(company_id: int, file: UploadFile = File(...), user: dict = Depends(current_user)):
+    """Same as the normal upload, but returns at once with a job to check, so big files never time out the browser."""
+    need(user, "analyst")
+    need_company(user, company_id)
+    name = file.filename or "report.csv"
+    if "." in name and name.lower().rsplit(".", 1)[-1] not in core.ALLOWED_EXT:
+        raise HTTPException(400, "Supported files: " + core.FILE_TYPES_TEXT)
+    data = await file.read()
+    if not data:
+        raise HTTPException(400, "That file is empty.")
+    if len(data) > core.MAX_FILE_MB * 1024 * 1024:
+        raise HTTPException(400, f"File too large (limit {core.MAX_FILE_MB} MB)")
+    import hashlib
+    job, fresh = jobs.create("upload", user["id"], company_id, f"{company_id}:{hashlib.sha256(data).hexdigest()}", name)
+    if fresh:
+        _keep(asyncio.create_task(jobs.run(job, lambda progress: _process_upload(company_id, name, data, user, progress))))
+    return jobs.public(job)
+
+
+@app.get("/api/jobs/{job_id}")
+def job_status(job_id: str, user: dict = Depends(current_user)):
+    job = jobs.get(job_id)
+    if job is None or (job["owner"] != user["id"] and user.get("role") != "admin"):
+        raise HTTPException(404, "Job not found (it may have expired). Please upload again.")
+    return jobs.public(job)
 
 
 @app.delete("/api/reports/{report_id}")
@@ -1921,6 +1968,18 @@ def company_members(company_id: int, user: dict = Depends(current_user)):
 def company_cases(company_id: int, status: str = "all", limit: int = 200, user: dict = Depends(current_user)):
     need_company(user, company_id)
     return ef.list_cases(company_id, status, limit)
+
+
+@app.get("/api/companies/{company_id}/cases/ageing")
+def company_case_ageing(company_id: int, user: dict = Depends(current_user)):
+    need_company(user, company_id)
+    return ef.case_ageing(company_id)
+
+
+@app.get("/api/admin/audit/verify")
+def verify_audit_chain(user: dict = Depends(current_user)):
+    need(user, "admin")
+    return db.verify_audit()
 
 
 @app.get("/api/cases/{case_id}/events")

@@ -163,6 +163,11 @@ def update_case(case_id: int, actor_id: int, status: str | None = None, assigned
                 raise ValueError("Assignee must have access to this company.")
             con.execute("UPDATE discrepancy_cases SET assigned_user_id=?,updated_at=? WHERE id=?", (assigned_user_id, stamp(), case_id))
             con.execute("INSERT INTO discrepancy_case_events(case_id,actor_user_id,action,detail,created_at) VALUES(?,?,?,?,?)", (case_id, actor_id, "assigned", f"Assigned to user #{assigned_user_id}", stamp()))
+        if status in ("resolved", "accepted") and _maker_checker_on():
+            # maker-checker: the person who moved the case to review (the maker) cannot also close it (the checker)
+            prev = con.execute("SELECT actor_user_id FROM discrepancy_case_events WHERE case_id=? AND action='status_changed' AND detail='in_review' ORDER BY id DESC LIMIT 1", (case_id,)).fetchone()
+            if prev and prev["actor_user_id"] == actor_id:
+                raise ValueError("Maker-checker is on: a different officer must approve and close this case.")
         if status is not None:
             resolved = stamp() if status in {"resolved", "accepted"} else None
             con.execute("UPDATE discrepancy_cases SET status=?,resolved_at=?,updated_at=? WHERE id=?", (status, resolved, stamp(), case_id))
@@ -170,6 +175,26 @@ def update_case(case_id: int, actor_id: int, status: str | None = None, assigned
         if comment.strip():
             con.execute("INSERT INTO discrepancy_case_events(case_id,actor_user_id,action,detail,created_at) VALUES(?,?,?,?,?)", (case_id, actor_id, "comment", comment.strip(), stamp()))
     return get_case(case_id) or {}
+
+
+def case_ageing(company_id: int) -> dict:
+    """How long unresolved cases have been open, in buckets."""
+    import datetime as _dt
+    buckets = {"0-1 days": 0, "2-7 days": 0, "8-30 days": 0, "Over 30 days": 0}
+    now = _dt.datetime.utcnow()
+    with db._db() as con:
+        rows = con.execute("SELECT created_at FROM discrepancy_cases WHERE company_id=? AND status IN ('open','in_review')", (company_id,)).fetchall()
+    for r in rows:
+        try:
+            days = (now - _dt.datetime.strptime(str(r["created_at"])[:19].replace("T", " "), "%Y-%m-%d %H:%M:%S")).days
+        except Exception:  # noqa: BLE001
+            continue
+        buckets["0-1 days" if days <= 1 else "2-7 days" if days <= 7 else "8-30 days" if days <= 30 else "Over 30 days"] += 1
+    return {"buckets": buckets, "open_total": sum(buckets.values())}
+
+
+def _maker_checker_on() -> bool:
+    return os.getenv("MAKER_CHECKER", "").strip().lower() in ("1", "true", "on", "yes")
 
 
 def case_events(case_id: int) -> list[dict]:

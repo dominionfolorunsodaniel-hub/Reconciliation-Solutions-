@@ -229,6 +229,7 @@ def _init_schema(_con) -> None:
     _ensure_column(_con, "reports", "uploaded_by", "INTEGER")
     _ensure_column(_con, "queries", "user_id", "INTEGER")
     _ensure_column(_con, "users", "totp_secret", "TEXT")
+    _ensure_column(_con, "audit", "entry_hash", "TEXT")
     _ensure_column(_con, "users", "totp_enabled", "INTEGER NOT NULL DEFAULT 0")
     _ensure_column(_con, "users", "totp_last_step", "INTEGER NOT NULL DEFAULT 0")
     _ensure_column(_con, "payment_requests", "proof_data", "TEXT")   # encrypted base64 payment screenshot
@@ -591,13 +592,42 @@ def delete_session(token: str) -> None:
 
 
 # ---- audit log ------------------------------------------------------------------ #
+def _audit_hash(prev: str, ts, user_id, username, source, action, company_id, detail) -> str:
+    import hashlib
+    raw = "|".join(str(x) for x in (prev, ts, user_id, username, source, action, company_id, detail))
+    return hashlib.sha256(raw.encode("utf-8")).hexdigest()
+
+
 def audit(user: dict | None, action: str, company_id: int | None = None, detail: str = "",
           source: str = "web") -> None:
+    ts, uid, uname, det = _now(), (user["id"] if user else None), (user["username"] if user else None), (detail or "")[:500]
     with _db() as con:
-        con.execute(
-            "INSERT INTO audit(ts, user_id, username, source, action, company_id, detail) VALUES (?,?,?,?,?,?,?)",
-            (_now(), user["id"] if user else None, user["username"] if user else None,
-             source, action, company_id, (detail or "")[:500]))
+        cur_hash = None
+        try:  # tamper-evident chain: each row's hash covers the previous row's hash
+            last = con.execute("SELECT entry_hash FROM audit WHERE entry_hash IS NOT NULL ORDER BY id DESC LIMIT 1").fetchone()
+            cur_hash = _audit_hash(last["entry_hash"] if last else "", ts, uid, uname, source, action, company_id, det)
+        except Exception:  # noqa: BLE001  e.g. column not there yet: still write the log
+            cur_hash = None
+        if cur_hash:
+            con.execute(
+                "INSERT INTO audit(ts, user_id, username, source, action, company_id, detail, entry_hash) VALUES (?,?,?,?,?,?,?,?)",
+                (ts, uid, uname, source, action, company_id, det, cur_hash))
+        else:
+            con.execute(
+                "INSERT INTO audit(ts, user_id, username, source, action, company_id, detail) VALUES (?,?,?,?,?,?,?)",
+                (ts, uid, uname, source, action, company_id, det))
+
+
+def verify_audit() -> dict:
+    """Re-computes the chain. Any edited or deleted row after chaining began shows up as a break."""
+    with _db() as con:
+        rows = con.execute("SELECT id, ts, user_id, username, source, action, company_id, detail, entry_hash FROM audit WHERE entry_hash IS NOT NULL ORDER BY id").fetchall()
+    prev, checked = "", 0
+    for r in rows:
+        if _audit_hash(prev, r["ts"], r["user_id"], r["username"], r["source"], r["action"], r["company_id"], r["detail"]) != r["entry_hash"]:
+            return {"ok": False, "checked": checked, "broken_at_id": r["id"]}
+        prev, checked = r["entry_hash"], checked + 1
+    return {"ok": True, "checked": checked, "broken_at_id": None}
 
 
 def list_audit(limit: int = 100) -> list[dict]:

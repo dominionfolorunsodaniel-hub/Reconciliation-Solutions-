@@ -95,3 +95,9 @@ Cause of 1-2 minute answers: each question makes two Gemini calls (plan, then wr
 ## Round 12 (FINAL_19)
 - Collapsible 'How was this calculated?' panel under every answer; Month-end pack ZIP (PDF + Excel) on results and reconciliations; 'Review cases' button after reconciliation (cases already existed).
 - Public pages /for/pos-agents, /for/atm-operators, /for/petrol-stations, /for/supermarkets and /whats-new (edit static/changelog.json); added to sitemap and footer.
+
+## Round 13 (FINAL_20)
+See ROADMAP_STATUS.md
+
+## Round 14 (FINAL_21)
+Background upload with progress (jobs.py, /api/companies/{id}/reports/async, /api/jobs/{id}); see ROADMAP_STATUS.md
