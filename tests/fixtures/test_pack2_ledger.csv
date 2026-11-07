@@ -1,0 +1,12 @@
+Reference,Date,Description,Credit,Debit
+RA2001,2026-10-01,Transfer from Ade,50000,
+RA2002,2026-10-02,POS settlement,120000,
+RA2003,2026-10-02,Bank charges,,1500
+RA2004,2026-10-03,Supplier payment,,75000
+RA2005,2026-10-04,Customer deposit,80000,
+RA2006,2026-10-05,Rent,,200000
+RA2007,2026-10-06,Web payment,42000,
+RA2008,2026-10-07,Salary advance,,30000
+RA2009,2026-10-08,Invoice 2009,61000,
+RA2010,2026-10-09,Vendor 2010,,16000
+RA2012,2026-10-11,Ledger-only expense,,9500
