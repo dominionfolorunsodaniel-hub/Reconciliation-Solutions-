@@ -1249,6 +1249,7 @@ html[data-theme=dark] .d-kpi, html[data-theme=dark] .d-kpi b, html[data-theme=da
 #app #tkBody,#app #bcBody,#app #tkReply{min-height:130px}
 #app .row>#question+button,#app #ask{min-height:48px}
 </style>
+<style id="calc18">.calc-panel{margin:10px 0;border:1px solid var(--a-line,#dbe3f2);border-radius:10px;padding:10px 14px;background:#fff}.calc-panel summary{cursor:pointer;font-weight:700;min-height:32px}.calc-body{white-space:pre-wrap;margin-top:8px;font-size:14px;color:#44506e}html[data-theme=dark] .calc-panel{background:#0e1729}html[data-theme=dark] .calc-body{color:#b7c3dd}</style>
 </head>
 <body>
 <a class="skip-link" href="#top">Skip to main content</a>
@@ -1596,7 +1597,7 @@ html[data-theme=dark] .d-kpi, html[data-theme=dark] .d-kpi b, html[data-theme=da
           <a class="lp-brand" href="#top"><svg class="lp-ic lp-logo-ic" aria-hidden="true"><use href="#i-logo"/></svg><span>Reconciliation Solutions</span></a>
           <p>Reconcile ATM, POS and bank reports and check bank statements. Built for teams that handle sensitive financial data.</p>
         </div>
-        <nav aria-label="Product"><h4>Product</h4><ul><li><a href="#features">Features</a></li><li><a href="#statement">Statement check</a></li><li><a href="#pricing">Pricing</a></li><li><a href="#about">About</a></li><li><a href="#faq">FAQ</a></li></ul></nav>
+        <nav aria-label="Product"><h4>Product</h4><ul><li><a href="#features">Features</a></li><li><a href="#statement">Statement check</a></li><li><a href="#pricing">Pricing</a></li><li><a href="#about">About</a></li><li><a href="#faq">FAQ</a></li><li><a href="/whats-new">What's new</a></li><li><a href="/for/pos-agents">For POS agents</a></li><li><a href="/for/atm-operators">For ATM operators</a></li><li><a href="/for/petrol-stations">For petrol stations</a></li><li><a href="/for/supermarkets">For shops</a></li></ul></nav>
         <nav aria-label="Legal"><h4>Legal</h4><ul><li><button type="button" class="lp-foot-btn" data-legal="terms">Terms of Service</button></li><li><button type="button" class="lp-foot-btn" data-legal="privacy">Privacy Policy</button></li></ul></nav>
         <div><h4>Contact</h4><ul><li><a href="mailto:reconciliationsolutionsupport@gmail.com">reconciliationsolutionsupport@gmail.com</a></li><li><a href="#contact">Send us a message</a></li><li><a href="https://t.me/COLDFX26" target="_blank" rel="noopener">Telegram: t.me/COLDFX26</a></li></ul></div>
       </div>
@@ -2054,7 +2055,7 @@ html[data-theme=dark] .d-kpi, html[data-theme=dark] .d-kpi b, html[data-theme=da
   <section class="card hidden" id="resultCard" data-views="analytics">
     <div class="row" style="justify-content:space-between">
       <h2 id="title" style="margin:0"></h2>
-      <span class="row"><a id="download"><button class="ghost">Download Excel</button></a><a id="downloadPdf"><button class="ghost">Download PDF</button></a></span>
+      <span class="row"><a id="download"><button class="ghost">Download Excel</button></a><a id="downloadPdf"><button class="ghost">Download PDF</button></a><a id="downloadPack"><button class="ghost">Month-end pack (ZIP)</button></a></span>
     </div>
     <div class="insight hidden" id="insight"></div>
     <canvas id="chart" class="hidden"></canvas>
@@ -2084,7 +2085,7 @@ html[data-theme=dark] .d-kpi, html[data-theme=dark] .d-kpi b, html[data-theme=da
     <div class="error" id="rErr"></div>
     <div id="rOut" class="hidden" style="margin-top:10px">
       <pre class="recon" id="rText"></pre>
-      <span class="row"><a id="rDownload"><button class="ghost">Download Excel (all details)</button></a><a id="rPdf"><button class="ghost">Download PDF</button></a></span>
+      <span class="row"><a id="rDownload"><button class="ghost">Download Excel (all details)</button></a><a id="rPdf"><button class="ghost">Download PDF</button></a><a id="rPack"><button class="ghost">Month-end pack (ZIP)</button></a><button type="button" class="ghost" id="rCases">Review cases</button></span>
       <div class="tablewrap" style="margin-top:10px"><table id="rTable"></table></div>
       <div class="mute" id="rInfo"></div>
       <div id="rAsk"></div>
@@ -2542,8 +2543,12 @@ $("fBtn").onclick = async () => {
 };
 function renderResult(r) {
   $("resultCard").classList.remove("hidden");
-  $("title").textContent = r.title; $("download").href = `/api/download/${r.result_id}`; $("downloadPdf").href = `/api/download/${r.result_id}/pdf`;
-  const ins = $("insight"); ins.textContent = r.insight || ""; ins.classList.toggle("hidden", !r.insight);
+  $("title").textContent = r.title; $("download").href = `/api/download/${r.result_id}`; $("downloadPdf").href = `/api/download/${r.result_id}/pdf`; $("downloadPack").href = `/api/download/${r.result_id}/pack`;
+  const ins = $("insight"), full = r.insight || "", cut = full.indexOf("\n\nHOW THIS WAS WORKED OUT:");
+  ins.textContent = cut >= 0 ? full.slice(0, cut) : full; ins.classList.toggle("hidden", !full);
+  let cp = $("calcPanel"); if (!cp) { cp = document.createElement("details"); cp.id = "calcPanel"; cp.className = "calc-panel"; ins.after(cp); }
+  cp.replaceChildren(); cp.hidden = cut < 0;
+  if (cut >= 0) { const sm = document.createElement("summary"); sm.textContent = "How was this calculated?"; const pre = document.createElement("div"); pre.className = "calc-body"; pre.textContent = full.slice(cut + 2).replace("HOW THIS WAS WORKED OUT:", "Steps:").trim(); cp.append(sm, pre); }
   const cv = $("chart"); if (S.chart) { S.chart.destroy(); S.chart = null; }
   if (r.chart) { cv.classList.remove("hidden"); const c = r.chart; S.chart = new Chart(cv, { type: c.type, data: { labels: c.labels, datasets: [{ label: c.metric, data: c.values, borderWidth: 2, backgroundColor: "rgba(11,92,230,.55)", borderColor: "#0b5ce6", tension: .3 }] }, options: { responsive: true, plugins: { legend: { display: c.type === "pie" } } } }); } else cv.classList.add("hidden");
   fillTable($("table"), r.columns, r.rows);
@@ -2552,6 +2557,7 @@ function renderResult(r) {
 }
 
 /* ---------- reconcile ---------- */
+$("rCases").onclick = () => { if (window.navigate) window.navigate("discrepancies"); };
 $("rBtn").onclick = async () => {
   $("rErr").textContent = ""; $("rOut").classList.add("hidden");
   if (!$("rA").value || !$("rB").value || $("rA").value === $("rB").value) { $("rErr").textContent = "Pick two different reports."; return; }
@@ -2560,7 +2566,7 @@ $("rBtn").onclick = async () => {
     const r = await jpost("/api/reconcile", { company_id: Number($("company").value), report_a: Number($("rA").value), report_b: Number($("rB").value), instruction: $("rNote").value });
     if (r.clarify) $("rErr").textContent = " " + r.clarify;
     else {
-      S.reconResultId = r.result_id; $("rOut").classList.remove("hidden"); $("rText").textContent = r.text; $("rDownload").href = `/api/download/${r.result_id}`; $("rPdf").href = `/api/download/${r.result_id}/pdf`;
+      S.reconResultId = r.result_id; $("rOut").classList.remove("hidden"); $("rText").textContent = r.text; $("rDownload").href = `/api/download/${r.result_id}`; $("rPdf").href = `/api/download/${r.result_id}/pdf`; $("rPack").href = `/api/download/${r.result_id}/pack`; $("rCases").classList.toggle("hidden", !r.cases_created);
       fillTable($("rTable"), r.columns, r.rows);
       $("rInfo").textContent = r.total_problem_rows ? `${r.total_problem_rows} unmatched/mismatched row(s)` + (r.total_problem_rows > r.rows.length ? ` - showing ${r.rows.length}, download Excel for all.` : "") : "Everything matched.";
     }
