@@ -85,3 +85,9 @@ Cause of 1-2 minute answers: each question makes two Gemini calls (plan, then wr
 - /api/site-extras: testimonials from static/testimonials.json (only entries with "approved": true), demo video from static/demo.mp4/.webm, real hero screenshot from static/hero-screenshot.png. Sections stay hidden until you add real files.
 - "Made for Nigerian businesses" bank strip (bank detection already existed in statement.py).
 - Shareable report links already existed (Share in the results screen).
+
+## Round 10 (FINAL_17)
+- Hero highlight types itself in (skipped for reduced-motion users); "How it works" steps light up in order on scroll; footer shows a real service-status line measured from /api/health. No simulated data.
+
+## Round 11 (FINAL_18)
+- Ask box is now a large 3-line textarea (Enter sends, Shift+Enter new line); all app inputs min height 48px; textareas larger; narrow fields widened.
