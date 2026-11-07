@@ -91,3 +91,7 @@ Cause of 1-2 minute answers: each question makes two Gemini calls (plan, then wr
 
 ## Round 11 (FINAL_18)
 - Ask box is now a large 3-line textarea (Enter sends, Shift+Enter new line); all app inputs min height 48px; textareas larger; narrow fields widened.
+
+## Round 12 (FINAL_19)
+- Collapsible 'How was this calculated?' panel under every answer; Month-end pack ZIP (PDF + Excel) on results and reconciliations; 'Review cases' button after reconciliation (cases already existed).
+- Public pages /for/pos-agents, /for/atm-operators, /for/petrol-stations, /for/supermarkets and /whats-new (edit static/changelog.json); added to sitemap and footer.

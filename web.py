@@ -35,6 +35,7 @@ import enterprise_features as ef
 import extras
 import landing
 import notify
+import pages
 import portal
 import receipts
 import recon
@@ -501,6 +502,19 @@ def pwa_service_worker():
     return FileResponse(_STATIC / "sw.js", media_type="application/javascript", headers={"Cache-Control": "no-cache", "Service-Worker-Allowed": "/"})
 
 
+@app.get("/for/{slug}")
+def niche(slug: str):
+    page = pages.niche_page(slug)
+    if page is None:
+        raise HTTPException(404, "Not found")
+    return Response(content=page, media_type="text/html")
+
+
+@app.get("/whats-new")
+def whats_new():
+    return Response(content=pages.changelog_page(), media_type="text/html")
+
+
 @app.get("/api/site-extras")
 def site_extras():
     """Public. Only returns things the owner really supplied: approved testimonials, a demo video, a real screenshot."""
@@ -581,7 +595,9 @@ def robots_txt(request: Request):
 @app.get("/sitemap.xml")
 def sitemap_xml(request: Request):
     body = ('<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n'
-            f"  <url><loc>{public_base(request)}/</loc></url>\n</urlset>\n")
+            f"  <url><loc>{public_base(request)}/</loc></url>\n"
+            + "".join(f"  <url><loc>{public_base(request)}/for/{k}</loc></url>\n" for k in pages.NICHES)
+            + f"  <url><loc>{public_base(request)}/whats-new</loc></url>\n</urlset>\n")
     return Response(content=body, media_type="application/xml")
 
 
@@ -1440,6 +1456,24 @@ def download_pdf(result_id: str, user: dict = Depends(current_user)):
     db.audit(user, "export_pdf", item["company"], p["title"][:100])
     return StreamingResponse(iter([pdf]), media_type="application/pdf",
                              headers={"Content-Disposition": 'attachment; filename="report.pdf"'})
+
+
+@app.get("/api/download/{result_id}/pack")
+def download_pack(result_id: str, user: dict = Depends(current_user)):
+    """Month-end pack: the branded PDF and the full Excel file in one ZIP."""
+    import zipfile
+    item = _owned_result(result_id, user)
+    p = item.get("pdf")
+    company = db.get_company(item["company"])
+    buf = io.BytesIO()
+    with zipfile.ZipFile(buf, "w", zipfile.ZIP_DEFLATED) as z:
+        z.writestr("details.xlsx", item["data"])
+        if p:
+            z.writestr("summary.pdf", report_pdf.build_pdf(company["name"], p["title"], p["question"], p["insight"], p["table"],
+                                                           p["chart"], db.get_branding(company["id"]), p.get("total_rows")))
+    db.audit(user, "export_pack", item["company"], (p or {}).get("title", "pack")[:100])
+    return StreamingResponse(iter([buf.getvalue()]), media_type="application/zip",
+                             headers={"Content-Disposition": 'attachment; filename="month-end-pack.zip"'})
 
 
 # ------------------------------- branding (every customer, own company) ------------------------------ #
