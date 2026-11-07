@@ -189,5 +189,115 @@ class StatementTests(unittest.TestCase):
         self.assertEqual((t["credits_count"], t["debits_count"]), (8, 5))
 
 
+class BankLedgerTests(unittest.TestCase):
+    """Test Pack 2 (rebuilt from the expected results): 11 bank, 11 ledger, 8 exact, 2 amount mismatches, 1 bank-only, 1 ledger-only."""
+    @classmethod
+    def setUpClass(cls):
+        import bankrec
+        cls.br = bankrec
+        fx = os.path.join(os.path.dirname(__file__), "fixtures")
+        cls.bank = pd.read_csv(os.path.join(fx, "test_pack2_bank.csv"))
+        cls.ledger = pd.read_csv(os.path.join(fx, "test_pack2_ledger.csv"))
+        cls.out = bankrec.reconcile_bank_ledger(cls.bank, cls.ledger, 0.01, "bank.csv", "ledger.csv")
+
+    def row(self, ref):
+        d = self.out["detail"]
+        return d[d["Reference"] == ref].iloc[0]
+
+    def test_counts(self):
+        c = self.out["detail"]["Status"].value_counts()
+        self.assertEqual(c[self.br.MATCHED], 8)
+        self.assertEqual(c[self.br.CREDIT_MISMATCH], 1)
+        self.assertEqual(c[self.br.DEBIT_MISMATCH], 1)
+        self.assertEqual(c[self.br.BANK_ONLY], 1)
+        self.assertEqual(c[self.br.LEDGER_ONLY], 1)
+        self.assertEqual(self.out["totals"]["bank"]["rows"], 11)
+        self.assertEqual(self.out["totals"]["ledger"]["rows"], 11)
+
+    def test_credit_mismatch_ra2009(self):
+        r = self.row("RA2009")
+        self.assertEqual((r["Bank amount"], r["Ledger amount"], r["Difference (A-B)"]), (65000, 61000, 4000))
+
+    def test_debit_mismatch_ra2010(self):
+        r = self.row("RA2010")
+        self.assertEqual(r["Status"], self.br.DEBIT_MISMATCH)
+        self.assertEqual((r["Bank amount"], r["Ledger amount"], abs(r["Difference (A-B)"])), (14000, 16000, 2000))
+
+    def test_unmatched_show_real_amounts(self):
+        self.assertEqual(self.row("RA2011")["Bank amount"], 33000)
+        self.assertTrue(pd.isna(self.row("RA2011")["Ledger amount"]))
+        self.assertEqual(self.row("RA2012")["Ledger amount"], 9500)
+        self.assertTrue(pd.isna(self.row("RA2012")["Bank amount"]))
+
+    def test_total_discrepancy(self):
+        self.assertEqual(self.out["totals"]["total_discrepancy"], 48500)
+
+    def test_report_text_has_everything(self):
+        t = self.out["report_text"]
+        for needle in ("RA2009", "RA2010", "RA2011", "RA2012", "65,000.00", "61,000.00", "33,000.00", "9,500.00", "48,500.00", "tolerance"):
+            self.assertIn(needle, t)
+        for i in range(1, 9):
+            self.assertIn(f"RA200{i}", t)  # exact matches are listed too, none omitted
+
+    def test_totals_and_averages(self):
+        b = self.out["totals"]["bank"]
+        self.assertEqual(b["credit_count"] + b["debit_count"], 11)
+        self.assertEqual(b["net_movement"], round(b["credit_total"] - b["debit_total"], 2))
+        self.assertEqual(b["credit_average"], round(b["credit_total"] / b["credit_count"], 2))  # divided by credits, not all rows
+        self.assertEqual(b["debit_highest"]["reference"], "RA2006")
+
+    def test_reference_in_both_is_not_enough(self):
+        bank = pd.DataFrame({"Reference": ["X1"], "Credit": [100.0], "Debit": [None]})
+        led = pd.DataFrame({"Reference": ["X1"], "Credit": [90.0], "Debit": [None]})
+        self.assertEqual(self.br.reconcile_bank_ledger(bank, led)["detail"].iloc[0]["Status"], self.br.CREDIT_MISMATCH)
+
+    def test_direction_and_missing_and_duplicates(self):
+        bank = pd.DataFrame({"Reference": ["D1", "M1", "P1", "P1", None], "Credit": [100.0, 50.0, 10.0, 10.0, 7.0], "Debit": [None, None, None, None, None]})
+        led = pd.DataFrame({"Reference": ["D1", "M1", "P1"], "Credit": [None, None, 10.0], "Debit": [100.0, None, None]})
+        d = self.br.reconcile_bank_ledger(bank, led)["detail"]
+        st = lambda ref: set(d[d["Reference"] == ref]["Status"])  # noqa: E731
+        self.assertEqual(st("D1"), {self.br.DIRECTION})
+        self.assertEqual(st("M1"), {self.br.MISSING_AMT})
+        self.assertEqual(st("P1"), {self.br.DUPLICATE})
+        self.assertEqual(int((d["Reference"] == "P1").sum()), 3)       # all three rows listed
+        self.assertEqual(st("(blank)"), {self.br.NO_REF})               # nothing dropped
+        self.assertEqual(len(d), 6)  # D1, M1, three P1 rows, one blank-reference row
+
+    def test_tolerance(self):
+        bank = pd.DataFrame({"Reference": ["T"], "Credit": [100.50], "Debit": [None]})
+        led = pd.DataFrame({"Reference": ["T"], "Credit": [100.00], "Debit": [None]})
+        self.assertEqual(self.br.reconcile_bank_ledger(bank, led, 1.0)["detail"].iloc[0]["Status"], self.br.MATCHED)
+        self.assertEqual(self.br.reconcile_bank_ledger(bank, led, 0.1)["detail"].iloc[0]["Status"], self.br.CREDIT_MISMATCH)
+
+    def test_amount_plus_type_layout(self):
+        bank = pd.DataFrame({"Ref": ["A", "B"], "Amount": ["1,000.00", "(500.00)"], "Type": ["CR", "DR"]})
+        led = pd.DataFrame({"Ref": ["A", "B"], "Amount": [1000, 450], "Type": ["Credit", "Debit"]})
+        d = self.br.reconcile_bank_ledger(bank, led)["detail"].set_index("Reference")
+        self.assertEqual(d.loc["A", "Status"], self.br.MATCHED)
+        self.assertEqual(d.loc["B", "Status"], self.br.DEBIT_MISMATCH)
+
+    def test_excel_sheets_complete(self):
+        sh = self.br.sheets(self.out)
+        self.assertEqual(len(sh["All records"]), len(self.out["detail"]))
+        for name in ("Executive summary", "Exact matches", "Amount mismatches", "Only in bank", "Only in ledger", "Duplicate references", "Financial totals", "Corrective actions", "Methodology"):
+            self.assertIn(name, sh)
+        self.assertEqual(len(sh["Exact matches"]), 8)
+
+
+class FullReadTests(unittest.TestCase):
+    def test_everything_request_and_description(self):
+        import fullread
+        self.assertTrue(fullread.wants_everything("Tell me everything in this file"))
+        self.assertTrue(fullread.wants_everything("list all transactions"))
+        self.assertFalse(fullread.wants_everything("total sales by region"))
+        df = pd.DataFrame({"Reference": ["A", "A", "B", None], "Amount": [10.0, 20.0, None, 5.0]})
+        t = fullread.describe(df)
+        self.assertIn("4 rows", t)
+        self.assertIn("1 blank", t)           # blank amount reported, not treated as zero
+        self.assertIn("total 35.00", t)
+        self.assertIn("average 11.67 (over 3 values)", t)   # divided by values present, not all rows
+        self.assertIn("Repeated values in Reference: A", t)
+
+
 if __name__ == "__main__":
     unittest.main()
