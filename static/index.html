@@ -1251,6 +1251,8 @@ html[data-theme=dark] .d-kpi, html[data-theme=dark] .d-kpi b, html[data-theme=da
 </style>
 <style id="calc18">.calc-panel{margin:10px 0;border:1px solid var(--a-line,#dbe3f2);border-radius:10px;padding:10px 14px;background:#fff}.calc-panel summary{cursor:pointer;font-weight:700;min-height:32px}.calc-body{white-space:pre-wrap;margin-top:8px;font-size:14px;color:#44506e}html[data-theme=dark] .calc-panel{background:#0e1729}html[data-theme=dark] .calc-body{color:#b7c3dd}</style>
 <style id="help20">.help-list{margin-top:14px;display:grid;gap:8px}.help-item{border:1px solid var(--a-line,#dbe3f2);border-radius:10px;padding:10px 14px;background:#fff}.help-item summary{cursor:pointer;font-weight:700;min-height:32px}.help-item p{margin:8px 0 2px;color:#44506e}.case-ageing{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:8px 0}.age-chip{padding:4px 10px;border-radius:999px;font-size:13px;font-weight:600}.age-chip.a0{background:#dcfce7;color:#166534}.age-chip.a1{background:#dbeafe;color:#1e40af}.age-chip.a2{background:#fef3c7;color:#92400e}.age-chip.a3{background:#fee2e2;color:#991b1b}html[data-theme=dark] .help-item{background:#0e1729}html[data-theme=dark] .help-item p{color:#b7c3dd}</style>
+<style id="rq21">.rq{display:flex;gap:14px;align-items:center;padding:12px 14px;border:1px solid var(--a-line,#dbe3f2);border-radius:12px;background:#fff;margin:10px 0}.rq>b{color:#fff;border-radius:999px;padding:10px 16px;font-size:18px}.rq small{display:block;color:#5b6785}html[data-theme=dark] .rq{background:#0e1729}</style>
+<style id="rr21">.rr-list{display:grid;gap:10px;margin:12px 0}.rr-row{display:flex;flex-wrap:wrap;gap:10px;align-items:center;border:1px solid var(--a-line,#dbe3f2);border-radius:12px;padding:12px;background:#fff}.rr-row>div:first-child{flex:1 1 220px}html[data-theme=dark] .rr-row{background:#0e1729}</style>
 </head>
 <body>
 <a class="skip-link" href="#top">Skip to main content</a>
@@ -1352,6 +1354,7 @@ html[data-theme=dark] .d-kpi, html[data-theme=dark] .d-kpi b, html[data-theme=da
           <div class="lp-stack">
             <input type="text" id="fpUser" placeholder="Your username" maxlength="40" autocomplete="off" autocapitalize="none">
             <button id="fpSend" type="button" class="lp-btn lp-btn-outline lp-full">Send me a code</button>
+            <button id="fpAsk" type="button" class="lp-btn lp-btn-outline lp-full">No code arrived? Ask the admin to approve my reset</button>
             <div id="fpStep2" class="hidden lp-stack">
               <input type="text" id="fpCode" placeholder="6-digit code we sent you" inputmode="numeric" maxlength="6" autocomplete="off">
               <input type="password" id="fpNew" placeholder="New password (at least 10 characters)" autocomplete="new-password">
@@ -1623,6 +1626,7 @@ html[data-theme=dark] .d-kpi, html[data-theme=dark] .d-kpi b, html[data-theme=da
     <button type="button" class="sb-item" data-nav="discrepancies"><span class="ic"><svg class="svg-ic" aria-hidden="true"><use href="#i-alert"/></svg></span><span>Discrepancies</span></button>
     <button type="button" class="sb-item" data-nav="notifications"><span class="ic"><svg class="svg-ic" aria-hidden="true"><use href="#i-bell"/></svg></span><span>Notifications</span><span class="sb-count hidden" id="sbNotifCount">0</span></button>
     <button type="button" class="sb-item admin-only hidden" data-nav="team"><span class="ic"><svg class="svg-ic" aria-hidden="true"><use href="#i-users"/></svg></span><span>Team &amp; Access</span></button>
+    <button type="button" class="sb-item admin-only hidden" data-nav="resets"><span class="ic"><svg class="svg-ic" aria-hidden="true"><use href="#i-shieldcheck"/></svg></span><span>Password resets</span></button>
     <button type="button" class="sb-item admin-only hidden" data-nav="broadcast"><span class="ic"><svg class="svg-ic" aria-hidden="true"><use href="#i-megaphone"/></svg></span><span>Broadcast</span></button>
     <button type="button" class="sb-item" data-nav="plan"><span class="ic"><svg class="svg-ic" aria-hidden="true"><use href="#i-card"/></svg></span><span>Plan &amp; Billing</span></button>
     <button type="button" class="sb-item" data-nav="donations"><span class="ic"><svg class="svg-ic" aria-hidden="true"><use href="#i-heart"/></svg></span><span>Donations</span></button>
@@ -1791,9 +1795,11 @@ html[data-theme=dark] .d-kpi, html[data-theme=dark] .d-kpi b, html[data-theme=da
       <div class="ss-kpis" id="ssKpis"></div>
       <div class="ss-banner" id="ssIntegrity"></div>
       <div id="ssFlags"></div>
+      <div id="ssAttnBox" class="hidden"><h3 style="margin:16px 0 6px">Transactions to check</h3><small class="mute">Possible duplicates and unusually large entries, with their dates and references.</small><div class="ss-wrap" id="ssAttn"></div></div>
       <canvas id="ssChart" height="120"></canvas>
       <h3 style="margin:16px 0 6px">Month by month</h3>
       <div class="ss-wrap" id="ssTableWrap"></div>
+      <div id="ssTxBox" class="hidden"><h3 style="margin:16px 0 6px">All transactions</h3><small class="mute" id="ssTxNote"></small><div class="ss-wrap" id="ssTx"></div></div>
       <div id="ssCatsBox" class="hidden"><h3 style="margin:16px 0 6px">Where the money goes and comes from</h3><div class="ss-cats"><div id="ssCatSpend"></div><div id="ssCatIn"></div></div></div>
       <div id="ssFcBox" class="hidden"><h3 style="margin:16px 0 6px">What the next months may look like</h3><div class="ss-wrap" id="ssFcTable"></div><div id="ssFcWarn"></div><small class="mute" id="ssFcNote"></small></div>
       <div class="ss-loan hidden" id="ssLoan"></div>
@@ -1878,6 +1884,14 @@ html[data-theme=dark] .d-kpi, html[data-theme=dark] .d-kpi b, html[data-theme=da
   <section class="d-panel" data-views="notifications">
     <div class="d-head"><div><h3>Notifications</h3><p class="d-sub">News and announcements from the Report Analyzer team.</p></div><button type="button" class="ghost" id="notifReadAll">Mark all as read</button></div>
     <div id="notifList" style="display:grid;gap:10px"></div>
+  </section>
+
+  <section class="d-panel admin-only hidden" data-views="resets" id="resetsCard">
+    <h2 style="margin-top:0">Password reset requests</h2>
+    <p class="mute">When a customer asks for a reset, press Approve. A random 6-digit code is created and sent to their email (or Telegram) at once. The code works for 15 minutes.</p>
+    <div class="note hidden" id="rrMail"></div>
+    <div id="rrList" class="rr-list"></div>
+    <div class="row"><button type="button" class="ghost" id="rrRefresh">Refresh</button><span class="mute" id="rrMsg"></span></div>
   </section>
 
   <section class="d-panel admin-only hidden bc-box" data-views="broadcast">
@@ -2092,6 +2106,8 @@ html[data-theme=dark] .d-kpi, html[data-theme=dark] .d-kpi b, html[data-theme=da
     </div>
     <div class="error" id="rErr"></div>
     <div id="rOut" class="hidden" style="margin-top:10px">
+      <div id="rQuality" class="rq hidden"></div>
+      <div id="rSettleBox" class="hidden"><h3 style="margin:12px 0 6px">Daily settlement</h3><small class="mute">Expected comes from the first report, settled from the second. Delay is the days between their dates.</small><div class="tablewrap"><table id="rSettle"></table></div></div>
       <pre class="recon" id="rText"></pre>
       <span class="row"><a id="rDownload"><button class="ghost">Download Excel (all details)</button></a><a id="rPdf"><button class="ghost">Download PDF</button></a><a id="rPack"><button class="ghost">Month-end pack (ZIP)</button></a><button type="button" class="ghost" id="rCases">Review cases</button></span>
       <div class="tablewrap" style="margin-top:10px"><table id="rTable"></table></div>
@@ -2362,6 +2378,17 @@ async function api(path, opts) {
 const jsend = (method, p, b) => api(p, { method, headers: { "Content-Type": "application/json" }, body: JSON.stringify(b) });
 const jpost = (p, b) => jsend("POST", p, b);
 const fill = (sel, items, label, val) => sel.replaceChildren(...items.map(i => { const o = el("option", label(i)); o.value = val(i); return o; }));
+function txTable(columns, rows) {
+  columns = columns.filter(c => c !== "Balance" || true).slice(); const fi = columns.indexOf("Flag"), bi = columns.indexOf("Balance");
+  if (fi > -1 && bi > -1 && fi > bi) { columns.splice(fi, 1); columns.splice(bi, 0, "Flag"); }   // keep the Flag note visible, not off to the right
+  const tbl = el("table", "", "ss-table"), head = el("tr");
+  columns.forEach(c => head.append(el("th", c))); tbl.append(head);
+  rows.forEach(row => { const tr = el("tr"); columns.forEach(c => {
+    const v = row[c], isNum = (c === "Amount" || c === "Balance") && typeof v === "number";
+    const td = el("td", isNum ? "\u20a6" + v.toLocaleString("en-NG", { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : (v == null ? "" : String(v)));
+    if (c === "Flag" && v) td.className = "ss-neg"; tr.append(td); }); tbl.append(tr); });
+  return tbl;
+}
 function fillTable(t, columns, rows) {
   const head = el("tr"); columns.forEach(c => head.appendChild(el("th", c)));
   const body = rows.map(row => { const tr = el("tr"); columns.forEach(c => { const v = row[c]; const td = el("td", v === null || v === undefined ? "" : (typeof v === "number" ? v.toLocaleString(undefined, { maximumFractionDigits: 2 }) : String(v))); if (typeof v === "number") td.className = "num"; tr.appendChild(td); }); return tr; });
@@ -2592,6 +2619,17 @@ $("rBtn").onclick = async () => {
     if (r.clarify) $("rErr").textContent = " " + r.clarify;
     else {
       S.reconResultId = r.result_id; $("rOut").classList.remove("hidden"); $("rText").textContent = r.text; $("rDownload").href = `/api/download/${r.result_id}`; $("rPdf").href = `/api/download/${r.result_id}/pdf`; $("rPack").href = `/api/download/${r.result_id}/pack`; $("rCases").classList.toggle("hidden", !r.cases_created);
+      { const qb = $("rQuality"); qb.replaceChildren(); qb.classList.toggle("hidden", !r.quality);
+        if (r.quality) { const col = r.quality.score >= 90 ? "#10b981" : r.quality.score >= 75 ? "#22a6b3" : r.quality.score >= 50 ? "#f59e0b" : "#ef4444";
+          const big = el("b", `${r.quality.score}/100`); big.style.background = col; const t = el("div"); t.append(el("b", `Reconciliation quality: ${r.quality.grade}`));
+          t.append(el("small", r.exposure && r.exposure.total_at_risk ? ` Total value affected by differences: \u20a6${Number(r.exposure.total_at_risk).toLocaleString("en-NG", { maximumFractionDigits: 2 })}` : " Nothing affected."));
+          qb.append(big, t); } }
+      { const sb = $("rSettleBox"), st = r.settlement || []; sb.classList.toggle("hidden", !st.length);
+        if (st.length) { const cols = Object.keys(st[0]), money = new Set(["Expected", "Settled", "Outstanding"]);
+          const head = el("tr"); cols.forEach(c => head.append(el("th", c)));
+          const body = st.slice(0, 31).map(row => { const tr = el("tr"); cols.forEach(c => { const v = row[c];
+            tr.append(el("td", v == null ? "" : (money.has(c) ? Number(v).toLocaleString("en-NG", { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : String(v)))); }); return tr; });
+          $("rSettle").replaceChildren(head, ...body); } }
       fillTable($("rTable"), r.columns, r.rows);
       $("rInfo").textContent = r.total_problem_rows ? `${r.total_problem_rows} unmatched/mismatched row(s)` + (r.total_problem_rows > r.rows.length ? ` - showing ${r.rows.length}, download Excel for all.` : "") : "Everything matched.";
     }
@@ -3255,6 +3293,13 @@ api("/api/me").then(start).catch(showLanding);
     catch (e) { $("fpMsg").textContent = e.message; }
     $("fpSend").disabled = false;
   };
+  $("fpAsk").onclick = async () => {
+    const u = $("fpUser").value.trim(); if (!u) { $("fpMsg").textContent = "Enter your username or email first."; return; }
+    $("fpAsk").disabled = true; $("fpMsg").textContent = "Sending…";
+    try { const r = await jpost("/api/password-reset/ask", { username: u }); $("fpMsg").textContent = r.message; $("fpStep2").classList.remove("hidden"); }
+    catch (e) { $("fpMsg").textContent = e.message; }
+    $("fpAsk").disabled = false;
+  };
   $("fpConfirm").onclick = async () => {
     $("fpConfirm").disabled = true;
     try {
@@ -3469,7 +3514,7 @@ api("/api/me").then(start).catch(showLanding);
     $("ssGauge").style.setProperty("--p", r.score); $("ssGauge").style.setProperty("--c", col);
     $("ssScore").textContent = r.score; $("ssVerdict").textContent = r.verdict; $("ssVerdict").style.background = col;
     $("ssElig").textContent = r.eligibility; $("ssPeriod").textContent = `Period checked: ${r.period} · ${r.totals.months} month(s)`;
-    const k = r.totals; $("ssKpis").replaceChildren(...[["Total income", ngn(k.income)], ["Total spending", ngn(k.expenses)], ["Left over", ngn(k.net)], ["Avg left over / month", ngn(k.avg_left_over)]]
+    const k = r.totals; $("ssKpis").replaceChildren(...[["Total income", ngn(k.income)], ["Total spending", ngn(k.expenses)], ["Net movement", ngn(k.net_movement !== undefined ? k.net_movement : k.net)], ["Credits / debits", k.credits_count !== undefined ? `${k.credits_count} / ${k.debits_count}` : "-"], ["Avg left over / month", ngn(k.avg_left_over)]]
       .map(([a, b]) => { const d = el("div", "", "ss-kpi"); d.append(el("small", a), el("b", b)); return d; }));
     if (S.ssChart) S.ssChart.destroy();
     S.ssChart = new Chart($("ssChart"), { type: "bar", data: { labels: r.chart.labels, datasets: [
@@ -3492,6 +3537,10 @@ api("/api/me").then(start).catch(showLanding);
     ib.className = "ss-banner " + (ig.status === "passed" ? "" : (ig.status || "unavailable"));
     ib.replaceChildren(el("b", { passed: "Statement looks genuine", warning: "Some balances do not add up", failed: "Balances do not add up: this statement may have been edited", unavailable: "Authenticity check not possible" }[ig.status] || ""), el("small", ig.message || ""));
     $("ssFlags").replaceChildren(...(r.flags || []).map(f => { const d = el("div", "", "ss-flag " + f.severity); d.append(el("b", f.title), el("div", f.detail)); if (f.examples && f.examples.length) d.append(el("small", "e.g. " + f.examples.slice(0, 3).join(" · "))); return d; }));
+    $("ssAttnBox").classList.toggle("hidden", !(r.attention && r.attention.length));
+    if (r.attention && r.attention.length) $("ssAttn").replaceChildren(txTable(r.tx_columns, r.attention));
+    $("ssTxBox").classList.toggle("hidden", !(r.transactions && r.transactions.length));
+    if (r.transactions && r.transactions.length) { $("ssTx").replaceChildren(txTable(r.tx_columns, r.transactions.slice(0, 100))); $("ssTxNote").textContent = `${r.transactions.length} transaction(s) read` + (r.transactions.length > 100 ? " - showing the first 100; the Excel file has all of them." : "."); }
     const cats = r.categories; $("ssCatsBox").classList.toggle("hidden", !cats);
     if (cats) [["ssCatSpend", "Spending", cats.spending], ["ssCatIn", "Money in", cats.income]].forEach(([id, title, list]) => {
       const box = $(id); box.replaceChildren(el("h4", title)); (list || []).slice(0, 8).forEach(c => { const row = el("div", "", "ss-cat"), tr = el("div", "", "ss-bar"), i = el("i"); i.style.width = c.share_pct + "%"; tr.append(i); row.append(el("span", c.category), tr, el("b", `${ngn(c.amount)} (${c.share_pct}%)`)); box.append(row); }); });
@@ -4287,6 +4336,34 @@ async function loadAgeing() {
     if (!n) { const m = document.createElement("p"); m.className = "mute"; m.textContent = "No match. Try another word or message us on Telegram."; list.append(m); }
   }
   box.addEventListener("input", render); render();
+})();
+</script>
+<script>
+/* admin: approve password resets */
+(function () {
+  const list = document.getElementById("rrList"); if (!list) return;
+  async function load() {
+    const r = await api("/api/admin/reset-requests?status=pending"); list.replaceChildren();
+    const mb = document.getElementById("rrMail"); mb.classList.toggle("hidden", !!r.email_ready);
+    mb.textContent = r.email_ready ? "" : "Email is not set up on the server yet, so codes will not be emailed. After approving, the code is shown here so you can send it yourself (for example on Telegram).";
+    if (!r.requests.length) { const p = document.createElement("p"); p.className = "mute"; p.textContent = "No one is waiting."; list.append(p); return; }
+    r.requests.forEach(q => {
+      const row = document.createElement("div"); row.className = "rr-row";
+      const who = document.createElement("div"); who.innerHTML = ""; const b = document.createElement("b"); b.textContent = q.username;
+      const sm = document.createElement("small"); sm.textContent = ` asked ${q.created_at.replace("T", " ").slice(0, 16)} \u00b7 ` + (q.has_email ? "has email" : "no email") + (q.has_telegram ? " \u00b7 Telegram linked" : ""); who.append(b, sm);
+      const ok = document.createElement("button"); ok.textContent = "Approve & send code";
+      const no = document.createElement("button"); no.className = "ghost"; no.textContent = "Reject";
+      const out = document.createElement("div"); out.className = "mute";
+      async function decide(approve) { ok.disabled = no.disabled = true;
+        try { const d = await jpost(`/api/admin/reset-requests/${q.id}/decision`, { approve });
+          out.textContent = approve ? `Approved. Code ${d.code}` + (d.delivered.length ? ` sent by ${d.delivered.join(" and ")}.` : ". It was not sent automatically; give it to the customer.") : "Rejected."; }
+        catch (e) { out.textContent = e.message; ok.disabled = no.disabled = false; } }
+      ok.onclick = () => decide(true); no.onclick = () => decide(false);
+      row.append(who, ok, no, out); list.append(row);
+    });
+  }
+  document.querySelector('[data-nav="resets"]').addEventListener("click", () => load().catch(() => {}));
+  document.getElementById("rrRefresh").onclick = () => load().catch(e => { document.getElementById("rrMsg").textContent = e.message; });
 })();
 </script>
 </body>

@@ -1,6 +1,42 @@
 [
   {
     "date": "November 2026",
+    "title": "Password reset approved by the admin, faster repeat answers",
+    "changes": [
+      "If a reset code does not arrive, you can ask the admin to approve your reset and a new code is sent within seconds.",
+      "Asking the same question about the same report again answers instantly."
+    ]
+  },
+  {
+    "date": "November 2026",
+    "title": "Grouped matching and daily settlement",
+    "changes": [
+      "Several rows that add up to one row in the other report are now matched as a group.",
+      "A daily settlement table shows expected, settled and outstanding amounts and settlement delays.",
+      "Warnings appear when a file mixes currencies."
+    ]
+  },
+  {
+    "date": "November 2026",
+    "title": "Reconciliation quality score",
+    "changes": [
+      "Every reconciliation now gets a 0-100 quality score with the reason for each part.",
+      "Total value affected by differences is shown, and added to the PDF and Excel file.",
+      "Rows described as reversals, refunds or failed transactions are flagged for review."
+    ]
+  },
+  {
+    "date": "November 2026",
+    "title": "More detail in bank statement checks",
+    "changes": [
+      "The statement report now lists every transaction with its date and reference.",
+      "Possible duplicates and unusual entries are listed one by one with the reason.",
+      "Net movement, credit and debit counts, and a check of how many rows were read are shown.",
+      "Rows that hold both a credit and a debit amount are now counted as two transactions."
+    ]
+  },
+  {
+    "date": "November 2026",
     "title": "Safer uploads, better matching evidence",
     "changes": [
       "Uploads now run in the background with a progress percentage, so large files no longer freeze the page.",
