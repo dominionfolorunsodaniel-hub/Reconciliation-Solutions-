@@ -1218,6 +1218,18 @@ html[data-theme=dark] .d-kpi, html[data-theme=dark] .d-kpi b, html[data-theme=da
 .d-hero-card { background:#0a1f55 !important; color:#fff !important; border-color:#0a1f55 !important; }
 .d-hero-card b { color:#fff; } .d-hero-card p, .d-hero-card small { color:#b4c0e0 !important; }
 </style>
+<style id="extras16">
+#landing.lp .lp-banks{text-align:center;max-width:860px;margin:0 auto;font-weight:600;color:#08153a;line-height:2}
+#landing.lp .lp-banks-note{text-align:center;color:#5b6785;margin-top:8px}
+#landing.lp .lp-video{display:block;width:100%;max-width:860px;margin:0 auto;border-radius:16px;box-shadow:0 20px 50px rgba(8,21,58,.18);background:#000}
+#landing.lp .lp-reviews{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:18px}
+#landing.lp .lp-reviews blockquote{margin:0;padding:20px;border-radius:16px;background:#fff;border:1px solid #dbe3f2}
+#landing.lp .lp-reviews blockquote p{margin:0 0 12px}
+#landing.lp .lp-reviews cite{font-style:normal;font-weight:700;color:#0b5ce6;display:block}
+#landing.lp .lp-reviews small{color:#5b6785}
+#landing.lp .lp-hero-shot{width:100%;border-radius:14px;box-shadow:0 20px 50px rgba(8,21,58,.2)}
+#landing.lp [hidden]{display:none!important}
+</style>
 </head>
 <body>
 <a class="skip-link" href="#top">Skip to main content</a>
@@ -1492,6 +1504,28 @@ html[data-theme=dark] .d-kpi, html[data-theme=dark] .d-kpi b, html[data-theme=da
         </details>
         <p class="lp-story-sign"><a href="https://t.me/COLDFX26" target="_blank" rel="noopener">Message me on Telegram</a> <span aria-hidden="true">&middot;</span> <a href="mailto:reconciliationsolutionsupport@gmail.com">Email us</a></p>
       </div>
+    </div>
+  </section>
+
+  <section class="lp-sec" id="banks">
+    <div class="lp-wrap">
+      <div class="lp-head"><p class="lp-kicker">Made for Nigerian businesses</p><h2>Statements from your bank, POS and wallet</h2></div>
+      <p class="lp-banks">GTBank · Access · Zenith · UBA · First Bank · OPay · Moniepoint · Kuda · PalmPay · Fidelity · Sterling · Wema · Stanbic IBTC · FCMB · Ecobank · Providus · Polaris · Keystone</p>
+      <p class="lp-banks-note">Excel or CSV exports from these banks are recognised automatically. POS terminal and sales reports work too.</p>
+    </div>
+  </section>
+
+  <section class="lp-sec" id="demoVid" hidden>
+    <div class="lp-wrap">
+      <div class="lp-head"><p class="lp-kicker">See it work</p><h2>Watch a reconciliation in under two minutes</h2></div>
+      <video id="demoVideo" class="lp-video" controls preload="none" playsinline></video>
+    </div>
+  </section>
+
+  <section class="lp-sec" id="reviews" hidden>
+    <div class="lp-wrap">
+      <div class="lp-head"><p class="lp-kicker">Customers</p><h2>What our customers say</h2></div>
+      <div id="reviewGrid" class="lp-reviews"></div>
     </div>
   </section>
 
@@ -3767,6 +3801,12 @@ api("/api/me").then(start).catch(showLanding);
       grid.append(kpi("Customers", o.customers, `${o.new_customers_7d} new this week`), kpi("Income this month", naira(o.income_this_month_ngn), "all time " + naira(o.income_total_ngn)),
                   kpi("Analyses this month", o.analyses_this_month), kpi("Waiting for you", o.pending_payments + o.pending_registrations, `${o.pending_payments} payment(s) · ${o.pending_registrations} account request(s)`));
       host.append(grid);
+      const g2 = el("div", "", "insight-grid");
+      g2.append(kpi("Questions this month", o.questions_this_month, `${o.questions_7d} in the last 7 days`), kpi("Active users (7 days)", o.active_users_7d));
+      host.append(g2);
+      host.append(listBox("Busiest companies this month", (o.top_companies || []).map(x => `${x.company}: ${x.questions} questions`), "No questions yet."));
+      host.append(listBox("Sign-ups, last 14 days", (o.signups_14d || []).map(x => `${x.day}: ${x.n}`), "No sign-ups."));
+      host.append(listBox("Questions per day, last 14 days", (o.questions_14d || []).map(x => `${x.day}: ${x.n}`), "No questions."));
       const plans = Object.entries(o.companies_by_plan).map(([k, v]) => `${k}: ${v}`);
       host.append(listBox("Companies by plan", plans, "No companies yet."));
       const mx = Math.max(1, ...o.income_by_month.map(m => m.ngn));
@@ -4112,6 +4152,23 @@ api("/api/me").then(start).catch(showLanding);
       try { rec.start(); } catch (e) { b.classList.remove("on"); rec = null; }
     });
   }
+})();
+</script>
+<script>
+(async function(){
+  try{
+    const r=await fetch("/api/site-extras"); if(!r.ok) return; const x=await r.json();
+    if(x.demo){const v=document.getElementById("demoVideo"); v.src=x.demo; document.getElementById("demoVid").hidden=false;}
+    if(x.testimonials&&x.testimonials.length){
+      const g=document.getElementById("reviewGrid");
+      x.testimonials.forEach(t=>{const b=document.createElement("blockquote"),p=document.createElement("p"),c=document.createElement("cite"),m=document.createElement("small");
+        p.textContent="\u201c"+t.quote+"\u201d"; c.textContent=t.name; m.textContent=t.role||""; b.append(p,c,m); g.append(b);});
+      document.getElementById("reviews").hidden=false;
+    }
+    if(x.screenshot){
+      const art=document.querySelector(".lp-hero-art"); if(art){const i=document.createElement("img"); i.src=x.screenshot; i.alt="Reconciliation Solutions dashboard"; i.className="lp-hero-shot"; art.replaceChildren(i); art.removeAttribute("aria-hidden");}
+    }
+  }catch(e){}
 })();
 </script>
 </body>
