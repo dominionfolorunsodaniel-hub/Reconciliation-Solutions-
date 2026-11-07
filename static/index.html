@@ -3540,7 +3540,7 @@ api("/api/me").then(start).catch(showLanding);
     $("ssAttnBox").classList.toggle("hidden", !(r.attention && r.attention.length));
     if (r.attention && r.attention.length) $("ssAttn").replaceChildren(txTable(r.tx_columns, r.attention));
     $("ssTxBox").classList.toggle("hidden", !(r.transactions && r.transactions.length));
-    if (r.transactions && r.transactions.length) { $("ssTx").replaceChildren(txTable(r.tx_columns, r.transactions.slice(0, 100))); $("ssTxNote").textContent = `${r.transactions.length} transaction(s) read` + (r.transactions.length > 100 ? " - showing the first 100; the Excel file has all of them." : "."); }
+    if (r.transactions && r.transactions.length) { $("ssTx").replaceChildren(txTable(r.tx_columns, r.transactions.slice(0, 5000))); $("ssTxNote").textContent = `${r.transactions.length} transaction(s) read` + (r.transactions.length > 5000 ? " - showing the first 5,000; the Excel file has all of them." : ", all listed."); }
     const cats = r.categories; $("ssCatsBox").classList.toggle("hidden", !cats);
     if (cats) [["ssCatSpend", "Spending", cats.spending], ["ssCatIn", "Money in", cats.income]].forEach(([id, title, list]) => {
       const box = $(id); box.replaceChildren(el("h4", title)); (list || []).slice(0, 8).forEach(c => { const row = el("div", "", "ss-cat"), tr = el("div", "", "ss-bar"), i = el("i"); i.style.width = c.share_pct + "%"; tr.append(i); row.append(el("span", c.category), tr, el("b", `${ngn(c.amount)} (${c.share_pct}%)`)); box.append(row); }); });
