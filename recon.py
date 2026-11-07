@@ -204,11 +204,25 @@ def run_recon(a: pd.DataFrame, b: pd.DataFrame, plan: dict) -> dict:
         m["Difference (A-B)"] = diff
         bad = ((m["_merge"] == "both") & (diff.abs() > tol)).to_numpy()
         status[bad] = "Amount mismatch"
+    grouped = pd.Series(False, index=m.index)
+    if amt:
+        try:
+            grouped = _group_matches(m, status, amt, tol)
+            status[grouped] = "Matched"
+        except Exception:  # noqa: BLE001  grouping is a bonus; fall back to plain one-to-one results
+            grouped = pd.Series(False, index=m.index)
     m.insert(0, "Status", status)
     try:
         m = _add_evidence(m, status, keys, amt)
     except Exception:  # noqa: BLE001  evidence columns are a bonus; never let them break a reconciliation
         pass
+    try:
+        m = _flag_reversals(m)
+    except Exception:  # noqa: BLE001
+        pass
+    if grouped.any() and "Finding" in m.columns:
+        m.loc[grouped, "Finding"] = "Grouped match: several rows in one report add up to the amount in the other"
+        m.loc[grouped, "Confidence"] = "Medium"
     m = m.drop(columns=["_merge", "_n"]).rename(columns={"_key": "Match key"})
 
     rows = []
@@ -220,7 +234,21 @@ def run_recon(a: pd.DataFrame, b: pd.DataFrame, plan: dict) -> dict:
             row["Amount B"] = round(float(pd.to_numeric(part[f"B: {amt['b']}"], errors="coerce").astype(float).sum()), 2)
             row["Difference"] = round(row["Amount A"] - row["Amount B"], 2)
         rows.append(row)
-    return {"summary": pd.DataFrame(rows), "detail": m, "plan": plan}
+    out = {"summary": pd.DataFrame(rows), "detail": m, "plan": plan, "grouped_rows": int(grouped.sum())}
+    try:
+        out["settlement"] = settlement_report(m, amt)
+    except Exception:  # noqa: BLE001
+        pass
+    try:
+        out["warnings"] = _currency_warnings(a, b)
+    except Exception:  # noqa: BLE001
+        pass
+    try:
+        out["quality"] = quality_score(out)
+        out["exposure"] = exposure(out)
+    except Exception:  # noqa: BLE001  extras must never break a reconciliation
+        pass
+    return out
 
 
 async def reconcile(a: pd.DataFrame, b: pd.DataFrame, instruction: str = "") -> dict:
@@ -333,11 +361,137 @@ def likely_causes(result: dict) -> list[str]:
     return out
 
 
+_REV_WORDS = re.compile(r"revers|refund|chargeback|charge ?back|failed|declined|unsuccessful|cancel|void|returned", re.I)
+_TEXT_COLS = re.compile(r"narrat|descri|remark|detail|status|type|response|particular|memo|message", re.I)
+
+
+def _flag_reversals(m: pd.DataFrame) -> pd.DataFrame:
+    """Rows whose own text says reversal / refund / failed / cancelled. Flagged for review (not decided by AI)."""
+    cols = [c for c in m.columns if _TEXT_COLS.search(str(c)) and str(c).startswith(("A: ", "B: "))]
+    if not cols or "Finding" not in m.columns:
+        return m
+    text = m[cols].astype(str).agg(" ".join, axis=1)
+    hit = text.str.contains(_REV_WORDS.pattern, flags=re.I, regex=True) & (m["Status"] != "Matched")
+    note = "Possible reversal, refund or failed transaction (the description says so)"
+    m.loc[hit, "Finding"] = note + m.loc[hit, "Finding"].map(lambda f: f"; {f}" if f else "")
+    return m
+
+
+def _amount_cols(d: pd.DataFrame):
+    a = [c for c in d.columns if str(c).startswith("A: ")]
+    return a
+
+
+def _group_matches(m: pd.DataFrame, status: pd.Series, amt: dict, tol: float) -> pd.Series:
+    """Many-to-one / one-to-many: for a key, the rows in A and in B are different in number but add up to the same total."""
+    av = pd.to_numeric(m[f"A: {amt['a']}"], errors="coerce")
+    bv = pd.to_numeric(m[f"B: {amt['b']}"], errors="coerce")
+    g = pd.DataFrame({"k": m["_key"].astype(str), "a": av, "b": bv, "na": av.notna().astype(int), "nb": bv.notna().astype(int)})
+    tot = g.groupby("k").agg(a=("a", "sum"), b=("b", "sum"), na=("na", "sum"), nb=("nb", "sum"))
+    ok = tot[(tot["na"] != tot["nb"]) & (tot["na"] > 0) & (tot["nb"] > 0) & ((tot["a"] - tot["b"]).abs() <= max(tol, 0.01))].index
+    return (g["k"].isin(ok) & (status != "Matched")).reset_index(drop=True).set_axis(m.index)
+
+
+def _currency_warnings(a: pd.DataFrame, b: pd.DataFrame) -> list:
+    out = []
+    for label, df in (("A", a), ("B", b)):
+        for c in df.columns:
+            if re.search(r"currenc|\bccy\b|\bcur\b", str(c), re.I):
+                vals = sorted(set(df[c].dropna().astype(str).str.strip().str.upper()) - {""})
+                if len(vals) > 1:
+                    out.append(f"Report {label} has more than one currency ({', '.join(vals[:5])}). Totals add them together without converting, so check them per currency.")
+    return out
+
+
+def settlement_report(m: pd.DataFrame, amt) -> pd.DataFrame | None:
+    """Daily expected-versus-settled view. Expected = report A (e.g. POS/switch), settled = report B (e.g. bank).
+    Needs a date column in both reports. Delay = days between the date in A and the date in B for matched rows."""
+    if not amt:
+        return None
+    pick = lambda pre: next((c for c in m.columns if str(c).startswith(pre) and re.search(r"date|time|settle|posted", str(c), re.I)), None)  # noqa: E731
+    da, db_ = pick("A: "), pick("B: ")
+    if not da:
+        return None
+    d_a = pd.to_datetime(m[da], errors="coerce", dayfirst=True)
+    av = pd.to_numeric(m[f"A: {amt['a']}"], errors="coerce")
+    bv = pd.to_numeric(m[f"B: {amt['b']}"], errors="coerce")
+    both = m["Status"].isin(["Matched", "Amount mismatch"]) & av.notna() & bv.notna()
+    t = pd.DataFrame({"Day": d_a.dt.strftime("%Y-%m-%d"), "exp": av.where(av.notna(), 0.0), "set": bv.where(both, 0.0), "has": av.notna()})
+    t = t[t["Day"].notna() & t["has"]]
+    if t.empty:
+        return None
+    day = t.groupby("Day").agg(Expected=("exp", "sum"), Settled=("set", "sum"), Transactions=("has", "sum")).reset_index()
+    day["Outstanding"] = (day["Expected"] - day["Settled"]).round(2)
+    day["Expected"], day["Settled"] = day["Expected"].round(2), day["Settled"].round(2)
+    if db_:
+        d_b = pd.to_datetime(m[db_], errors="coerce", dayfirst=True)
+        delay = ((d_b - d_a).dt.days).where(both)
+        dd = pd.DataFrame({"Day": d_a.dt.strftime("%Y-%m-%d"), "delay": delay}).dropna()
+        if len(dd):
+            ag = dd.groupby("Day")["delay"].agg(["mean", "max"]).round(1).reset_index().rename(columns={"mean": "Average delay (days)", "max": "Longest delay (days)"})
+            day = day.merge(ag, on="Day", how="left")
+    day["Transactions"] = day["Transactions"].astype(int)
+    return day
+
+
+def exposure(result: dict) -> dict:
+    """How much money is affected by what did not match. Plain sums of the rows; no AI."""
+    s = result["summary"].set_index("Status")
+    if "Amount A" not in s.columns:
+        return {}
+    g = lambda st, col: float(s.loc[st, col]) if st in s.index else 0.0  # noqa: E731
+    mismatch = abs(g("Amount mismatch", "Difference"))
+    only_a, only_b = g("Only in A", "Amount A"), g("Only in B", "Amount B")
+    return {"mismatch_value": round(mismatch, 2), "only_in_a_value": round(only_a, 2), "only_in_b_value": round(only_b, 2),
+            "total_at_risk": round(mismatch + abs(only_a) + abs(only_b), 2)}
+
+
+def quality_score(result: dict) -> dict:
+    """0-100 score from the evidence in the rows. Each factor says why it got its points."""
+    d, s = result["detail"], result["summary"].set_index("Status")
+    total = max(int(len(d)), 1)
+    cnt = lambda st: int(s.loc[st, "Count"]) if st in s.index else 0  # noqa: E731
+    matched, mism, oa, ob = cnt("Matched"), cnt("Amount mismatch"), cnt("Only in A"), cnt("Only in B")
+    find = d["Finding"].astype(str) if "Finding" in d.columns else pd.Series([""] * len(d))
+    dups = int(find.str.contains("duplicate", case=False).sum())
+    revs = int(find.str.contains("reversal", case=False).sum())
+    exceptions = mism + oa + ob
+    ratio = exceptions / total
+    factors = []
+
+    def add(name, pts, mx, detail):
+        factors.append({"name": name, "score": round(pts, 1), "max": mx, "detail": detail})
+    add("Matching accuracy", 30 * matched / total, 30, f"{matched:,} of {total:,} rows matched ({matched / total * 100:.1f}%).")
+    pts = 15 if exceptions == 0 else 12 if ratio <= 0.02 else 8 if ratio <= 0.10 else 4 if ratio <= 0.25 else 0
+    add("Unresolved exceptions", pts, 15, f"{exceptions:,} row(s) still need a decision ({ratio * 100:.1f}% of rows).")
+    add("Missing records", 20 * (1 - min(1.0, (oa + ob) / total * 2)), 20, f"{oa:,} only in report A and {ob:,} only in report B.")
+    add("Duplicate detection", 15 * (1 - min(1.0, dups / total * 5)), 15, f"{dups:,} possible duplicate row(s) found and flagged." if dups else "No duplicates found.")
+    add("Reversal identification", 10 * (1 - min(1.0, revs / total * 5)), 10, f"{revs:,} reversal/refund/failed row(s) identified for review." if revs else "No reversal-type rows found.")
+    ok = int(s["Count"].sum()) == len(d)
+    if ok and "Amount A" in s.columns:
+        ok = abs(float(s["Difference"].sum()) - (float(s["Amount A"].sum()) - float(s["Amount B"].sum()))) < 0.05
+    add("Calculation consistency", 10 if ok else 0, 10, "Counts and amounts add up between the summary and the details." if ok else "The summary does not add up to the details. Do not rely on this result.")
+    score = round(sum(f["score"] for f in factors))
+    grade = "Excellent" if score >= 90 else "Good" if score >= 75 else "Needs attention" if score >= 50 else "Poor"
+    return {"score": int(score), "grade": grade, "factors": factors}
+
+
 def to_excel(result: dict):
     d, s = result["detail"], result["summary"]
     cut = lambda st: d[d["Status"] == st].dropna(axis=1, how="all")  # noqa: E731
+    extra = {}
+    if result.get("quality"):
+        q = result["quality"]
+        extra["Quality score"] = pd.DataFrame([{"Factor": f["name"], "Points": f["score"], "Out of": f["max"], "Why": f["detail"]} for f in q["factors"]]
+                                              + [{"Factor": f"TOTAL ({q['grade']})", "Points": q["score"], "Out of": 100, "Why": ""}])
+    if result.get("settlement") is not None and len(result["settlement"]):
+        extra["Daily settlement"] = result["settlement"]
+    if result.get("exposure"):
+        e = result["exposure"]
+        extra["Financial exposure"] = pd.DataFrame([["Value of amount mismatches", e["mismatch_value"]], ["Value only in report A", e["only_in_a_value"]],
+                                                    ["Value only in report B", e["only_in_b_value"]], ["Total value affected", e["total_at_risk"]]], columns=["Item", "Amount"])
     return core.dfs_to_excel({
-        "Summary": s,
+        "Summary": s, **extra,
         "Amount mismatches": cut("Amount mismatch"),
         "Only in A": cut("Only in A"),
         "Only in B": cut("Only in B"),

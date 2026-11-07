@@ -95,6 +95,16 @@ def _narration_column(d: pd.DataFrame):
     return None
 
 
+_REF_NAME = re.compile(r"\bref(erence)?\b|\brrn\b|\bstan\b|session|trans(action)?[\s_]*(id|no|num|ref)|\btxn|\btrx|\bcheque|\bchq|serial", re.I)
+
+
+def _reference_column(d: pd.DataFrame, skip=None):
+    for c in d.columns:
+        if c != skip and _REF_NAME.search(str(c)) and not re.search(r"balance|amount|date", str(c), re.I):
+            return c
+    return None
+
+
 def monthly_table(df: pd.DataFrame, from_month: str | None = None, to_month: str | None = None):
     """Returns (monthly DataFrame, prepared transactions DataFrame, notes). Transaction columns are renamed to a
     standard set: Date, Credit/Debit, Amount (always positive), and (when present) Balance and Narration."""
@@ -106,14 +116,24 @@ def monthly_table(df: pd.DataFrame, from_month: str | None = None, to_month: str
     if dc is None:
         raise ValueError("I couldn't find a date column in this file, so I can't group the transactions by month.")
     bc, nc = _balance_column(d), _narration_column(d)
-    keep = [dc, core.CRED_COL, core.AMT_COL] + ([bc] if bc else []) + ([nc] if nc else [])
-    x = d[keep].dropna(subset=[dc, core.CRED_COL, core.AMT_COL]).reset_index(drop=True)
-    x = x.rename(columns={dc: "Date", **({bc: "Balance"} if bc else {}), **({nc: "Narration"} if nc else {})})
+    rc = _reference_column(d, skip=nc)
+    keep = [dc, core.CRED_COL, core.AMT_COL] + ([bc] if bc else []) + ([nc] if nc else []) + ([rc] if rc else [])
+    pre = d[keep].reset_index(drop=True)
+    x = pre.dropna(subset=[dc, core.CRED_COL, core.AMT_COL]).reset_index(drop=True)
+    x = x.rename(columns={dc: "Date", **({bc: "Balance"} if bc else {}), **({nc: "Narration"} if nc else {}), **({rc: "Reference"} if rc else {})})
+    rows_read, rows_unreadable = int(len(df)), int(len(pre) - len(x))
     bank_notes = []
+    if rows_unreadable > 0:
+        bad = pre[~pre.index.isin(pre.dropna(subset=[dc, core.CRED_COL, core.AMT_COL]).index)]
+        why = []
+        if bad[dc].isna().any(): why.append(f"{int(bad[dc].isna().sum())} without a readable date")
+        if bad[core.AMT_COL].isna().any() or bad[core.CRED_COL].isna().any(): why.append(f"{int((bad[core.AMT_COL].isna() | bad[core.CRED_COL].isna()).sum())} without an amount or credit/debit")
+        bank_notes.append(f"{rows_unreadable} row(s) could not be counted: " + "; ".join(why) + ". If these are real transactions, check them in your file.")
     if "Narration" in x.columns:
-        is_bal = x["Narration"].astype(str).str.contains(_BALANCE_LINE)
+        is_bal = x["Narration"].astype(str).map(lambda v: bool(_BALANCE_LINE.search(v)))
         if is_bal.any():
-            bank_notes.append(f"Ignored {int(is_bal.sum())} 'opening/closing/brought forward balance' line(s): they show a balance, not money moving.")
+            ex = "; ".join(f"{r['Date']:%Y-%m-%d} \"{str(r['Narration'])[:30]}\" {money(r[core.AMT_COL])}" for _, r in x[is_bal].head(3).iterrows())
+            bank_notes.append(f"Ignored {int(is_bal.sum())} 'opening/closing/brought forward balance' line(s) because they show a balance, not money moving ({ex}).")
             x = x[~is_bal].reset_index(drop=True)
     bank = detect_bank(df.columns, df.attrs.get("filename"))
     if bank:
@@ -146,7 +166,8 @@ def monthly_table(df: pd.DataFrame, from_month: str | None = None, to_month: str
         rows.append(row)
     table = pd.DataFrame(rows)
     notes = ([money_note] if money_note else []) + bank_notes
-    x.attrs.update({"balance_col": "Balance" if bc else None, "narration_col": "Narration" if nc else None, "all_months": all_months})
+    x.attrs.update({"balance_col": "Balance" if bc else None, "narration_col": "Narration" if nc else None, "all_months": all_months,
+                    "rows_read": rows_read, "rows_unreadable": rows_unreadable})
     return table, x, notes
 
 
@@ -184,6 +205,67 @@ def integrity_check(x: pd.DataFrame) -> dict:
 # --------------------------------------------------------------------------- #
 # Unusual patterns worth a second look
 # --------------------------------------------------------------------------- #
+def _duplicate_mask(x: pd.DataFrame):
+    """Rows that look like duplicates: same day+amount+direction(+description), or the same reference used twice with the same amount."""
+    amt, cd = core.AMT_COL, core.CRED_COL
+    g = pd.DataFrame({"d": x["Date"].dt.normalize(), "c": x[cd], "a": x[amt]})
+    if "Narration" in x.columns:
+        g["n"] = x["Narration"].astype(str)
+    mask = g.duplicated(keep=False) & (g["a"] > 100)
+    why = pd.Series("", index=x.index, dtype=object)
+    why[mask] = "Possible duplicate (same day, amount and description)"
+    if "Reference" in x.columns:
+        ref = x["Reference"].astype(str).str.strip()
+        okref = ~ref.isin(["", "nan", "None", "-"])
+        rg = pd.DataFrame({"r": ref, "c": x[cd], "a": x[amt]})[okref]
+        rdup = rg.duplicated(keep=False) & (rg["a"] > 100)
+        idx = rg.index[rdup]
+        mask.loc[idx] = True
+        why.loc[idx] = "Possible duplicate (same reference used more than once)"
+    return mask, why
+
+
+def _large_mask(x: pd.DataFrame):
+    """Unusually big amounts, per direction. Needs at least 5 transactions in that direction."""
+    amt, cd = core.AMT_COL, core.CRED_COL
+    mask = pd.Series(False, index=x.index)
+    limits = {}
+    for direction in ("Credit", "Debit"):
+        s_ = x.loc[x[cd] == direction, amt]
+        if len(s_) < 5:
+            continue
+        lim = max(5 * float(s_.median()), float(s_.mean() + 3 * s_.std(ddof=0))) if len(s_) >= 10 else 5 * float(s_.median())
+        if lim > 0:
+            m = (x[cd] == direction) & (x[amt] > lim)
+            if m.any():
+                mask |= m
+                limits[direction] = lim
+    return mask, limits
+
+
+def transactions_table(x: pd.DataFrame) -> pd.DataFrame:
+    """Every transaction with its date, reference, narration, type, amount, balance and a plain 'why flagged' note."""
+    amt, cd = core.AMT_COL, core.CRED_COL
+    dmask, dwhy = _duplicate_mask(x)
+    lmask, _ = _large_mask(x)
+    why = dwhy.copy()
+    why[lmask & (why == "")] = "Large compared with usual amounts"
+    why[lmask & (why != "") & (why != "Large compared with usual amounts")] += "; unusually large"
+    t = pd.DataFrame({"Date": x["Date"].dt.strftime("%Y-%m-%d")})
+    t["Reference"] = x["Reference"].astype(str).replace({"nan": "", "None": ""}) if "Reference" in x.columns else ""
+    t["Narration"] = x["Narration"].astype(str).replace({"nan": ""}) if "Narration" in x.columns else ""
+    t["Type"] = x[cd]
+    t["Amount"] = x[amt].round(2)
+    if "Balance" in x.columns:
+        t["Balance"] = x["Balance"].round(2)
+    if "Account" in x.columns and x["Account"].astype(str).str.len().gt(0).any():
+        t.insert(0, "Account", x["Account"])
+    t["Flag"] = why
+    return t
+
+
+
+
 def fraud_flags(x: pd.DataFrame) -> list[dict]:
     flags = []
 
@@ -192,28 +274,24 @@ def fraud_flags(x: pd.DataFrame) -> list[dict]:
 
     amt, cd = core.AMT_COL, core.CRED_COL
     day = x["Date"].dt.normalize()
-    # duplicates: same day, same amount, same direction, same description
-    g = pd.DataFrame({"d": day, "c": x[cd], "a": x[amt]})
-    if "Narration" in x.columns:
-        g["n"] = x["Narration"].astype(str)
-    dup = g.duplicated(keep=False) & (g["a"] > 100)
-    if dup.any():
-        grp = g[dup].drop_duplicates()
+    # duplicates: same day/amount/direction/description, or the same reference used twice
+    dmask, dwhy = _duplicate_mask(x)
+    if dmask.any():
+        grp = x[dmask].drop_duplicates(subset=[c for c in ("Date", cd, amt, "Reference") if c in x.columns])
         ex = []
         for _, r in grp.head(4).iterrows():
-            ex.append(f"{r['d']:%Y-%m-%d} {r['c']} {money(r['a'])}" + (f" - {r['n'][:40]}" if "n" in grp.columns else ""))
+            ex.append(f"{r['Date']:%Y-%m-%d} {r[cd]} {money(r[amt])}" + (f" ref {r['Reference']}" if "Reference" in grp.columns and str(r.get('Reference', '')).strip() not in ('', 'nan') else "")
+                      + (f" - {str(r['Narration'])[:40]}" if "Narration" in grp.columns else ""))
         add("duplicates", "high" if len(grp) >= 3 else "medium", "Possible duplicate transactions",
-            f"{len(grp)} transaction(s) appear more than once on the same day with the same amount.", len(grp), ex)
+            f"{int(dmask.sum())} transaction(s) look like duplicates (same day, amount and description, or the same reference used more than once).", int(dmask.sum()), ex)
     # unusually large amounts
-    for direction in ("Credit", "Debit"):
-        s = x.loc[x[cd] == direction, amt]
-        if len(s) >= 10:
-            lim = max(5 * float(s.median()), float(s.mean() + 3 * s.std(ddof=0)))
-            big = x[(x[cd] == direction) & (x[amt] > lim)]
-            if len(big) and lim > 0:
-                add("large", "medium", f"Unusually large {direction.lower()}s",
-                    f"{len(big)} {direction.lower()}(s) are far bigger than the account's normal activity (above {money(lim)}).", len(big),
-                    [f"{r['Date']:%Y-%m-%d} {money(r[amt])}" for _, r in big.head(3).iterrows()])
+    lmask, lim_by_dir = _large_mask(x)
+    for direction, lim in lim_by_dir.items():
+        big = x[lmask & (x[cd] == direction)]
+        if len(big):
+            add("large", "medium", f"Unusually large {direction.lower()}s",
+                f"{len(big)} {direction.lower()}(s) are far bigger than the account's normal activity (above {money(lim)}).", len(big),
+                [f"{r['Date']:%Y-%m-%d} {money(r[amt])}" + (f" ref {r['Reference']}" if "Reference" in big.columns and str(r.get('Reference', '')).strip() not in ('', 'nan') else "") for _, r in big.head(3).iterrows()])
     # round numbers
     big_tx = x[x[amt] >= 10000]
     if len(big_tx) >= 10:
@@ -571,6 +649,14 @@ def build_many(items: list[tuple[str, pd.DataFrame]], from_month: str | None = N
     out = score_statement(table, x, integrity, flags)
     cats = categorize(x)
     all_months = sorted(set(m for p in parts for m in p[2].attrs.get("all_months", [])))
+    credits_n, debits_n = int((x[core.CRED_COL] == "Credit").sum()), int((x[core.CRED_COL] == "Debit").sum())
+    out["totals"].update({"credits_count": credits_n, "debits_count": debits_n, "transactions": credits_n + debits_n,
+                          "rows_read": int(sum(p[2].attrs.get("rows_read", 0) for p in parts)),
+                          "rows_unreadable": int(sum(p[2].attrs.get("rows_unreadable", 0) for p in parts)),
+                          "money_in": round(float(x.loc[x[core.CRED_COL] == "Credit", core.AMT_COL].sum()), 2),
+                          "money_out": round(float(x.loc[x[core.CRED_COL] == "Debit", core.AMT_COL].sum()), 2)})
+    out["totals"]["net_movement"] = round(out["totals"]["money_in"] - out["totals"]["money_out"], 2)
+    out["transactions"] = transactions_table(x)
     out.update({"table": table, "notes": notes, "period": f"{table['Month'].iloc[0]} to {table['Month'].iloc[-1]}",
                 "months_available": all_months, "categories": cats, "accounts": [p[0] for p in parts],
                 "forecast": forecast(table)})
@@ -651,6 +737,11 @@ def summary_text(r: dict) -> str:
     lines.append(f"LOAN READINESS: {r['score']} out of 100 - {r['verdict']}. {r['eligibility']}")
     lines.append(f"\nPERIOD: {r['period']} ({t['months']} month(s)). Income {money(t['income'])}, spending {money(t['expenses'])}, "
                  f"left over {money(t['net'])}.")
+    if "net_movement" in t:
+        lines.append(f"\nNET MOVEMENT: {money(t['money_in'])} in minus {money(t['money_out'])} out = {money(t['net_movement'])} "
+                     f"({'more came in than went out' if t['net_movement'] >= 0 else 'more went out than came in'}). "
+                     f"{t['credits_count']} credit(s) and {t['debits_count']} debit(s), {t['transactions']} transaction(s) counted"
+                     + (f" out of {t['rows_read']} row(s) read" if t.get("rows_read") else "") + ".")
     lines.append("\nMONTH BY MONTH:")
     for _, m in r["table"].iterrows():
         extra = f", closing balance {money(m['Closing balance'])}" if "Closing balance" in m and pd.notna(m.get("Closing balance")) else ""
@@ -663,6 +754,17 @@ def summary_text(r: dict) -> str:
         lines.append("\nIS THE STATEMENT GENUINE? " + ig["message"])
     if r.get("flags"):
         lines.append("\nUNUSUAL PATTERNS:\n" + "\n".join(f"- [{f['severity']}] {f['title']}: {f['detail']}" for f in r["flags"]))
+    tx = r.get("transactions")
+    if tx is not None and len(tx):
+        att = tx[tx["Flag"] != ""]
+        if len(att):
+            lines.append("\nTRANSACTIONS TO CHECK (duplicates and unusual entries):")
+            for _, a in att.head(12).iterrows():
+                lines.append(f"- {a['Date']} | ref {a['Reference'] or 'none'} | {a['Type']} {money(a['Amount'])} | {str(a['Narration'])[:40]} | {a['Flag']}")
+            if len(att) > 12:
+                lines.append(f"- ...and {len(att) - 12} more (full list in the Excel file).")
+        else:
+            lines.append("\nTRANSACTIONS TO CHECK: no duplicates or unusually large entries were found.")
     cats = r.get("categories")
     if cats and cats["spending"]:
         lines.append("\nWHERE THE MONEY WENT:\n" + "\n".join(f"- {c['category']}: {money(c['amount'])} ({c['share_pct']}%)" for c in cats["spending"][:8]))
@@ -717,12 +819,20 @@ def excel(r: dict) -> io.BytesIO:
     t = r["totals"]
     summary = pd.DataFrame([["Loan readiness score", f"{r['score']} / 100"], ["Verdict", r["verdict"]], ["What it means", r["eligibility"]],
                             ["Period", r["period"]], ["Total income", t["income"]], ["Total spending", t["expenses"]],
-                            ["Left over", t["net"]], ["Average monthly income", t["avg_income"]], ["Average monthly spending", t["avg_expenses"]],
+                            ["Left over", t["net"]], ["Net movement (money in minus money out)", t.get("net_movement", t["net"])],
+                            ["Credits (count)", t.get("credits_count", "")], ["Debits (count)", t.get("debits_count", "")],
+                            ["Rows read from file", t.get("rows_read", "")], ["Rows that could not be counted", t.get("rows_unreadable", "")],
+                            ["Average monthly income", t["avg_income"]], ["Average monthly spending", t["avg_expenses"]],
                             ["Note", r["disclaimer"]]], columns=["Item", "Value"])
     factors = pd.DataFrame(r["factors"]).rename(columns={"name": "Factor", "score": "Points", "max": "Out of", "detail": "Why"})
     tips = pd.DataFrame({"Good signs": pd.Series(r["strengths"], dtype=object), "Worries": pd.Series(r["concerns"], dtype=object),
                          "How to improve": pd.Series(r["advice"], dtype=object)})
     sheets = {"Summary": summary, "Month by month": r["table"], "Score breakdown": factors, "Tips": tips}
+    tx = r.get("transactions")
+    if tx is not None and len(tx):
+        sheets["All transactions"] = tx
+        if (tx["Flag"] != "").any():
+            sheets["Needs attention"] = tx[tx["Flag"] != ""]
     ig = r.get("integrity")
     if ig:
         sheets["Balance check"] = pd.DataFrame([{"Result": ig["status"].upper(), "Message": ig["message"]}] + [

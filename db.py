@@ -240,6 +240,8 @@ def _init_schema(_con) -> None:
     _ensure_column(_con, "users", "email", "TEXT")
     _ensure_column(_con, "users", "referral_code", "TEXT")
     _ensure_column(_con, "users", "referred_by", "INTEGER")
+    _con.executescript("CREATE TABLE IF NOT EXISTS reset_requests (id INTEGER PRIMARY KEY AUTOINCREMENT, user_id INTEGER NOT NULL, username TEXT NOT NULL, "
+                       "note TEXT, status TEXT NOT NULL DEFAULT 'pending', created_at TEXT NOT NULL, decided_at TEXT, decided_by TEXT);")
     _con.executescript("CREATE TABLE IF NOT EXISTS password_resets (user_id INTEGER PRIMARY KEY, code_hash TEXT NOT NULL, "
                        "expires_at TEXT NOT NULL, attempts INTEGER NOT NULL DEFAULT 0, created_at TEXT NOT NULL);")
     _con.executescript(
@@ -1243,6 +1245,52 @@ def create_password_reset(username: str) -> dict | None:
         row = con.execute("SELECT * FROM users WHERE username = ?", (username.strip(),)).fetchone()
     if row is None or not row["active"] or row["role"] == "admin" or not (row["telegram_id"] or _col(row, "email")):
         return None  # admins use the configured credentials; no email/Telegram on file = ask the admin to reset
+    code = f"{secrets.randbelow(1_000_000):06d}"
+    expires = (dt.datetime.now(dt.timezone.utc) + dt.timedelta(minutes=RESET_MINUTES)).strftime(FMT)
+    with _db() as con:
+        con.execute("DELETE FROM password_resets WHERE user_id = ?", (row["id"],))
+        con.execute("INSERT INTO password_resets(user_id, code_hash, expires_at, attempts, created_at) VALUES (?,?,?,0,?)",
+                    (row["id"], _reset_hash(row["id"], code), expires, _now()))
+    return {"user": _user(row), "code": code}
+
+
+def create_reset_request(identifier: str, note: str = "") -> bool:
+    """A customer asks the admin to approve a password reset. identifier = username or email. Returns True when a request was
+    recorded (callers must give the same answer either way, so nobody can discover which accounts exist)."""
+    ident = (identifier or "").strip()
+    if not ident:
+        return False
+    with _db() as con:
+        row = con.execute("SELECT * FROM users WHERE username = ? OR LOWER(email) = ?", (ident, ident.lower())).fetchone()
+        if row is None or not row["active"] or row["role"] == "admin":
+            return False
+        if con.execute("SELECT 1 FROM reset_requests WHERE user_id = ? AND status = 'pending'", (row["id"],)).fetchone():
+            return True
+        con.execute("INSERT INTO reset_requests(user_id, username, note, status, created_at) VALUES (?,?,?,?,?)",
+                    (row["id"], row["username"], (note or "")[:300], "pending", _now()))
+    return True
+
+
+def list_reset_requests(status: str = "pending") -> list[dict]:
+    with _db() as con:
+        q = ("SELECT r.id, r.user_id, r.username, r.note, r.status, r.created_at, r.decided_at, u.email, u.telegram_id "
+             "FROM reset_requests r JOIN users u ON u.id = r.user_id")
+        rows = con.execute(q + (" WHERE r.status = ?" if status != "all" else "") + " ORDER BY r.id DESC LIMIT 100", (status,) if status != "all" else ()).fetchall()
+    return [{"id": r["id"], "username": r["username"], "note": r["note"] or "", "status": r["status"], "created_at": r["created_at"],
+             "has_email": bool(r["email"]), "has_telegram": bool(r["telegram_id"])} for r in rows]
+
+
+def decide_reset_request(request_id: int, approve: bool, admin_name: str) -> dict:
+    """Approve = generate a random 6-digit one-time code for that customer (valid RESET_MINUTES). Returns {user, code} or {user, code: None}."""
+    with _db() as con:
+        req = con.execute("SELECT * FROM reset_requests WHERE id = ?", (request_id,)).fetchone()
+        if req is None or req["status"] != "pending":
+            raise ValueError("That request was already handled.")
+        row = con.execute("SELECT * FROM users WHERE id = ?", (req["user_id"],)).fetchone()
+        con.execute("UPDATE reset_requests SET status = ?, decided_at = ?, decided_by = ? WHERE id = ?",
+                    ("approved" if approve else "rejected", _now(), admin_name, request_id))
+    if not approve or row is None:
+        return {"user": _user(row) if row else None, "code": None}
     code = f"{secrets.randbelow(1_000_000):06d}"
     expires = (dt.datetime.now(dt.timezone.utc) + dt.timedelta(minutes=RESET_MINUTES)).strftime(FMT)
     with _db() as con:

@@ -816,13 +816,28 @@ def _store_result(data: bytes, user: dict, company_id: int, pdf: dict | None = N
     return rid
 
 
+ANSWER_CACHE: dict = {}   # (user, company, report, question) -> (time, result); repeat questions answer instantly
+
+
 @app.post("/api/analyze")
 async def analyze(body: AnalyzeIn, user: dict = Depends(current_user)):
     need_company(user, body.company_id)
     reservation = reserve_plan_usage(user, body.company_id, "analysis_question")
     try:
-        df = await asyncio.to_thread(db.resolve_frame, body.company_id, body.report_id)
-        out = await core.analyze(df, body.question, body.prev_plan, INSIGHTS)
+        ckey = None
+        if body.report_id and not body.prev_plan:   # the same person asking the same thing about the same report: answer at once
+            ckey = (user["id"], body.company_id, body.report_id, " ".join(body.question.lower().split()))
+            hit = ANSWER_CACHE.get(ckey)
+            out = hit[1] if hit and time.time() - hit[0] < 1800 else None
+        else:
+            out = None
+        if out is None:
+            df = await asyncio.to_thread(db.resolve_frame, body.company_id, body.report_id)
+            out = await core.analyze(df, body.question, body.prev_plan, INSIGHTS)
+            if ckey and not out.get("clarify") and out.get("res") is not None and "could not turn this into an exact" not in out.get("insight", ""):
+                ANSWER_CACHE[ckey] = (time.time(), out)
+                while len(ANSWER_CACHE) > 100:
+                    ANSWER_CACHE.pop(next(iter(ANSWER_CACHE)))
     except Exception as e:  # noqa: BLE001
         finish_plan_usage(reservation, False)
         raise HTTPException(400, str(e))
@@ -908,8 +923,15 @@ async def statement_score(body: StatementIn, user: dict = Depends(current_user))
              f"report={body.report_id or body.report_ids}; score={r['score']}; months={r['totals']['months']}; balance_check={r['integrity']['status']}; flags={len(r['flags'])}")
     xlsx = await asyncio.to_thread(statement.excel, r)
     png = await asyncio.to_thread(statement.chart_png, r["table"])
+    tx = r.get("transactions")
+    extra_tables = []
+    if tx is not None and len(tx):
+        att = tx[tx["Flag"] != ""]
+        if len(att):
+            extra_tables.append(("Transactions to check (duplicates and unusual entries)", att, 30))
+        extra_tables.append(("All transactions", tx, 60))
     pdf = {"title": f"Statement check: {r['verdict']} ({r['score']}/100)", "question": f"Period {r['period']}", "insight": full,
-           "table": r["table"], "chart": png, "total_rows": len(r["table"])}
+           "table": r["table"], "chart": png, "total_rows": len(r["table"]), "extra_tables": extra_tables}
     t = r["table"]
     response = {
         "score": r["score"], "verdict": r["verdict"], "eligibility": r["eligibility"], "factors": r["factors"],
@@ -920,6 +942,9 @@ async def statement_score(body: StatementIn, user: dict = Depends(current_user))
         "forecast": r.get("forecast"),
         "accounts": r.get("accounts", []),
         "columns": list(t.columns), "rows": json.loads(t.to_json(orient="records")),
+        "tx_columns": list(tx.columns) if tx is not None else [],
+        "transactions": json.loads(tx.head(500).to_json(orient="records")) if tx is not None else [],
+        "attention": json.loads(tx[tx["Flag"] != ""].head(100).to_json(orient="records")) if tx is not None else [],
         "chart": {"labels": t["Month"].tolist(), "income": t["Income (credits)"].tolist(),
                   "expenses": t["Expenses (debits)"].tolist(), "left": t["Left over (income - expenses)"].tolist()},
     }
@@ -1426,7 +1451,20 @@ async def reconcile(body: ReconIn, user: dict = Depends(current_user)):
     hints = recon.likely_causes(out)
     if hints:
         text += "\n\nPOSSIBLE REASONS (found by comparing the numbers; please confirm):\n" + "\n".join("- " + h for h in hints)
-    pdf = {"title": "Reconciliation", "question": f"{la} vs {lb}", "insight": (out.get("how") or "") + "\n\n" + recon._summary_text(out, la, lb).split("\n\n")[0],
+    q, ex = out.get("quality"), out.get("exposure")
+    if q:
+        text += f"\n\nRECONCILIATION QUALITY SCORE: {q['score']} out of 100 ({q['grade']}).\n" + "\n".join(f"- {f['name']}: {f['score']:g} of {f['max']}. {f['detail']}" for f in q["factors"])
+    if ex:
+        text += f"\n\nFINANCIAL EXPOSURE: total value affected by differences {ex['total_at_risk']:,.2f} (amount mismatches {ex['mismatch_value']:,.2f}; only in report A {ex['only_in_a_value']:,.2f}; only in report B {ex['only_in_b_value']:,.2f})."
+    for w in out.get("warnings") or []:
+        text += "\n\nWARNING: " + w
+    if out.get("grouped_rows"):
+        text += f"\n\nGROUPED MATCHES: {out['grouped_rows']} row(s) were matched as a group (several rows in one report add up to the amount in the other)."
+    st = out.get("settlement")
+    if st is not None and len(st):
+        text += "\n\nDAILY SETTLEMENT (expected in report A, settled in report B):\n" + st.head(10).to_string(index=False)
+    pdf = {"title": "Reconciliation", "question": f"{la} vs {lb}", "insight": (out.get("how") or "") + "\n\n" + recon._summary_text(out, la, lb).split("\n\n")[0]
+           + (f"\n\nQuality score: {q['score']}/100 ({q['grade']})" if q else "") + (f"\nTotal value affected: {ex['total_at_risk']:,.2f}" if ex else ""),
            "table": out["summary"], "chart": None, "total_rows": len(out["summary"])}
     response = {
         "text": text, "hints": hints,
@@ -1436,6 +1474,8 @@ async def reconcile(body: ReconIn, user: dict = Depends(current_user)):
         "total_problem_rows": len(problems),
         "reconciliation_run_id": run_id,
         "cases_created": cases_created,
+        "quality": q, "exposure": ex, "warnings": out.get("warnings") or [],
+        "settlement": json.loads(st.to_json(orient="records")) if st is not None else [],
         "result_id": _store_result(xlsx.getvalue(), user, body.company_id, pdf,
                                    ctx=text + "\n\nROWS THAT DID NOT MATCH (first 40):\n" + problems.head(40).to_string(index=False, max_colwidth=40)),
     }
@@ -1499,7 +1539,7 @@ def download_pdf(result_id: str, user: dict = Depends(current_user)):
         raise HTTPException(404, "No PDF for this result.")
     company = db.get_company(item["company"])
     pdf = report_pdf.build_pdf(company["name"], p["title"], p["question"], p["insight"], p["table"],
-                               p["chart"], db.get_branding(company["id"]), p.get("total_rows"))
+                               p["chart"], db.get_branding(company["id"]), p.get("total_rows"), p.get("extra_tables"))
     db.audit(user, "export_pdf", item["company"], p["title"][:100])
     return StreamingResponse(iter([pdf]), media_type="application/pdf",
                              headers={"Content-Disposition": 'attachment; filename="report.pdf"'})
@@ -1517,7 +1557,7 @@ def download_pack(result_id: str, user: dict = Depends(current_user)):
         z.writestr("details.xlsx", item["data"])
         if p:
             z.writestr("summary.pdf", report_pdf.build_pdf(company["name"], p["title"], p["question"], p["insight"], p["table"],
-                                                           p["chart"], db.get_branding(company["id"]), p.get("total_rows")))
+                                                           p["chart"], db.get_branding(company["id"]), p.get("total_rows"), p.get("extra_tables")))
     db.audit(user, "export_pack", item["company"], (p or {}).get("title", "pack")[:100])
     return StreamingResponse(iter([buf.getvalue()]), media_type="application/zip",
                              headers={"Content-Disposition": 'attachment; filename="month-end-pack.zip"'})
@@ -1843,6 +1883,64 @@ def password_reset_request(body: ResetRequestIn, request: Request):
     # Same answer either way, so nobody can discover which usernames exist.
     return {"message": "If that account has an email address (or Telegram) on file, a 6-digit code has been sent there. "
                        "Nothing arrived? Ask your administrator to reset your password."}
+
+
+class ResetAskIn(BaseModel):
+    username: str
+    note: str = ""
+
+
+@app.post("/api/password-reset/ask")
+def password_reset_ask(body: ResetAskIn, request: Request):
+    """Customer asks the admin to approve a reset (works even with no email on file). Same answer whether or not the account exists."""
+    ip = request.client.host if request.client else "?"
+    key = ("ask", body.username.strip().lower(), ip)
+    now = time.time()
+    RESET_REQUESTS[key] = [t for t in RESET_REQUESTS.get(key, []) if now - t < 3600]
+    if len(RESET_REQUESTS[key]) >= 3:
+        raise HTTPException(429, "Too many requests. Try again in one hour.")
+    RESET_REQUESTS[key].append(now)
+    if db.create_reset_request(body.username, body.note):
+        try:
+            notify.alert_admins(f"Password reset request from {body.username.strip()[:40]}. Open Password resets in the admin menu to approve.")
+        except Exception:  # noqa: BLE001
+            pass
+    return {"message": "Request sent. When the administrator approves it, a 6-digit code is sent to your email (or Telegram) within seconds. "
+                       "Then enter the code below."}
+
+
+@app.get("/api/admin/reset-requests")
+def admin_reset_requests(status: str = "pending", user: dict = Depends(current_user)):
+    need(user, "admin")
+    return {"requests": db.list_reset_requests(status), "email_ready": notify.email_configured()}
+
+
+class ResetDecisionIn(BaseModel):
+    approve: bool
+
+
+@app.post("/api/admin/reset-requests/{request_id}/decision")
+def admin_reset_decision(request_id: int, body: ResetDecisionIn, user: dict = Depends(current_user)):
+    need(user, "admin")
+    try:
+        res = db.decide_reset_request(request_id, body.approve, user["username"])
+    except ValueError as e:
+        raise HTTPException(400, str(e))
+    u, code = res["user"], res["code"]
+    delivered = []
+    if code and u:
+        text = (f"Your Reconciliation Solutions password reset was approved.\n\nYour code is {code}\n"
+                f"It works for {db.RESET_MINUTES} minutes. Go to the sign-in page, choose Forgot your password, enter your username, this code and a new password.\n"
+                "If you did not ask for this, ignore this message.")
+        if u.get("email") and notify.email_configured():
+            extras._mail_async(u["email"], "Your password reset code", text); delivered.append("email")
+        if u.get("telegram_id"):
+            try:
+                notify.send_telegram(u["telegram_id"], text); delivered.append("Telegram")
+            except Exception:  # noqa: BLE001
+                pass
+    db.audit(user, "reset_approved" if body.approve else "reset_rejected", None, f"user={u['username'] if u else '?'}; sent_by={','.join(delivered) or 'nothing'}")
+    return {"ok": True, "approved": body.approve, "code": code, "delivered": delivered, "username": u["username"] if u else None}
 
 
 @app.post("/api/password-reset/confirm")

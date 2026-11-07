@@ -101,3 +101,15 @@ See ROADMAP_STATUS.md
 
 ## Round 14 (FINAL_21)
 Background upload with progress (jobs.py, /api/companies/{id}/reports/async, /api/jobs/{id}); see ROADMAP_STATUS.md
+
+## Round 15 (FINAL_22)
+Statement report: transactions list (date, reference, type, amount, flag), duplicates by reference, unusual entries on small statements, net movement, credit/debit counts, rows-read check; core.add_money_columns splits rows with both credit and debit; PDF/Excel include the lists.
+
+## Round 16 (FINAL_23)
+Reconciliation Quality Score, exposure analysis, reversal flags (recon.py quality_score/exposure/_flag_reversals).
+
+## Round 17 (FINAL_24)
+Grouped matching, daily settlement table, currency warning.
+
+## Round 18 (FINAL_25)
+Admin-approved password reset (db.reset_requests, /api/password-reset/ask, /api/admin/reset-requests), repeat-question cache.

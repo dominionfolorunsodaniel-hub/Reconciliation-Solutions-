@@ -509,8 +509,17 @@ def add_money_columns(df: pd.DataFrame):
             d.loc[c_.abs() > 0, CRED_COL] = "Credit"
             d.loc[d_.abs() > 0, CRED_COL] = "Debit"
             d[AMT_COL] = c_.abs().where(c_.abs() > 0, d_.abs())
+            both_rows = (c_.abs() > 0) & (d_.abs() > 0)
+            extra_note = ""
+            if both_rows.any():   # one row holding money in AND money out: count it as two transactions, not one
+                d.loc[both_rows, CRED_COL] = "Credit"
+                d.loc[both_rows, AMT_COL] = c_.abs()[both_rows]
+                extra = d[both_rows].copy()
+                extra[CRED_COL], extra[AMT_COL] = "Debit", d_.abs()[both_rows]
+                d = pd.concat([d, extra]).sort_index(kind="stable")
+                extra_note = f" {int(both_rows.sum())} row(s) had both a credit and a debit amount, so each was counted as two transactions."
             return d, (f'Your table has separate "{cr[0]}" (money coming in) and "{dr[0]}" (money going out) columns. '
-                       f'I combined them into "{CRED_COL}" and "{AMT_COL}".')
+                       f'I combined them into "{CRED_COL}" and "{AMT_COL}".' + extra_note)
         # 1b) only one of the two columns exists (the other was empty for the whole period and got dropped)
         if (cr and not dr) or (dr and not cr):
             only = (cr or dr)[0]
