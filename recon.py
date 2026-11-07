@@ -254,6 +254,14 @@ def run_recon(a: pd.DataFrame, b: pd.DataFrame, plan: dict) -> dict:
 async def reconcile(a: pd.DataFrame, b: pd.DataFrame, instruction: str = "") -> dict:
     """Returns run_recon's dict. The AI proposes the column mapping; if it is unavailable, unsure or wrong, the built-in logic
     works it out from the note and the column names. A question comes back only when no sensible matching exists at all."""
+    # Bank statement vs ledger (reference + credit/debit or amount+type columns on both sides): deterministic engine.
+    try:
+        import bankrec
+        if bankrec.applicable(a, b):
+            tol = parse_note(instruction, a, b).get("tolerance")
+            return await asyncio.to_thread(bankrec.reconcile_bank_ledger, a, b, 0.01 if tol is None else tol)
+    except Exception:  # noqa: BLE001  fall back to the general engine
+        pass
     plan = None
     try:
         user_msg = (
@@ -297,6 +305,8 @@ def describe_plan(plan: dict) -> str:
 
 
 def summary_text(result: dict, label_a: str, label_b: str) -> str:
+    if result.get("report_text"):
+        return result["report_text"].replace(result["bank_name"], label_a, 1).replace(result["ledger_name"], label_b, 1)
     base = _summary_text(result, label_a, label_b)
     return (result["how"] + "\n\n" + base) if result.get("how") else base
 
@@ -316,6 +326,8 @@ def likely_causes(result: dict) -> list[str]:
     """Plain-English guesses about WHY rows differ, found by comparing the numbers (never invented).
     Each line is a possibility to check, not a proven cause."""
     out = []
+    if result.get("engine") == "bank-ledger":
+        return out
     try:
         d, plan = result["detail"], result["plan"]
         amt = plan.get("amount")
@@ -477,6 +489,9 @@ def quality_score(result: dict) -> dict:
 
 
 def to_excel(result: dict):
+    if result.get("engine") == "bank-ledger":
+        import bankrec
+        return core.dfs_to_excel(bankrec.sheets(result))
     d, s = result["detail"], result["summary"]
     cut = lambda st: d[d["Status"] == st].dropna(axis=1, how="all")  # noqa: E731
     extra = {}

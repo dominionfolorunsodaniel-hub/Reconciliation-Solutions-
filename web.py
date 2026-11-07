@@ -833,7 +833,13 @@ async def analyze(body: AnalyzeIn, user: dict = Depends(current_user)):
             out = None
         if out is None:
             df = await asyncio.to_thread(db.resolve_frame, body.company_id, body.report_id)
-            out = await core.analyze(df, body.question, body.prev_plan, INSIGHTS)
+            import fullread
+            if fullread.wants_everything(body.question) and not body.prev_plan:
+                full = df.drop(columns=["_rows"], errors="ignore").reset_index(drop=True)
+                out = {"plan": {"intent": "everything"}, "res": full, "filtered": df, "keys": [], "metric": "", "title": "Everything in this file",
+                       "insight": fullread.describe(df), "full": True}
+            else:
+                out = await core.analyze(df, body.question, body.prev_plan, INSIGHTS)
             if ckey and not out.get("clarify") and out.get("res") is not None and "could not turn this into an exact" not in out.get("insight", ""):
                 ANSWER_CACHE[ckey] = (time.time(), out)
                 while len(ANSWER_CACHE) > 100:
@@ -853,12 +859,12 @@ async def analyze(body: AnalyzeIn, user: dict = Depends(current_user)):
         asyncio.to_thread(core.make_excel, res, out["filtered"], out["plan"], out["insight"]),
         asyncio.to_thread(core.make_chart_png, res, out["keys"], out["metric"], out["plan"].get("chart", "bar"), out["title"]),
     )
-    pdf = {"title": out["title"], "question": body.question, "insight": out["insight"], "table": res.head(40),
+    pdf = {"title": out["title"], "question": body.question, "insight": out["insight"], "table": res,
            "chart": chart_png.getvalue() if chart_png else None, "total_rows": len(res)}
     response = {
         "title": out["title"],
         "columns": list(res.columns),
-        "rows": json.loads(res.head(500).to_json(orient="records", date_format="iso")),
+        "rows": json.loads(res.head(5000 if out.get("full") else 500).to_json(orient="records", date_format="iso")),
         "total_rows": len(res),
         "chart": core.chart_payload(res, out["keys"], out["metric"], out["plan"].get("chart", "bar")),
         "insight": out["insight"],
@@ -943,7 +949,7 @@ async def statement_score(body: StatementIn, user: dict = Depends(current_user))
         "accounts": r.get("accounts", []),
         "columns": list(t.columns), "rows": json.loads(t.to_json(orient="records")),
         "tx_columns": list(tx.columns) if tx is not None else [],
-        "transactions": json.loads(tx.head(500).to_json(orient="records")) if tx is not None else [],
+        "transactions": json.loads(tx.head(5000).to_json(orient="records")) if tx is not None else [],
         "attention": json.loads(tx[tx["Flag"] != ""].head(100).to_json(orient="records")) if tx is not None else [],
         "chart": {"labels": t["Month"].tolist(), "income": t["Income (credits)"].tolist(),
                   "expenses": t["Expenses (debits)"].tolist(), "left": t["Left over (income - expenses)"].tolist()},
@@ -1463,21 +1469,44 @@ async def reconcile(body: ReconIn, user: dict = Depends(current_user)):
     st = out.get("settlement")
     if st is not None and len(st):
         text += "\n\nDAILY SETTLEMENT (expected in report A, settled in report B):\n" + st.head(10).to_string(index=False)
-    pdf = {"title": "Reconciliation", "question": f"{la} vs {lb}", "insight": (out.get("how") or "") + "\n\n" + recon._summary_text(out, la, lb).split("\n\n")[0]
+    bank_pdf = None
+    if out.get("engine") == "bank-ledger":
+        import bankrec as _br
+        sh = _br.sheets(out)
+        t_ = out["totals"]
+        sections = [("1. Reconciliation overview", sh["Executive summary"]), ("2. Exact matches", sh["Exact matches"]),
+                    ("3. Amount mismatches", sh["Amount mismatches"]), ("4. Bank-only transactions", sh["Only in bank"]),
+                    ("5. Ledger-only transactions", sh["Only in ledger"]), ("6. Duplicate reference findings", sh["Duplicate references"]),
+                    ("7. Missing data", sh["Missing data"]), ("8. Financial totals", sh["Financial totals"]),
+                    ("9. Recommended corrective actions", sh["Corrective actions"]), ("10. Matching methodology and assumptions", sh["Methodology"])]
+        pdf_cols = ["Reference", "Date", "Description", "Bank amount", "Ledger amount", "Difference (A-B)", "Status", "Recommended resolution"]
+        extra = []
+        for ttl, df_ in sections:
+            if df_ is not None and len(df_):
+                extra.append((ttl, df_[[c for c in pdf_cols if c in df_.columns]] if "Reference" in df_.columns else df_, None))
+            else:
+                extra.append((ttl, pd.DataFrame({"Result": ["None found."]}), None))
+        bank_pdf = {"title": "Reconciliation report", "question": f"Bank file: {la}  |  Ledger file: {lb}  |  Tolerance {t_['tolerance']:g}",
+                    "insight": (f"Executive summary: {t_['matched_count']} exact match(es); {t_['unmatched_count']} record(s) need attention. "
+                                f"Total absolute discrepancy {t_['total_discrepancy']:,.2f}.\n"
+                                f"Bank net movement {t_['bank']['net_movement']:,.2f}; ledger net movement {t_['ledger']['net_movement']:,.2f}."),
+                    "table": None, "chart": None, "total_rows": 0, "extra_tables": extra}
+    pdf = bank_pdf or {"title": "Reconciliation", "question": f"{la} vs {lb}", "insight": (out.get("how") or "") + "\n\n" + recon._summary_text(out, la, lb).split("\n\n")[0]
            + (f"\n\nQuality score: {q['score']}/100 ({q['grade']})" if q else "") + (f"\nTotal value affected: {ex['total_at_risk']:,.2f}" if ex else ""),
            "table": out["summary"], "chart": None, "total_rows": len(out["summary"])}
     response = {
         "text": text, "hints": hints,
         "summary": json.loads(out["summary"].to_json(orient="records")),
         "columns": list(problems.columns),
-        "rows": json.loads(problems.head(200).to_json(orient="records", date_format="iso")),
+        "rows": json.loads(problems.head(2000).to_json(orient="records", date_format="iso")),
         "total_problem_rows": len(problems),
+        "totals": out.get("totals"),
         "reconciliation_run_id": run_id,
         "cases_created": cases_created,
         "quality": q, "exposure": ex, "warnings": out.get("warnings") or [],
         "settlement": json.loads(st.to_json(orient="records")) if st is not None else [],
         "result_id": _store_result(xlsx.getvalue(), user, body.company_id, pdf,
-                                   ctx=text + "\n\nROWS THAT DID NOT MATCH (first 40):\n" + problems.head(40).to_string(index=False, max_colwidth=40)),
+                                   ctx=text if out.get("engine") == "bank-ledger" else text + "\n\nROWS THAT DID NOT MATCH (first 40):\n" + problems.head(40).to_string(index=False, max_colwidth=40)),
     }
     return response
 

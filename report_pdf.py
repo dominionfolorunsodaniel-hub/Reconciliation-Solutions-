@@ -115,7 +115,7 @@ def build_pdf(company_name: str, title: str, question: str, insight: str | None,
         width = (A4[0] - 3.2 * cm) / len(cols)
         limit = max(int(width / 4.2), 6)  # characters that fit at 7.5pt
         data = [[str(c)[:limit] for c in cols]]
-        for _, row in table.head(MAX_ROWS).iterrows():
+        for _, row in table.iterrows():  # every row: nothing is left out of the PDF
             data.append([_cell(row[c])[:limit] for c in cols])
         t = Table(data, colWidths=[width] * len(cols), repeatRows=1)
         t.setStyle(TableStyle([
@@ -126,22 +126,22 @@ def build_pdf(company_name: str, title: str, question: str, insight: str | None,
         ]))
         story.append(t)
         total = total_rows if total_rows is not None else len(table)
-        if total > MAX_ROWS or len(table.columns) > MAX_COLS:
-            story.append(Paragraph(escape(f"Showing the first {min(MAX_ROWS, total)} of {total:,} rows - full detail is in the Excel file."), s_sub))
+        if len(table.columns) > MAX_COLS:
+            story.append(Paragraph(escape("Columns not shown in this table (they are in the Excel file): " + ", ".join(str(c) for c in list(table.columns)[MAX_COLS:])), s_sub))
 
     # extra detail tables (e.g. the transactions of a bank statement), with wrapping text so nothing is cut off
-    _w = {"date": 1.1, "reference": 1.4, "narration": 2.3, "type": 0.8, "amount": 1.2, "balance": 1.2, "flag": 2.4, "account": 1.2}
+    _w = {"date": 1.1, "reference": 1.4, "narration": 2.3, "description": 2.3, "recommended resolution": 3.4, "status": 1.3, "note": 1.6, "item": 3.0, "value": 1.3, "category": 1.8, "methodology and assumptions": 8.0, "type": 0.8, "amount": 1.2, "balance": 1.2, "flag": 2.4, "account": 1.2}
     s_cell = ParagraphStyle("cell", parent=styles["Normal"], fontName=f_reg, fontSize=7, leading=8.5)
     for ttl, tdf, cap in (extra_tables or []):
         if tdf is None or not len(tdf):
             continue
-        cols = list(tdf.columns)[:MAX_COLS]
+        cols = list(tdf.columns)[:12]
         weights = [_w.get(str(c).lower(), 1.0) for c in cols]
         avail = A4[0] - 3.2 * cm
         widths = [avail * w / sum(weights) for w in weights]
         story += [Spacer(1, 12), Paragraph(escape(ttl), s_name)]
         data = [[Paragraph(escape(str(c)), ParagraphStyle("h", parent=s_cell, fontName=f_bold, textColor=colors.white)) for c in cols]]
-        for _, row in tdf.head(cap).iterrows():
+        for _, row in tdf.iterrows():  # all rows, however many pages that takes
             data.append([Paragraph(escape(_cell(row[c])), s_cell) for c in cols])
         et = Table(data, colWidths=widths, repeatRows=1)
         et.setStyle(TableStyle([
@@ -150,8 +150,9 @@ def build_pdf(company_name: str, title: str, question: str, insight: str | None,
             ("VALIGN", (0, 0), (-1, -1), "TOP"),
         ]))
         story.append(et)
-        if len(tdf) > cap:
-            story.append(Paragraph(escape(f"Showing the first {cap} of {len(tdf):,} rows - the full list is in the Excel file."), s_sub))
+        story.append(Paragraph(escape(f"{len(tdf):,} row(s) listed."), s_sub))
+        if len(tdf.columns) > 12:
+            story.append(Paragraph(escape("Columns not shown here (they are in the Excel file): " + ", ".join(str(c) for c in list(tdf.columns)[12:])), s_sub))
 
     def footer(canvas, doc):
         canvas.saveState()

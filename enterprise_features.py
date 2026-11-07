@@ -100,7 +100,7 @@ def record_reconciliation(company_id: int, report_a: int, report_b: int, result:
             (company_id, report_a, report_b, source, actor_id, stamp(), total, matched, int(len(problems)), difference_total, _json(summary_records)))
         run_id = int(cur.lastrowid)
         created = 0
-        for _, row in problems.head(1000).iterrows():
+        for _, row in problems.iterrows():
             record = {str(k): (None if _is_na(v) else v) for k, v in row.to_dict().items()}
             dtype = str(record.get("Status", "Discrepancy"))[:80]
             diff = 0.0
@@ -108,7 +108,8 @@ def record_reconciliation(company_id: int, report_a: int, report_b: int, result:
                 diff = abs(float(record.get("Difference (A-B)") or 0))
             except (TypeError, ValueError):
                 pass
-            severity = "high" if dtype == "Amount mismatch" and diff >= 100000 else ("medium" if dtype == "Amount mismatch" else "low")
+            is_mm = "mismatch" in dtype.lower()
+            severity = "high" if is_mm and diff >= 100000 else ("medium" if is_mm else "low")
             cur2 = con.execute(
                 "INSERT INTO discrepancy_cases(company_id,recon_run_id,report_a,report_b,match_key,discrepancy_type,severity,status,details_json,created_by,created_at,updated_at) VALUES(?,?,?,?,?,?,?,'open',?,?,?,?)",
                 (company_id, run_id, report_a, report_b, str(record.get("Match key", ""))[:200], dtype, severity,
