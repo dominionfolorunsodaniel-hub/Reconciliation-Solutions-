@@ -4399,6 +4399,7 @@ $("aiCheckBtn").onclick = async () => {
   try {
     const r = await api("/api/admin/ai-check");
     const L = [`Key present: ${r.key_present ? "yes" : "NO"} (length ${r.key_length}) | per-call timeout ${r.call_timeout_s}s | whole-question budget ${r.question_budget_s}s | thinking: ${r.thinking_level}`, ""];
+    L.push(`GEMINI_MODEL the server sees: ${r.model_setting_seen === null ? "NOT SET (using default " + r.default_model_in_code + ")" : JSON.stringify(r.model_setting_seen)}`, `GEMINI_FALLBACK_MODELS the server sees: ${r.fallback_setting_seen === null ? "NOT SET" : JSON.stringify(r.fallback_setting_seen)}`, `Setting names found: ${(r.gemini_setting_names || []).join(", ") || "none"}`, "");
     (r.models || []).forEach(m => L.push(`${m.model}: ${m.verdict}${m.http ? " (HTTP " + m.http + ")" : ""} in ${m.seconds}s${m.reason ? "\n   reason: " + m.reason : ""}`));
     if (r.advice) L.push(r.advice);
     L.push("", r.recent_problems && r.recent_problems.length ? "Recent times the AI could not answer a customer:" : "No recent AI failures recorded since the last restart.");
