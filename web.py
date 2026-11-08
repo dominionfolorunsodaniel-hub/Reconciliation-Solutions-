@@ -638,7 +638,10 @@ async def admin_ai_check(user: dict = Depends(current_user)):
         key = key.split("=", 1)[1].strip("\"'")
     models = [os.getenv("GEMINI_MODEL", core.MODEL).strip() or core.MODEL] + [m.strip() for m in os.getenv("GEMINI_FALLBACK_MODELS", "gemini-flash-lite-latest,gemini-3.7-flash").split(",") if m.strip()]
     result = {"key_present": bool(key), "key_length": len(key), "call_timeout_s": core.AI_CALL_TIMEOUT, "question_budget_s": core.ANALYZE_BUDGET,
-              "thinking_level": core.THINKING_LEVEL, "models": [], "recent_problems": AI_EVENTS[-10:][::-1]}
+              "thinking_level": core.THINKING_LEVEL, "models": [], "recent_problems": AI_EVENTS[-10:][::-1],
+              "model_setting_seen": os.getenv("GEMINI_MODEL"), "default_model_in_code": core.MODEL,
+              "fallback_setting_seen": os.getenv("GEMINI_FALLBACK_MODELS"),
+              "gemini_setting_names": sorted(k for k in os.environ if "GEMINI" in k.upper() or "ANALYZE" in k.upper() or "AI_" in k.upper())}
     if not key:
         result["advice"] = "GEMINI_API_KEY is not set in Render."
         return result
