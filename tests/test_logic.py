@@ -365,5 +365,54 @@ class DeepDiveTests(unittest.TestCase):
         self.assertEqual(deepdive.detail({"res": None, "keys": [], "filtered": None}), "")
 
 
+class ManualMatchTests(unittest.TestCase):
+    def test_manual_pair_in_engine(self):
+        import bankrec
+        fx = os.path.join(os.path.dirname(__file__), "fixtures")
+        bank, led = pd.read_csv(os.path.join(fx, "test_pack2_bank.csv")), pd.read_csv(os.path.join(fx, "test_pack2_ledger.csv"))
+        out = bankrec.reconcile_bank_ledger(bank, led, 0.01, "b", "l", [{"bank_ref": "RA2011", "ledger_ref": "RA2012", "reason": "same payment, wrong ref", "created_by_name": "tester", "created_at": "2026-11-08"}])
+        d = out["detail"]
+        self.assertEqual(len(d), 11)                                  # two rows became one
+        m = d[d["Status"] == bankrec.MANUAL].iloc[0]
+        self.assertEqual((m["Bank amount"], m["Ledger amount"], m["Difference (A-B)"]), (33000, 9500, 23500))
+        self.assertIn("same payment, wrong ref", m["Note"])
+        self.assertEqual(out["totals"]["total_discrepancy"], 4000 + 2000 + 23500)   # the unexplained difference is still counted
+        self.assertEqual(out["totals"]["manual_count"], 1)
+        # a pair that no longer fits (reference already matched) is ignored, never crashes
+        out2 = bankrec.reconcile_bank_ledger(bank, led, 0.01, "b", "l", [{"bank_ref": "RA2001", "ledger_ref": "RA2012", "reason": "x"}])
+        self.assertEqual(out2["totals"]["total_discrepancy"], 48500)
+
+    def test_db_manual_matches_and_checklist(self):
+        try:
+            import db
+        except Exception as e:
+            self.skipTest(f"db not importable here: {e}")
+        if hasattr(db, "init"): db.init()
+        user = {"id": 1, "username": "tester"}
+        mid = db.add_manual_match(99, 1, 2, "RA2011", "RA2012", "same payment", user)
+        self.assertEqual(len(db.list_manual_matches(99, 1, 2)), 1)
+        with self.assertRaises(ValueError): db.add_manual_match(99, 1, 2, "RA2011", "RA9999", "again", user)   # a transaction can be matched once
+        db.delete_manual_match(mid, 99)
+        self.assertEqual(db.list_manual_matches(99), [])
+        items = db.get_checklist(99, "2026-10")
+        self.assertTrue(all(not i["done"] for i in items))
+        db.set_checklist(99, "2026-10", db.CLOSE_ITEMS[0], True, user)
+        self.assertTrue(db.get_checklist(99, "2026-10")[0]["done"])
+        db.set_checklist(99, "2026-10", db.CLOSE_ITEMS[0], False, user)
+        self.assertFalse(db.get_checklist(99, "2026-10")[0]["done"])
+        with self.assertRaises(ValueError): db.set_checklist(99, "2026-10", "made up item", True, user)
+
+
+class PagesTests(unittest.TestCase):
+    def test_trust_and_status_pages(self):
+        import pages
+        for k in ("privacy", "terms", "security"):
+            html_ = pages.legal_page(k)
+            self.assertIn("<h1>", html_)
+            self.assertNotIn("certified", html_.lower().replace("any formal security certification", ""))   # no invented certifications
+        self.assertIn("Operational", pages.status_page(True, True, None))
+        self.assertIn("Problem", pages.status_page(False, True, None))
+
+
 if __name__ == "__main__":
     unittest.main()
