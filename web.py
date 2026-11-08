@@ -230,6 +230,15 @@ class RegistrationDecisionIn(BaseModel):
     note: str = ""
 
 
+class EmailCodeIn(BaseModel):
+    email: str
+
+
+class VerifyEmailIn(BaseModel):
+    email: str
+    code: str
+
+
 class LoginIn(BaseModel):
     username: str
     password: str
@@ -392,6 +401,51 @@ class ResetConfirmIn(BaseModel):
 
 
 # ------------------------------- login / session ----------------------------- #
+EMAIL_RX = re.compile(r"^[^@\s]+@[^@\s]+\.[^@\s]+$")
+EMAIL_CODE_SENDS: dict = {}
+
+
+def _email_verify_required() -> bool:
+    return notify.email_configured() and os.getenv("REQUIRE_EMAIL_VERIFY", "1") != "0"
+
+
+@app.get("/api/register/email-required")
+def email_required():
+    return {"required": _email_verify_required()}
+
+
+@app.post("/api/register/email-code")
+def register_email_code(body: EmailCodeIn, request: Request):
+    email = body.email.strip().lower()
+    if not EMAIL_RX.match(email) or len(email) > 160:
+        raise HTTPException(400, "Enter a valid email address.")
+    if not notify.email_configured():
+        raise HTTPException(400, "Email sending is not set up on this site yet. Please contact support.")
+    ip = client_ip(request) or "?"
+    now = time.time()
+    EMAIL_CODE_SENDS[ip] = [t for t in EMAIL_CODE_SENDS.get(ip, []) if now - t < 3600]
+    if len(EMAIL_CODE_SENDS[ip]) >= 6:
+        raise HTTPException(429, "Too many codes requested. Try again in an hour.")
+    try:
+        code = db.issue_email_code(email, "signup")
+    except ValueError as e:
+        raise HTTPException(429, str(e))
+    EMAIL_CODE_SENDS[ip].append(now)
+    if not notify.send_email(email, "Your Reconciliation Solutions verification code",
+                             f"Your verification code is {code}. It expires in {db.EMAIL_CODE_MINUTES} minutes.\n\nIf you did not ask for this, ignore this email."):
+        raise HTTPException(502, "We could not send the email. Check the address and try again in a minute.")
+    return {"ok": True}
+
+
+@app.post("/api/register/verify-email")
+def register_verify_email(body: VerifyEmailIn):
+    email = body.email.strip().lower()
+    if not db.check_email_code(email, "signup", body.code):
+        raise HTTPException(400, "That code is wrong or has expired. Ask for a new one.")
+    db.mark_email_verified(email)
+    return {"ok": True}
+
+
 @app.post("/api/register")
 def register_customer(body: RegistrationIn, request: Request):
     """Public customer request. New accounts remain disabled until an admin approves."""
@@ -403,6 +457,8 @@ def register_customer(body: RegistrationIn, request: Request):
     attempts = [t for t in REGISTRATION_FAILS.get(ip, []) if now - t < 3600]
     if len(attempts) >= 5:
         raise HTTPException(429, "Too many registration attempts. Try again in one hour.")
+    if _email_verify_required() and not (body.email and db.is_email_verified(body.email.strip().lower())):
+        raise HTTPException(400, "Verify your email address first: enter it, tap Send code, then enter the code we email you.")
     visitor = client_ip(request) or ip
     ok_mine = [t for t in REGISTRATION_OK.get(visitor, []) if now - t < 3600]
     ok_all = sum(1 for v in REGISTRATION_OK.values() for t in v if now - t < 3600)
@@ -457,8 +513,31 @@ async def login(body: LoginIn, request: Request, response: Response):
             FAILS[key].append(now)
             db.audit(user, "login_failed", detail="wrong 2FA code")
             raise HTTPException(401, "Wrong or already-used 2-factor code.")
+    new_device_cookie = None
+    if (not user["totp_enabled"] and user.get("email") and notify.email_configured() and os.getenv("EMAIL_2FA", "1") != "0"
+            and not db.is_trusted_device(user["id"], request.cookies.get("rdev"))):
+        masked = user["email"][0] + "***@" + user["email"].split("@")[-1]
+        if not body.code:
+            try:
+                ecode = await asyncio.to_thread(db.issue_email_code, f"u{user['id']}", "login")
+                sent = await asyncio.to_thread(notify.send_email, user["email"], "Your sign-in code",
+                                               f"Your sign-in code is {ecode}. It expires in {db.EMAIL_CODE_MINUTES} minutes.\n\nIf this was not you, do not share the code, and change your password.")
+            except ValueError as e:      # a code was sent a moment ago
+                return JSONResponse({"detail": str(e), "need_code": True, "email_code": True}, status_code=401)
+            if sent:
+                return JSONResponse({"detail": f"We emailed a 6-digit code to {masked}. Enter it to sign in on this device.", "need_code": True, "email_code": True}, status_code=401)
+            db.audit(user, "email_code_not_sent", detail="sign-in allowed because the email could not be sent")   # never lock a customer out because mail is down
+        else:
+            if not await asyncio.to_thread(db.check_email_code, f"u{user['id']}", "login", body.code):
+                FAILS[key].append(now)
+                db.audit(user, "login_failed", detail="wrong email code")
+                return JSONResponse({"detail": "Wrong or expired code. Sign in again to get a new one.", "need_code": True, "email_code": True}, status_code=401)
+            await asyncio.to_thread(db.mark_email_verified, user["email"])
+            new_device_cookie = await asyncio.to_thread(db.trust_device, user["id"])
     FAILS.pop(key, None)
     ua, ip = request.headers.get("user-agent", ""), client_ip(request)
+    if new_device_cookie:
+        response.set_cookie("rdev", new_device_cookie, httponly=True, samesite="lax", secure=COOKIE_SECURE, max_age=180 * 24 * 3600)
     token = db.create_session(user["id"], ua, ip)
     response.set_cookie("session", token, httponly=True, samesite="lax", secure=COOKIE_SECURE,
                         max_age=db.SESSION_HOURS * 3600)
@@ -1389,8 +1468,10 @@ def end_session(session_id: str, request: Request, user: dict = Depends(current_
 
 
 @app.post("/api/me/sessions/revoke-others")
-def end_other_sessions(request: Request, user: dict = Depends(current_user_any)):
+def end_other_sessions(request: Request, response: Response, user: dict = Depends(current_user_any)):
     n = safety.revoke_other_sessions(user["id"], request.cookies.get("session"))
+    db.forget_trusted_devices(user["id"])      # every other device must confirm by email code again
+    response.set_cookie("rdev", db.trust_device(user["id"]), httponly=True, samesite="lax", secure=COOKIE_SECURE, max_age=180 * 24 * 3600)
     db.audit(user, "session_revoke_others", None, f"{n} device(s) signed out")
     return {"signed_out": n}
 

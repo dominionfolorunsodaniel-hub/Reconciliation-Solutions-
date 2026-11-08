@@ -97,6 +97,7 @@ _LEGAL = {
         ("Where your data is kept", "Your account details and uploaded reports are stored in a managed database. When the site's encryption key is configured, report contents and sensitive fields are encrypted before they are stored."),
         ("AI processing", "When you ask a question, the question and the relevant parts of your data are sent to Google's Gemini service so it can write an explanation. Totals, matching, duplicate checks and other calculations are done by this site, not by the AI. Do not upload anything you are not allowed to share with a service provider."),
         ("Who can see your data", "Each customer account is tied to its own company. Other customers cannot open your reports. The site owner can access the system in order to run and support it."),
+        ("Email address", "When you sign up we ask for your email address and send a 6-digit code to confirm it is yours. We use it for sign-in codes on new devices, password help and notices about your account. We do not sell it."),
         ("Logs", "The site keeps an activity log (who did what and when), for example uploads, reconciliations and logins. The log is chained so tampering can be detected. Uploaded report contents are not written to the log, but short descriptions of an action (such as a question you asked) can be."),
         ("Your choices", "You can ask us to delete your account and data from Settings (deletion request) or by email. We act on requests as quickly as we can."),
         ("Contact", f"Questions about privacy: {CONTACT}"),
@@ -111,7 +112,7 @@ _LEGAL = {
         ("Contact", f"{CONTACT}"),
     ]),
     "security": ("Security", [
-        ("Accounts", "Passwords are stored in hashed form. Sign-in uses secure session cookies. Two-factor authentication is available. Access is role based (viewer, analyst, admin) and tied to your company."),
+        ("Accounts", "Passwords are stored in hashed form. Sign-in uses secure session cookies. Two-factor authentication is available, and a code is emailed when you sign in from a new device. Access is role based (viewer, analyst, admin) and tied to your company."),
         ("Your data", "Customers are separated by company. Uploaded content is encrypted at rest when the encryption key is configured. Traffic to the site uses HTTPS."),
         ("Accountability", "Important actions are recorded in an activity log whose entries are chained together, so any later change to the log can be detected. Administrators can export the log."),
         ("Careful handling", "Uploads are validated. Secrets such as API keys are kept in server settings, never in the page. Uploaded report contents are not written to the activity log."),

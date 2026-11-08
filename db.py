@@ -245,6 +245,11 @@ def _init_schema(_con) -> None:
     _con.executescript("CREATE TABLE IF NOT EXISTS password_resets (user_id INTEGER PRIMARY KEY, code_hash TEXT NOT NULL, "
                        "expires_at TEXT NOT NULL, attempts INTEGER NOT NULL DEFAULT 0, created_at TEXT NOT NULL);")
     _con.executescript(
+        "CREATE TABLE IF NOT EXISTS email_codes (key TEXT NOT NULL, purpose TEXT NOT NULL, code_hash TEXT NOT NULL, expires_at TEXT NOT NULL, "
+        "attempts INTEGER NOT NULL DEFAULT 0, created_at TEXT NOT NULL, PRIMARY KEY (key, purpose));"
+        "CREATE TABLE IF NOT EXISTS verified_emails (email TEXT PRIMARY KEY, verified_at TEXT NOT NULL);"
+        "CREATE TABLE IF NOT EXISTS trusted_devices (user_id INTEGER NOT NULL, token_hash TEXT NOT NULL, created_at TEXT NOT NULL, PRIMARY KEY (user_id, token_hash));")
+    _con.executescript(
         "CREATE TABLE IF NOT EXISTS manual_matches (id INTEGER PRIMARY KEY AUTOINCREMENT, company_id INTEGER NOT NULL, report_a INTEGER NOT NULL, "
         "report_b INTEGER NOT NULL, bank_ref TEXT NOT NULL, ledger_ref TEXT NOT NULL, reason TEXT NOT NULL DEFAULT '', created_by INTEGER, "
         "created_by_name TEXT, created_at TEXT NOT NULL);"
@@ -1507,3 +1512,82 @@ def set_checklist(company_id: int, month: str, item: str, done: bool, user: dict
         con.execute("DELETE FROM close_checklist WHERE company_id=? AND month=? AND item=?", (company_id, month, item))
         con.execute("INSERT INTO close_checklist(company_id, month, item, done, done_by, done_at) VALUES (?,?,?,?,?,?)",
                     (company_id, month, item, 1 if done else 0, user["username"] if done else None, _now() if done else None))
+
+
+# ---- email codes: sign-up verification and sign-in on a new device ---------------- #
+EMAIL_CODE_MINUTES = 10
+
+
+def _ecode_hash(key: str, purpose: str, code: str) -> str:
+    return hashlib.sha256(f"{key}|{purpose}|{code}|{os.getenv('ENCRYPTION_KEY', 'ra')}".encode()).hexdigest()
+
+
+def issue_email_code(key: str, purpose: str) -> str:
+    """A fresh 6-digit code. Raises ValueError if one was sent less than a minute ago (stops mail flooding)."""
+    key = key.strip().lower()
+    now = dt.datetime.now(dt.timezone.utc).replace(tzinfo=None)
+    with _db() as con:
+        row = con.execute("SELECT created_at FROM email_codes WHERE key=? AND purpose=?", (key, purpose)).fetchone()
+        if row:
+            try:
+                if (now - dt.datetime.strptime(row["created_at"], "%Y-%m-%d %H:%M:%S")).total_seconds() < 60:
+                    raise ValueError("A code was just sent. Wait a minute before asking for another.")
+            except ValueError as e:
+                if "just sent" in str(e):
+                    raise
+        code = f"{secrets.randbelow(1_000_000):06d}"
+        con.execute("DELETE FROM email_codes WHERE key=? AND purpose=?", (key, purpose))
+        con.execute("INSERT INTO email_codes(key, purpose, code_hash, expires_at, attempts, created_at) VALUES (?,?,?,?,0,?)",
+                    (key, purpose, _ecode_hash(key, purpose, code), (now + dt.timedelta(minutes=EMAIL_CODE_MINUTES)).strftime("%Y-%m-%d %H:%M:%S"), now.strftime("%Y-%m-%d %H:%M:%S")))
+    return code
+
+
+def check_email_code(key: str, purpose: str, code: str) -> bool:
+    """True once for a right, unexpired code. Five wrong tries burn the code."""
+    key = key.strip().lower()
+    now = dt.datetime.now(dt.timezone.utc).replace(tzinfo=None)
+    with _db() as con:
+        rec = con.execute("SELECT * FROM email_codes WHERE key=? AND purpose=?", (key, purpose)).fetchone()
+        if not rec:
+            return False
+        if rec["attempts"] >= 5 or dt.datetime.strptime(rec["expires_at"], "%Y-%m-%d %H:%M:%S") < now:
+            con.execute("DELETE FROM email_codes WHERE key=? AND purpose=?", (key, purpose))
+            return False
+        if secrets.compare_digest(rec["code_hash"], _ecode_hash(key, purpose, (code or "").strip())):
+            con.execute("DELETE FROM email_codes WHERE key=? AND purpose=?", (key, purpose))
+            return True
+        con.execute("UPDATE email_codes SET attempts = attempts + 1 WHERE key=? AND purpose=?", (key, purpose))
+        return False
+
+
+def mark_email_verified(email: str) -> None:
+    e = (email or "").strip().lower()
+    with _db() as con:
+        con.execute("DELETE FROM verified_emails WHERE email=?", (e,))
+        con.execute("INSERT INTO verified_emails(email, verified_at) VALUES (?,?)", (e, _now()))
+
+
+def is_email_verified(email: str | None) -> bool:
+    if not email:
+        return False
+    with _db() as con:
+        return con.execute("SELECT 1 FROM verified_emails WHERE email=?", ((email or "").strip().lower(),)).fetchone() is not None
+
+
+def trust_device(user_id: int) -> str:
+    token = secrets.token_urlsafe(24)
+    with _db() as con:
+        con.execute("INSERT INTO trusted_devices(user_id, token_hash, created_at) VALUES (?,?,?)", (user_id, hashlib.sha256(token.encode()).hexdigest(), _now()))
+    return token
+
+
+def is_trusted_device(user_id: int, token: str | None) -> bool:
+    if not token:
+        return False
+    with _db() as con:
+        return con.execute("SELECT 1 FROM trusted_devices WHERE user_id=? AND token_hash=?", (user_id, hashlib.sha256(token.encode()).hexdigest())).fetchone() is not None
+
+
+def forget_trusted_devices(user_id: int) -> None:
+    with _db() as con:
+        con.execute("DELETE FROM trusted_devices WHERE user_id=?", (user_id,))
