@@ -840,6 +840,10 @@ async def analyze(body: AnalyzeIn, user: dict = Depends(current_user)):
                        "insight": fullread.describe(df), "full": True}
             else:
                 out = await core.analyze(df, body.question, body.prev_plan, INSIGHTS)
+                import deepdive
+                dd = deepdive.detail(out, len(df)) if out.get("res") is not None and not out.get("clarify") and out.get("keys") is not None else ""
+                if dd:
+                    out["insight"] = out["insight"] + "\n\n" + dd
             if ckey and not out.get("clarify") and out.get("res") is not None and "could not turn this into an exact" not in out.get("insight", ""):
                 ANSWER_CACHE[ckey] = (time.time(), out)
                 while len(ANSWER_CACHE) > 100:
@@ -924,7 +928,8 @@ async def statement_score(body: StatementIn, user: dict = Depends(current_user))
             bad = core.unverified_figures(simple, text + " " + r["table"].to_string())
             if bad:
                 simple += "\n\nPlease double-check these figures, I could not match them directly: " + ", ".join(bad) + "."
-    full = ((simple + "\n\n") if simple else "") + text
+    au = r.get("audit")
+    full = ((simple + "\n\n") if simple else "") + text + (("\n\n" + au["text"]) if au else "")
     db.audit(user, "statement_score", body.company_id,
              f"report={body.report_id or body.report_ids}; score={r['score']}; months={r['totals']['months']}; balance_check={r['integrity']['status']}; flags={len(r['flags'])}")
     xlsx = await asyncio.to_thread(statement.excel, r)
@@ -935,7 +940,8 @@ async def statement_score(body: StatementIn, user: dict = Depends(current_user))
         att = tx[tx["Flag"] != ""]
         if len(att):
             extra_tables.append(("Transactions to check (duplicates and unusual entries)", att, 30))
-        extra_tables.append(("All transactions", tx, 60))
+        extra_tables.insert(0, ("Investigation findings: exact references, dates and amounts", au["findings_table"], None)) if au is not None and len(au["findings_table"]) else None
+        extra_tables.append(("All transactions", tx, None))
     pdf = {"title": f"Statement check: {r['verdict']} ({r['score']}/100)", "question": f"Period {r['period']}", "insight": full,
            "table": r["table"], "chart": png, "total_rows": len(r["table"]), "extra_tables": extra_tables}
     t = r["table"]
@@ -946,6 +952,7 @@ async def statement_score(body: StatementIn, user: dict = Depends(current_user))
         "notes": r["notes"], "simple": simple, "text": full,
         "integrity": r["integrity"], "flags": r["flags"], "categories": statement.categories_json(r.get("categories")),
         "forecast": r.get("forecast"),
+        "audit": ({"totals": au["totals"], "notes": au["notes"], "findings": au["findings"], "text": au["text"], "no_second_file": au["no_second_file"]} if au else None),
         "accounts": r.get("accounts", []),
         "columns": list(t.columns), "rows": json.loads(t.to_json(orient="records")),
         "tx_columns": list(tx.columns) if tx is not None else [],
