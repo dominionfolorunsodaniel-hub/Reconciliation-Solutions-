@@ -414,5 +414,43 @@ class PagesTests(unittest.TestCase):
         self.assertIn("Problem", pages.status_page(False, True, None))
 
 
+class EmailCodeTests(unittest.TestCase):
+    def test_codes_devices_and_verification(self):
+        try:
+            import db
+        except Exception as e:
+            self.skipTest(f"db not importable here: {e}")
+        if hasattr(db, "init"): db.init()
+        code = db.issue_email_code("Someone@Example.com", "signup")
+        self.assertRegex(code, r"^\d{6}$")
+        with self.assertRaises(ValueError): db.issue_email_code("someone@example.com", "signup")      # no mail flooding
+        self.assertFalse(db.check_email_code("someone@example.com", "signup", "000000" if code != "000000" else "111111"))
+        self.assertFalse(db.check_email_code("someone@example.com", "login", code))                    # wrong purpose
+        self.assertTrue(db.check_email_code("someone@example.com", "signup", code))
+        self.assertFalse(db.check_email_code("someone@example.com", "signup", code))                   # single use
+        code2 = db.issue_email_code("burn@example.com", "login") if False else None
+        self.assertFalse(db.is_email_verified("someone@example.com"))
+        db.mark_email_verified("Someone@Example.com")
+        self.assertTrue(db.is_email_verified("someone@example.com"))
+        tok = db.trust_device(4242)
+        self.assertTrue(db.is_trusted_device(4242, tok))
+        self.assertFalse(db.is_trusted_device(4243, tok))
+        self.assertFalse(db.is_trusted_device(4242, "forged"))
+        db.forget_trusted_devices(4242)
+        self.assertFalse(db.is_trusted_device(4242, tok))
+
+    def test_five_wrong_tries_burn_the_code(self):
+        try:
+            import db
+        except Exception as e:
+            self.skipTest(f"db not importable here: {e}")
+        if hasattr(db, "init"): db.init()
+        code = db.issue_email_code("burn@example.com", "login")
+        wrong = "999999" if code != "999999" else "888888"
+        for _ in range(5):
+            self.assertFalse(db.check_email_code("burn@example.com", "login", wrong))
+        self.assertFalse(db.check_email_code("burn@example.com", "login", code))                      # even the right code is dead now
+
+
 if __name__ == "__main__":
     unittest.main()
