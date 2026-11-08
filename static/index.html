@@ -515,6 +515,8 @@
   html[data-theme=dark] .ss-gauge::before { background:#121b2e; } html[data-theme=dark] .ss-gauge { background:conic-gradient(var(--c) calc(var(--p) * 1%), #26354f 0); }
   html[data-theme=dark] .ss-bar { background:#26354f; } html[data-theme=dark] .ss-loan { background:rgba(23,105,255,.14); }
   html[data-theme=dark] #app .ss-kpi, html[data-theme=dark] #app .ss-box { background:#0e1729; }
+  .ans-label { font-size:12px; font-weight:700; letter-spacing:.06em; text-transform:uppercase; color:var(--brand,#2b59ff); margin:10px 0 -4px; }
+  .full-panel > summary { font-weight:600; cursor:pointer; }
 </style>
 <style>
 /* ===== landing additions: sample check, contact form, honeypot ===== */
@@ -1799,6 +1801,12 @@ html[data-theme=dark] .d-kpi, html[data-theme=dark] .d-kpi b, html[data-theme=da
       <canvas id="ssChart" height="120"></canvas>
       <h3 style="margin:16px 0 6px">Month by month</h3>
       <div class="ss-wrap" id="ssTableWrap"></div>
+      <div id="ssAuditBox" class="hidden"><h3 style="margin:16px 0 6px">Detailed investigation report</h3>
+        <small class="mute">Every transaction was inspected. Each finding lists the exact references, dates and amounts behind it.</small>
+        <div id="ssAuditTotals" class="ss-flag" style="border-left-color:var(--brand,#2b59ff)"></div>
+        <div id="ssAuditNotes"></div><div id="ssAuditFindings"></div>
+        <div class="ss-flag" id="ssAuditCaveat" style="border-left-color:#6b7385"></div>
+        <details style="margin:8px 0"><summary>Read the whole report as text</summary><pre id="ssAuditText" style="white-space:pre-wrap;font-size:12.5px;max-height:480px;overflow:auto"></pre></details></div>
       <div id="ssTxBox" class="hidden"><h3 style="margin:16px 0 6px">All transactions</h3><small class="mute" id="ssTxNote"></small><div class="ss-wrap" id="ssTx"></div></div>
       <div id="ssCatsBox" class="hidden"><h3 style="margin:16px 0 6px">Where the money goes and comes from</h3><div class="ss-cats"><div id="ssCatSpend"></div><div id="ssCatIn"></div></div></div>
       <div id="ssFcBox" class="hidden"><h3 style="margin:16px 0 6px">What the next months may look like</h3><div class="ss-wrap" id="ssFcTable"></div><div id="ssFcWarn"></div><small class="mute" id="ssFcNote"></small></div>
@@ -2194,6 +2202,10 @@ html[data-theme=dark] .d-kpi, html[data-theme=dark] .d-kpi b, html[data-theme=da
     <h2 data-views="team">Admin - users &amp; access</h2>
     <div data-views="team">
     <div class="mute" style="margin-bottom:8px">Owner controls: customer accounts are created as analysts and assigned to their own company. They cannot see other companies unless you explicitly assign access. Telegram ID links a customer to the bot.</div>
+    <h2 style="margin-top:12px">AI connection check</h2>
+    <div class="mute">Tests each AI model with one tiny request and tells you exactly why answers are slow or failing.</div>
+    <button type="button" id="aiCheckBtn" style="margin:8px 0">Run AI check</button>
+    <pre id="aiCheckOut" class="mute" style="white-space:pre-wrap;font-size:12.5px"></pre>
     <h2 style="margin-top:12px">Customer registration requests</h2>
     <div class="mute">Public sign-up requests stay pending until you approve them. Approved customers get Analyst access to their own company only.</div>
     <div class="row" style="margin:8px 0"><button class="ghost" id="refreshRegs">Refresh requests</button><span class="mute" id="regAdminMsg"></span></div>
@@ -2598,9 +2610,14 @@ function renderResult(r) {
   $("title").textContent = r.title; $("download").href = `/api/download/${r.result_id}`; $("downloadPdf").href = `/api/download/${r.result_id}/pdf`; $("downloadPack").href = `/api/download/${r.result_id}/pack`;
   const ins = $("insight"), full = r.insight || "", cut = full.indexOf("\n\nHOW THIS WAS WORKED OUT:");
   ins.textContent = cut >= 0 ? full.slice(0, cut) : full; ins.classList.toggle("hidden", !full);
+  let lab = $("insLabel"); if (!lab) { lab = document.createElement("div"); lab.id = "insLabel"; lab.className = "ans-label"; ins.before(lab); }
+  lab.textContent = r.fallback ? "AI is busy: exact analysis of your whole file" : "Answer to your question"; lab.hidden = !full;
   let cp = $("calcPanel"); if (!cp) { cp = document.createElement("details"); cp.id = "calcPanel"; cp.className = "calc-panel"; ins.after(cp); }
   cp.replaceChildren(); cp.hidden = cut < 0;
   if (cut >= 0) { const sm = document.createElement("summary"); sm.textContent = "How was this calculated?"; const pre = document.createElement("div"); pre.className = "calc-body"; pre.textContent = full.slice(cut + 2).replace("HOW THIS WAS WORKED OUT:", "Steps:").trim(); cp.append(sm, pre); }
+  let fp = $("fullPanel"); if (!fp) { fp = document.createElement("details"); fp.id = "fullPanel"; fp.className = "calc-panel full-panel"; cp.after(fp); }
+  fp.replaceChildren(); fp.hidden = !r.full_analysis;
+  if (r.full_analysis) { const sm = document.createElement("summary"); sm.textContent = "Full analysis of the whole file (not just your question)"; const pre = document.createElement("pre"); pre.className = "calc-body"; pre.style.whiteSpace = "pre-wrap"; pre.textContent = r.full_analysis; fp.append(sm, pre); }
   const cv = $("chart"); if (S.chart) { S.chart.destroy(); S.chart = null; }
   if (r.chart) { cv.classList.remove("hidden"); const c = r.chart; S.chart = new Chart(cv, { type: c.type, data: { labels: c.labels, datasets: [{ label: c.metric, data: c.values, borderWidth: 2, backgroundColor: "rgba(11,92,230,.55)", borderColor: "#0b5ce6", tension: .3 }] }, options: { responsive: true, plugins: { legend: { display: c.type === "pie" } } } }); } else cv.classList.add("hidden");
   fillTable($("table"), r.columns, r.rows);
@@ -3539,6 +3556,17 @@ api("/api/me").then(start).catch(showLanding);
     $("ssFlags").replaceChildren(...(r.flags || []).map(f => { const d = el("div", "", "ss-flag " + f.severity); d.append(el("b", f.title), el("div", f.detail)); if (f.examples && f.examples.length) d.append(el("small", "e.g. " + f.examples.slice(0, 3).join(" · "))); return d; }));
     $("ssAttnBox").classList.toggle("hidden", !(r.attention && r.attention.length));
     if (r.attention && r.attention.length) $("ssAttn").replaceChildren(txTable(r.tx_columns, r.attention));
+    { const au = r.audit, ab = $("ssAuditBox"); ab.classList.toggle("hidden", !au);
+      if (au) {
+        const N = v => "₦" + Number(v).toLocaleString("en-NG", { minimumFractionDigits: 2, maximumFractionDigits: 2 }), t = au.totals;
+        $("ssAuditTotals").replaceChildren(...(t ? [el("b", "Totals"), el("div", `Inflows ${N(t.money_in)} (${t.in_count} credits) · Outflows ${N(t.money_out)} (${t.out_count} debits) · Net movement ${N(t.net_movement)} · ${t.rows} rows inspected`)] : [el("b", "Totals are shown per account in the full report below")]));
+        $("ssAuditNotes").replaceChildren(...(au.notes || []).map(n => el("div", n, "ss-flag")));
+        $("ssAuditFindings").replaceChildren(...(au.findings.length ? au.findings : []).map(f => {
+          const d = el("details", "", "ss-flag " + (f.severity === "info" ? "" : f.severity)); const s = el("summary"); s.append(el("b", `${f.title} `), el("small", `(${f.severity}, ${f.count} row(s), ${N(f.value)})`)); d.append(s, el("div", f.why), el("small", "How it was found: " + f.method));
+          const cols = ["Group", "No.", "Date", "Reference", "Narration", "Type", "Amount"]; { const wrap = el("div"); wrap.style.overflowX = "auto"; wrap.append(txTable(cols, f.rows)); d.append(wrap); } return d; }));
+        if (!au.findings.length) $("ssAuditFindings").replaceChildren(el("div", "None of the checks found anything that deserves investigation.", "ss-flag"));
+        $("ssAuditCaveat").textContent = au.no_second_file; $("ssAuditText").textContent = au.text;
+      } }
     $("ssTxBox").classList.toggle("hidden", !(r.transactions && r.transactions.length));
     if (r.transactions && r.transactions.length) { $("ssTx").replaceChildren(txTable(r.tx_columns, r.transactions.slice(0, 5000))); $("ssTxNote").textContent = `${r.transactions.length} transaction(s) read` + (r.transactions.length > 5000 ? " - showing the first 5,000; the Excel file has all of them." : ", all listed."); }
     const cats = r.categories; $("ssCatsBox").classList.toggle("hidden", !cats);
@@ -4365,6 +4393,20 @@ async function loadAgeing() {
   document.querySelector('[data-nav="resets"]').addEventListener("click", () => load().catch(() => {}));
   document.getElementById("rrRefresh").onclick = () => load().catch(e => { document.getElementById("rrMsg").textContent = e.message; });
 })();
+
+$("aiCheckBtn").onclick = async () => {
+  const out = $("aiCheckOut"), b = $("aiCheckBtn"); b.disabled = true; out.textContent = "Testing the AI models, this can take up to a minute...";
+  try {
+    const r = await api("/api/admin/ai-check");
+    const L = [`Key present: ${r.key_present ? "yes" : "NO"} (length ${r.key_length}) | per-call timeout ${r.call_timeout_s}s | whole-question budget ${r.question_budget_s}s | thinking: ${r.thinking_level}`, ""];
+    (r.models || []).forEach(m => L.push(`${m.model}: ${m.verdict}${m.http ? " (HTTP " + m.http + ")" : ""} in ${m.seconds}s${m.reason ? "\n   reason: " + m.reason : ""}`));
+    if (r.advice) L.push(r.advice);
+    L.push("", r.recent_problems && r.recent_problems.length ? "Recent times the AI could not answer a customer:" : "No recent AI failures recorded since the last restart.");
+    (r.recent_problems || []).forEach(p => L.push(`- ${p.time}: ${p.problem}`));
+    out.textContent = L.join("\n");
+  } catch (e) { out.textContent = "Check failed: " + (e.message || e); }
+  b.disabled = false;
+};
 </script>
 </body>
 </html>
