@@ -299,5 +299,71 @@ class FullReadTests(unittest.TestCase):
         self.assertIn("Repeated values in Reference: A", t)
 
 
+class TxAuditTests(unittest.TestCase):
+    def frame(self):
+        import core
+        rows = [  # date, ref, narration, type, amount
+            ("2026-10-01", "R1", "Salary", "Credit", 500000), ("2026-10-02", "R2", "Rent", "Debit", 200000),
+            ("2026-10-03", "R3", "POS", "Debit", 5000), ("2026-10-03", "R3", "POS", "Debit", 5000),      # duplicate ref + same day
+            ("2026-10-04", "R4", "Airtime", "Debit", 1000), ("2026-10-05", "R5", "Airtime", "Debit", 1000), ("2026-10-06", "R6", "Airtime", "Debit", 1000),
+            ("2026-10-07", "R7", "Transfer", "Credit", 90000), ("2026-10-07", "R8", "Transfer out", "Debit", 89000),   # pass-through
+            ("2026-10-08", "R9", "Shop", "Debit", 3000), ("2026-10-09", "R10", "Shop", "Debit", 4000), ("2026-10-10", "R11", "Shop", "Debit", 3500),
+            ("2026-10-11", "R12", "Shop", "Debit", 4500), ("2026-10-12", "R13", "Shop", "Debit", 3800), ("2026-10-13", "R14", "Shop", "Debit", 4200),
+            ("2026-10-14", "R15", "Big payment", "Debit", 4000000),                                         # outlier
+            ("2026-11-20", "R16", "Late", "Credit", 7000),                                                  # long quiet gap
+        ]
+        return pd.DataFrame({"Date": pd.to_datetime([r[0] for r in rows]), "Reference": [r[1] for r in rows], "Narration": [r[2] for r in rows],
+                             core.CRED_COL: [r[3] for r in rows], core.AMT_COL: [float(r[4]) for r in rows]})
+
+    def test_findings_and_totals(self):
+        import txaudit
+        a = txaudit.audit(self.frame())
+        t = a["totals"]
+        self.assertEqual(t["rows"], 17)
+        self.assertEqual(t["money_in"], 597000.0)
+        self.assertEqual(t["money_out"], 4000000 + 200000 + 10000 + 3000 + 89000 + 3000 + 4000 + 3500 + 4500 + 3800 + 4200)
+        self.assertEqual(t["net_movement"], round(t["money_in"] - t["money_out"], 2))
+        self.assertEqual(t["average_in"], round(597000 / 3, 2))          # over credits only
+        kinds = {f["kind"]: f for f in a["findings"]}
+        self.assertEqual(kinds["duplicate_reference_same"]["count"], 2)
+        self.assertEqual({r["Reference"] for r in kinds["duplicate_reference_same"]["rows"]}, {"R3"})
+        self.assertEqual(kinds["repeated_amount"]["count"], 3)
+        self.assertIn("R15", [r["Reference"] for r in kinds["unusual_debit"]["rows"]])
+        self.assertIn("pass_through", kinds)
+        self.assertIn("quiet_period", kinds)
+
+    def test_every_row_is_in_the_text_and_no_missing_claims(self):
+        import txaudit
+        a = txaudit.audit(self.frame())
+        for needle in ("R3", "R15", "4,000,000.00", "2026-10-03", "Net movement", "Total inflows"):
+            self.assertIn(needle, a["text"])
+        self.assertIn("CANNOT TELL YOU", a["text"])
+        self.assertIn("second file", a["text"])
+        self.assertNotIn("missing from your records", a["text"].split("CANNOT TELL YOU")[0])
+        self.assertEqual(len(a["findings_table"]), sum(f["count"] for f in a["findings"]))   # nothing dropped
+
+    def test_clean_statement_has_no_false_findings(self):
+        import core, txaudit
+        x = pd.DataFrame({"Date": pd.to_datetime(["2026-10-01", "2026-10-05", "2026-10-09"]), "Reference": ["A", "B", "C"], "Narration": ["x", "y", "z"],
+                          core.CRED_COL: ["Credit", "Debit", "Credit"], core.AMT_COL: [1234.0, 567.0, 8910.0]})
+        a = txaudit.audit(x)
+        self.assertEqual(a["findings"], [])
+        self.assertIn("None of the checks", a["text"])
+
+
+class DeepDiveTests(unittest.TestCase):
+    def test_detail_lists_exact_rows(self):
+        import deepdive
+        df = pd.DataFrame({"Reference": [f"R{i}" for i in range(1, 11)] + ["R5"], "Date": pd.to_datetime(["2026-10-%02d" % (i + 1) for i in range(11)]),
+                           "Region": ["N", "S"] * 5 + ["N"], "Amount": [100, 120, 110, 90, 105, 95, 115, 100, 9000, 1000, 105]})
+        res = df.groupby("Region", as_index=False)["Amount"].sum()
+        out = {"res": res, "keys": ["Region"], "metric": "Amount", "filtered": df}
+        t = deepdive.detail(out, 11)
+        for needle in ("BREAKDOWN", "Highest", "Unusually high values", "ref R9", "9,000.00", "DUPLICATE CHECK ON Reference", "R5", "LIMITS OF THIS ANALYSIS"):
+            self.assertIn(needle, t)
+        self.assertIn("(over 2 groups)", t)
+        self.assertEqual(deepdive.detail({"res": None, "keys": [], "filtered": None}), "")
+
+
 if __name__ == "__main__":
     unittest.main()
