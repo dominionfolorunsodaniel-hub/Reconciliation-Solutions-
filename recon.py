@@ -251,7 +251,7 @@ def run_recon(a: pd.DataFrame, b: pd.DataFrame, plan: dict) -> dict:
     return out
 
 
-async def reconcile(a: pd.DataFrame, b: pd.DataFrame, instruction: str = "") -> dict:
+async def reconcile(a: pd.DataFrame, b: pd.DataFrame, instruction: str = "", manual_pairs: list | None = None) -> dict:
     """Returns run_recon's dict. The AI proposes the column mapping; if it is unavailable, unsure or wrong, the built-in logic
     works it out from the note and the column names. A question comes back only when no sensible matching exists at all."""
     # Bank statement vs ledger (reference + credit/debit or amount+type columns on both sides): deterministic engine.
@@ -259,7 +259,7 @@ async def reconcile(a: pd.DataFrame, b: pd.DataFrame, instruction: str = "") -> 
         import bankrec
         if bankrec.applicable(a, b):
             tol = parse_note(instruction, a, b).get("tolerance")
-            return await asyncio.to_thread(bankrec.reconcile_bank_ledger, a, b, 0.01 if tol is None else tol)
+            return await asyncio.to_thread(bankrec.reconcile_bank_ledger, a, b, 0.01 if tol is None else tol, "Bank statement", "Ledger", manual_pairs)
     except Exception:  # noqa: BLE001  fall back to the general engine
         pass
     plan = None

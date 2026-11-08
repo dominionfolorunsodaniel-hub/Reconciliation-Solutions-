@@ -245,6 +245,12 @@ def _init_schema(_con) -> None:
     _con.executescript("CREATE TABLE IF NOT EXISTS password_resets (user_id INTEGER PRIMARY KEY, code_hash TEXT NOT NULL, "
                        "expires_at TEXT NOT NULL, attempts INTEGER NOT NULL DEFAULT 0, created_at TEXT NOT NULL);")
     _con.executescript(
+        "CREATE TABLE IF NOT EXISTS manual_matches (id INTEGER PRIMARY KEY AUTOINCREMENT, company_id INTEGER NOT NULL, report_a INTEGER NOT NULL, "
+        "report_b INTEGER NOT NULL, bank_ref TEXT NOT NULL, ledger_ref TEXT NOT NULL, reason TEXT NOT NULL DEFAULT '', created_by INTEGER, "
+        "created_by_name TEXT, created_at TEXT NOT NULL);"
+        "CREATE TABLE IF NOT EXISTS close_checklist (company_id INTEGER NOT NULL, month TEXT NOT NULL, item TEXT NOT NULL, done INTEGER NOT NULL DEFAULT 0, "
+        "done_by TEXT, done_at TEXT, PRIMARY KEY (company_id, month, item));")
+    _con.executescript(
         "CREATE TABLE IF NOT EXISTS broadcasts (id INTEGER PRIMARY KEY AUTOINCREMENT, title TEXT NOT NULL, body TEXT NOT NULL, "
         "level TEXT NOT NULL DEFAULT 'info', created_by INTEGER, created_at TEXT NOT NULL, expires_at TEXT, "
         "active INTEGER NOT NULL DEFAULT 1);"
@@ -1454,3 +1460,50 @@ def latest_report(company_id: int) -> dict | None:
     with _db() as con:
         row = con.execute("SELECT * FROM reports WHERE company_id = ? ORDER BY id DESC LIMIT 1", (company_id,)).fetchone()
         return dict(row) if row else None
+
+
+# ---- manual matches and the month-end checklist ------------------------------ #
+def add_manual_match(company_id: int, report_a: int, report_b: int, bank_ref: str, ledger_ref: str, reason: str, user: dict) -> int:
+    with _db() as con:
+        exists = con.execute("SELECT id FROM manual_matches WHERE company_id=? AND report_a=? AND report_b=? AND (bank_ref=? OR ledger_ref=?)",
+                             (company_id, report_a, report_b, bank_ref, ledger_ref)).fetchone()
+        if exists:
+            raise ValueError("One of these two transactions is already manually matched.")
+        con.execute("INSERT INTO manual_matches(company_id, report_a, report_b, bank_ref, ledger_ref, reason, created_by, created_by_name, created_at) "
+                    "VALUES (?,?,?,?,?,?,?,?,?)", (company_id, report_a, report_b, bank_ref, ledger_ref, (reason or "")[:300], user["id"], user["username"], _now()))
+        return con.execute("SELECT MAX(id) AS m FROM manual_matches WHERE company_id=?", (company_id,)).fetchone()["m"]
+
+
+def list_manual_matches(company_id: int, report_a: int | None = None, report_b: int | None = None) -> list[dict]:
+    q, p = "SELECT * FROM manual_matches WHERE company_id=?", [company_id]
+    if report_a is not None and report_b is not None:
+        q += " AND report_a=? AND report_b=?"; p += [report_a, report_b]
+    with _db() as con:
+        return [dict(r) for r in con.execute(q + " ORDER BY id", p).fetchall()]
+
+
+def delete_manual_match(match_id: int, company_id: int) -> bool:
+    with _db() as con:
+        con.execute("DELETE FROM manual_matches WHERE id=? AND company_id=?", (match_id, company_id))
+    return True
+
+
+CLOSE_ITEMS = ["Upload every bank statement for the month", "Upload the matching ledger or POS report for each account",
+               "Run the reconciliation for each account", "Clear or explain every unmatched transaction",
+               "Resolve duplicate references", "Review the discrepancy cases and close the resolved ones",
+               "Download the PDF and Excel reports for your records", "Sign off the month"]
+
+
+def get_checklist(company_id: int, month: str) -> list[dict]:
+    with _db() as con:
+        rows = {r["item"]: dict(r) for r in con.execute("SELECT * FROM close_checklist WHERE company_id=? AND month=?", (company_id, month)).fetchall()}
+    return [{"item": i, "done": bool(rows.get(i, {}).get("done")), "done_by": rows.get(i, {}).get("done_by"), "done_at": rows.get(i, {}).get("done_at")} for i in CLOSE_ITEMS]
+
+
+def set_checklist(company_id: int, month: str, item: str, done: bool, user: dict) -> None:
+    if item not in CLOSE_ITEMS:
+        raise ValueError("Unknown checklist item.")
+    with _db() as con:
+        con.execute("DELETE FROM close_checklist WHERE company_id=? AND month=? AND item=?", (company_id, month, item))
+        con.execute("INSERT INTO close_checklist(company_id, month, item, done, done_by, done_at) VALUES (?,?,?,?,?,?)",
+                    (company_id, month, item, 1 if done else 0, user["username"] if done else None, _now() if done else None))

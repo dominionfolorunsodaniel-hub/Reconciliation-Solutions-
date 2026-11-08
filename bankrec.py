@@ -26,11 +26,12 @@ BOTH_MISMATCH = "Credit and debit mismatch"
 DIRECTION = "Credit/debit mismatch"
 BANK_ONLY = "Only in bank"
 LEDGER_ONLY = "Only in ledger"
+MANUAL = "Manually matched"
 DUPLICATE = "Duplicate reference"
 MISSING_AMT = "Missing amount"
 NO_REF = "Missing reference"
 
-ORDER = [MATCHED, CREDIT_MISMATCH, DEBIT_MISMATCH, BOTH_MISMATCH, DIRECTION, BANK_ONLY, LEDGER_ONLY, DUPLICATE, MISSING_AMT, NO_REF]
+ORDER = [MATCHED, MANUAL, CREDIT_MISMATCH, DEBIT_MISMATCH, BOTH_MISMATCH, DIRECTION, BANK_ONLY, LEDGER_ONLY, DUPLICATE, MISSING_AMT, NO_REF]
 
 RESOLUTION = {
     MATCHED: "No action needed.",
@@ -45,6 +46,7 @@ RESOLUTION = {
                "(or investigate if it is unexpected).",
     LEDGER_ONLY: "The ledger shows this transaction but the bank does not. Check whether it is still in transit, was "
                  "recorded in error, or failed at the bank.",
+    MANUAL: "A person paired these two records by hand. Keep the reason on file; any remaining amount difference is still counted.",
     DUPLICATE: "This reference appears more than once. Check whether it was posted twice, or whether separate transactions "
                "share one reference, and fix the record that is wrong.",
     MISSING_AMT: "An amount is blank in one or both records. Get the real amount from the source document before matching.",
@@ -206,7 +208,7 @@ def _primary(r):
 
 
 def reconcile_bank_ledger(bank: pd.DataFrame, ledger: pd.DataFrame, tolerance: float = 0.01,
-                          bank_name: str = "Bank statement", ledger_name: str = "Ledger") -> dict:
+                          bank_name: str = "Bank statement", ledger_name: str = "Ledger", manual_pairs: list | None = None) -> dict:
     tol = abs(float(tolerance))
     B, L = normalise(bank), normalise(ledger)
     rows: list[dict] = []
@@ -289,6 +291,27 @@ def reconcile_bank_ledger(bank: pd.DataFrame, ledger: pd.DataFrame, tolerance: f
         rec(ref, st, b=b, l=l, diff=round(diff, 2) if bad else 0.0, bank_row=bn, ledger_row=ln, note=note)
 
     detail = pd.DataFrame(rows)
+    applied_manual = 0
+    for mp in (manual_pairs or []):
+        br, lr = _clean_ref(mp["bank_ref"]), _clean_ref(mp["ledger_ref"])
+        bi_ = detail.index[(detail["Status"] == BANK_ONLY) & (detail["Reference"].map(_clean_ref) == br)]
+        li_ = detail.index[(detail["Status"] == LEDGER_ONLY) & (detail["Reference"].map(_clean_ref) == lr)]
+        if len(bi_) != 1 or len(li_) != 1:
+            continue   # one of them is no longer unmatched (new files): ignore this pair
+        brow, lrow = detail.loc[bi_[0]].copy(), detail.loc[li_[0]]
+        amt_b, amt_l = brow["Bank amount"], lrow["Ledger amount"]
+        brow["Reference"] = brow["Reference"] if br == lr else f"{brow['Reference']} <-> {lrow['Reference']}"
+        for k in ("Ledger credit", "Ledger debit", "Ledger amount", "Ledger row", "Ledger date"):
+            brow[k] = lrow[k]
+        diff = round(float(amt_b) - float(amt_l), 2) if pd.notna(amt_b) and pd.notna(amt_l) else None
+        brow["Difference (A-B)"] = diff
+        brow["Status"] = MANUAL
+        brow["Recommended resolution"] = RESOLUTION[MANUAL]
+        brow["Note"] = f"Matched by hand by {mp.get('created_by_name') or 'a user'} on {str(mp.get('created_at', ''))[:10]}. Reason: {mp.get('reason') or 'none given'}." + (f" Amounts still differ by {abs(diff):,.2f}." if diff and abs(diff) > tol else "")
+        detail.loc[bi_[0]] = brow
+        detail = detail.drop(index=li_[0])
+        applied_manual += 1
+    detail = detail.reset_index(drop=True)
     detail["_o"] = detail["Status"].map({s: i for i, s in enumerate(ORDER)})
     detail = detail.sort_values(["_o", "Reference"], kind="stable").drop(columns="_o").reset_index(drop=True)
     return _finish(detail, B, L, tol, bank_name, ledger_name, dup_b, dup_l)
@@ -306,7 +329,7 @@ def _discrepancy_value(detail: pd.DataFrame) -> float:
     """Total absolute discrepancy: |difference| of every mismatch plus the full amount of every one-sided transaction."""
     total = 0.0
     for _, r in detail.iterrows():
-        if r["Status"] in (CREDIT_MISMATCH, DEBIT_MISMATCH, BOTH_MISMATCH, DIRECTION):
+        if r["Status"] in (CREDIT_MISMATCH, DEBIT_MISMATCH, BOTH_MISMATCH, DIRECTION, MANUAL):
             total += abs(float(r["Difference (A-B)"] or 0))
         elif r["Status"] in (BANK_ONLY, LEDGER_ONLY):
             total += _amount_of(r)
@@ -339,29 +362,31 @@ def _finish(detail, B, L, tol, bank_name, ledger_name, dup_b, dup_l) -> dict:
         part = detail[detail["Status"] == st]
         if not len(part) and st not in (MATCHED, CREDIT_MISMATCH, DEBIT_MISMATCH, BANK_ONLY, LEDGER_ONLY, DUPLICATE):
             continue
-        ba = pd.to_numeric(part["Bank amount"], errors="coerce").sum()
-        la = pd.to_numeric(part["Ledger amount"], errors="coerce").sum()
-        summary_rows.append({"Status": st, "Count": int(len(part)), "Amount A": round(float(ba), 2), "Amount B": round(float(la), 2),
-                             "Difference": round(float(ba - la), 2)})
+        ba = pd.to_numeric(part["Bank amount"], errors="coerce").sum(min_count=1)   # NaN = this side has no record (not zero)
+        la = pd.to_numeric(part["Ledger amount"], errors="coerce").sum(min_count=1)
+        summary_rows.append({"Status": st, "Count": int(len(part)), "Amount A": None if pd.isna(ba) else round(float(ba), 2),
+                             "Amount B": None if pd.isna(la) else round(float(la), 2),
+                             "Difference": round(float(0 if pd.isna(ba) else ba) - float(0 if pd.isna(la) else la), 2)})
     summary = pd.DataFrame(summary_rows)
-    problems = detail[detail["Status"] != MATCHED]
+    problems = detail[~detail["Status"].isin([MATCHED, MANUAL])]
     matched = detail[detail["Status"] == MATCHED]
+    manual_rows = detail[detail["Status"] == MANUAL]
     bt, lt = _side_totals(B), _side_totals(L)
     totals = {
         "bank": bt, "ledger": lt,
-        "matched_count": int(len(matched)),
+        "matched_count": int(len(matched)), "manual_count": int(len(manual_rows)),
         "matched_value_bank": round(float(pd.to_numeric(matched["Bank amount"], errors="coerce").sum()), 2),
         "matched_value_ledger": round(float(pd.to_numeric(matched["Ledger amount"], errors="coerce").sum()), 2),
         "unmatched_count": int(len(problems)),
         "bank_only_value": round(float(pd.to_numeric(detail.loc[detail["Status"] == BANK_ONLY, "Bank amount"], errors="coerce").sum()), 2),
         "ledger_only_value": round(float(pd.to_numeric(detail.loc[detail["Status"] == LEDGER_ONLY, "Ledger amount"], errors="coerce").sum()), 2),
-        "mismatch_value": round(float(sum(abs(float(x or 0)) for x in detail.loc[detail["Status"].isin([CREDIT_MISMATCH, DEBIT_MISMATCH, BOTH_MISMATCH, DIRECTION]), "Difference (A-B)"])), 2),
+        "mismatch_value": round(float(sum(abs(float(x or 0)) for x in detail.loc[detail["Status"].isin([CREDIT_MISMATCH, DEBIT_MISMATCH, BOTH_MISMATCH, DIRECTION, MANUAL]), "Difference (A-B)"])), 2),
         "duplicate_refs": sorted(dup_b | dup_l), "duplicate_refs_bank": sorted(dup_b), "duplicate_refs_ledger": sorted(dup_l),
         "total_discrepancy": _discrepancy_value(detail),
         "tolerance": tol,
     }
     total_rows = max(len(detail), 1)
-    score = round(100 * len(matched) / total_rows)
+    score = round(100 * (len(matched) + len(manual_rows)) / total_rows)
     out = {
         "engine": "bank-ledger", "summary": summary, "detail": detail, "totals": totals,
         "plan": {"keys": [{"a": "Reference", "b": "Reference"}], "amount": None, "tolerance": tol, "engine": "bank-ledger"},
@@ -371,7 +396,7 @@ def _finish(detail, B, L, tol, bank_name, ledger_name, dup_b, dup_l) -> dict:
                      "only_in_b_value": totals["ledger_only_value"], "total_at_risk": totals["total_discrepancy"]},
         "quality": {"score": score, "grade": "Excellent" if score >= 90 else "Good" if score >= 75 else "Needs attention" if score >= 50 else "Poor",
                     "factors": [{"name": "Matching accuracy", "score": float(score), "max": 100,
-                                 "detail": f"{len(matched)} of {len(detail)} records matched exactly ({score}%)."}]},
+                                 "detail": f"{len(matched)} matched exactly and {len(manual_rows)} matched by hand, of {len(detail)} records ({score}%)."}]},
         "warnings": [],
     }
     out["report_text"] = report_text(out)
@@ -406,15 +431,15 @@ def report_text(out: dict) -> str:
     t, d = out["totals"], out["detail"]
     lines = [f"RECONCILIATION: {out['bank_name']} (bank) vs {out['ledger_name']} (ledger)",
              f"Reporting date: {datetime.now().strftime('%Y-%m-%d')}. Matching tolerance: {t['tolerance']:g}.", "",
-             "RESULT", out["summary"].to_string(index=False, float_format=lambda x: f"{x:,.2f}"), "",
-             f"Exact matches: {t['matched_count']}. Records needing attention: {t['unmatched_count']}. "
+             "RESULT", out["summary"].to_string(index=False, na_rep="-", float_format=lambda x: f"{x:,.2f}"), "",
+             f"Exact matches: {t['matched_count']}. Matched by hand: {t['manual_count']}. Records needing attention: {t['unmatched_count']}. "
              f"Total absolute discrepancy: {t['total_discrepancy']:,.2f} "
              f"(amount differences {t['mismatch_value']:,.2f} + only in bank {t['bank_only_value']:,.2f} + only in ledger {t['ledger_only_value']:,.2f}).", "",
              "TOTALS (calculated by the application)", _side_text("Bank", t["bank"]), _side_text("Ledger", t["ledger"]), ""]
     if t["duplicate_refs"]:
         lines += [f"DUPLICATE REFERENCES: {', '.join(t['duplicate_refs'])}", ""]
     lines.append("EVERY RECORD THAT DID NOT MATCH")
-    prob = d[d["Status"] != MATCHED]
+    prob = d[~d["Status"].isin([MATCHED])]
     if prob.empty:
         lines.append("None. Every record matched.")
     for _, r in prob.iterrows():
@@ -447,7 +472,7 @@ def sheets(out: dict) -> dict:
                                                            f"Bank file: {out['bank_name']}", f"Ledger file: {out['ledger_name']}"]})
     actions = pd.DataFrame([[s, int(c), RESOLUTION[s]] for s, c in d["Status"].value_counts().items() if s != MATCHED],
                            columns=["Category", "Records", "Recommended corrective action"])
-    return {"Executive summary": out["summary"], "Financial totals": totals, "All records": d[cols], "Exact matches": cut(MATCHED),
+    return {"Executive summary": out["summary"], "Financial totals": totals, "All records": d[cols], "Exact matches": cut(MATCHED), "Manual matches": cut(MANUAL),
             "Amount mismatches": cut(CREDIT_MISMATCH, DEBIT_MISMATCH, BOTH_MISMATCH, DIRECTION), "Only in bank": cut(BANK_ONLY),
             "Only in ledger": cut(LEDGER_ONLY), "Duplicate references": cut(DUPLICATE),
             "Missing data": cut(MISSING_AMT, NO_REF), "Corrective actions": actions, "Methodology": method}

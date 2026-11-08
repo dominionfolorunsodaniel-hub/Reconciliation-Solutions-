@@ -1507,7 +1507,8 @@ async def reconcile(body: ReconIn, user: dict = Depends(current_user)):
     try:
         a = await asyncio.to_thread(db.get_frame, body.report_a)
         b = await asyncio.to_thread(db.get_frame, body.report_b)
-        out = await recon.reconcile(a, b, body.instruction)
+        pairs = await asyncio.to_thread(db.list_manual_matches, body.company_id, body.report_a, body.report_b)
+        out = await recon.reconcile(a, b, body.instruction, pairs)
     except Exception as e:  # noqa: BLE001
         finish_plan_usage(reservation, False)
         raise HTTPException(400, str(e))
@@ -1518,7 +1519,7 @@ async def reconcile(body: ReconIn, user: dict = Depends(current_user)):
 
     la, lb = f"#{body.report_a} {ra['filename']}", f"#{body.report_b} {rb['filename']}"
     detail = out["detail"]
-    problems = detail[detail["Status"] != "Matched"].dropna(axis=1, how="all")
+    problems = detail[~detail["Status"].isin(["Matched"])].dropna(axis=1, how="all")
     xlsx = await asyncio.to_thread(recon.to_excel, out)
     run_id, cases_created = await asyncio.to_thread(ef.record_reconciliation, body.company_id, body.report_a, body.report_b, out, user["id"], "manual")
     db.audit(user, "reconcile", body.company_id, f"{la} vs {lb}; run={run_id}; cases={cases_created}")
@@ -1543,7 +1544,7 @@ async def reconcile(body: ReconIn, user: dict = Depends(current_user)):
         import bankrec as _br
         sh = _br.sheets(out)
         t_ = out["totals"]
-        sections = [("1. Reconciliation overview", sh["Executive summary"]), ("2. Exact matches", sh["Exact matches"]),
+        sections = [("1. Reconciliation overview", sh["Executive summary"]), ("2. Exact matches", sh["Exact matches"]), ("2b. Matched by hand", sh["Manual matches"]),
                     ("3. Amount mismatches", sh["Amount mismatches"]), ("4. Bank-only transactions", sh["Only in bank"]),
                     ("5. Ledger-only transactions", sh["Only in ledger"]), ("6. Duplicate reference findings", sh["Duplicate references"]),
                     ("7. Missing data", sh["Missing data"]), ("8. Financial totals", sh["Financial totals"]),
@@ -1569,7 +1570,7 @@ async def reconcile(body: ReconIn, user: dict = Depends(current_user)):
         "columns": list(problems.columns),
         "rows": json.loads(problems.head(2000).to_json(orient="records", date_format="iso")),
         "total_problem_rows": len(problems),
-        "totals": out.get("totals"),
+        "totals": out.get("totals"), "engine": out.get("engine"),
         "reconciliation_run_id": run_id,
         "cases_created": cases_created,
         "quality": q, "exposure": ex, "warnings": out.get("warnings") or [],
@@ -1578,6 +1579,188 @@ async def reconcile(body: ReconIn, user: dict = Depends(current_user)):
                                    ctx=text if out.get("engine") == "bank-ledger" else text + "\n\nROWS THAT DID NOT MATCH (first 40):\n" + problems.head(40).to_string(index=False, max_colwidth=40)),
     }
     return response
+
+
+# ---------------------------------------------------------------------------- #
+# Manual matching, reference lookup, audit export, month-end checklist, email, public pages
+# ---------------------------------------------------------------------------- #
+class ManualMatchIn(BaseModel):
+    company_id: int
+    report_a: int
+    report_b: int
+    bank_ref: str
+    ledger_ref: str
+    reason: str = ""
+
+
+class LookupIn(BaseModel):
+    company_id: int
+    report_a: int
+    report_b: int
+    reference: str
+
+
+class ChecklistIn(BaseModel):
+    company_id: int
+    month: str
+    item: str
+    done: bool
+
+
+class EmailResultIn(BaseModel):
+    result_id: str
+
+
+@app.post("/api/manual-matches")
+async def add_manual_match(body: ManualMatchIn, user: dict = Depends(current_user)):
+    need_company(user, body.company_id)
+    need(user, "analyst")
+    ra, rb = report_for(user, body.report_a), report_for(user, body.report_b)
+    if ra["company_id"] != body.company_id or rb["company_id"] != body.company_id:
+        raise HTTPException(400, "Both reports must belong to the selected company.")
+    if not body.bank_ref.strip() or not body.ledger_ref.strip():
+        raise HTTPException(400, "Choose one bank-only and one ledger-only transaction.")
+    if len(body.reason.strip()) < 3:
+        raise HTTPException(400, "Write a short reason, for example: the same payment recorded with a different reference.")
+    try:
+        mid = await asyncio.to_thread(db.add_manual_match, body.company_id, body.report_a, body.report_b, body.bank_ref.strip(), body.ledger_ref.strip(), body.reason.strip(), user)
+    except ValueError as e:
+        raise HTTPException(400, str(e))
+    db.audit(user, "manual_match", body.company_id, f"{body.bank_ref} <-> {body.ledger_ref}: {body.reason[:120]}")
+    return {"id": mid}
+
+
+@app.get("/api/companies/{company_id}/manual-matches")
+def list_manual_matches(company_id: int, user: dict = Depends(current_user)):
+    need_company(user, company_id)
+    return db.list_manual_matches(company_id)
+
+
+@app.delete("/api/manual-matches/{match_id}")
+def delete_manual_match(match_id: int, company_id: int, user: dict = Depends(current_user)):
+    need_company(user, company_id)
+    need(user, "analyst")
+    db.delete_manual_match(match_id, company_id)
+    db.audit(user, "manual_match_removed", company_id, f"match {match_id}")
+    return {"ok": True}
+
+
+@app.post("/api/reconcile/lookup")
+async def reconcile_lookup(body: LookupIn, user: dict = Depends(current_user)):
+    """Everything the two files say about one reference. Pure arithmetic, no AI, so it is instant."""
+    need_company(user, body.company_id)
+    ra, rb = report_for(user, body.report_a), report_for(user, body.report_b)
+    if ra["company_id"] != body.company_id or rb["company_id"] != body.company_id:
+        raise HTTPException(400, "Both reports must belong to the selected company.")
+    import bankrec
+    a = await asyncio.to_thread(db.get_frame, body.report_a)
+    b = await asyncio.to_thread(db.get_frame, body.report_b)
+    if not bankrec.applicable(a, b):
+        raise HTTPException(400, "Reference lookup needs a reference column and credit/debit (or amount and type) columns in both files.")
+    pairs = await asyncio.to_thread(db.list_manual_matches, body.company_id, body.report_a, body.report_b)
+    out = await asyncio.to_thread(bankrec.reconcile_bank_ledger, a, b, 0.01, "Bank statement", "Ledger", pairs)
+    want = bankrec._clean_ref(body.reference)
+    if not want:
+        raise HTTPException(400, "Type a reference.")
+    d = out["detail"]
+    hit = d[d["Reference"].map(lambda v: want in bankrec._clean_ref(v).split("<->") or bankrec._clean_ref(v) == want or want in bankrec._clean_ref(v))]
+    db.audit(user, "reference_lookup", body.company_id, body.reference[:80])
+    if hit.empty:
+        return {"found": False, "message": f"The reference {body.reference.strip()} does not appear in either file."}
+    rows = json.loads(hit.to_json(orient="records", date_format="iso"))
+    lines = []
+    for r in rows:
+        bk, lg, df_ = r.get("Bank amount"), r.get("Ledger amount"), r.get("Difference (A-B)")
+        lines.append(f"{r['Reference']}: {r['Status']}. Bank {('%.2f' % bk) if bk is not None else 'no record'}; ledger {('%.2f' % lg) if lg is not None else 'no record'}"
+                     + (f"; difference {df_:,.2f}" if df_ else "") + f". {r['Recommended resolution']}" + (f" {r['Note']}" if r.get("Note") else ""))
+    return {"found": True, "rows": rows, "explanation": "\n".join(lines)}
+
+
+@app.get("/api/audit/export.csv")
+def export_audit_csv(company_id: int | None = None, user: dict = Depends(current_user)):
+    need(user, "admin")
+    import csv
+    import io
+    with db._db() as con:
+        q, p = "SELECT id, ts, username, source, action, company_id, detail, entry_hash FROM audit", []
+        if company_id:
+            q += " WHERE company_id = ?"; p.append(company_id)
+        rows = con.execute(q + " ORDER BY id", p).fetchall()
+    buf = io.StringIO()
+    wr = csv.writer(buf)
+    wr.writerow(["id", "time", "user", "source", "action", "company_id", "detail", "entry_hash"])
+    for r in rows:
+        wr.writerow([r["id"], r["ts"], r["username"], r["source"], r["action"], r["company_id"], r["detail"], r["entry_hash"]])
+    db.audit(user, "audit_exported", company_id, f"{len(rows)} rows")
+    return Response(content=buf.getvalue(), media_type="text/csv", headers={"Content-Disposition": 'attachment; filename="audit-trail.csv"'})
+
+
+@app.get("/api/companies/{company_id}/checklist")
+def get_close_checklist(company_id: int, month: str, user: dict = Depends(current_user)):
+    need_company(user, company_id)
+    if not re.fullmatch(r"\d{4}-\d{2}", month):
+        raise HTTPException(400, "Month must look like 2026-10.")
+    return db.get_checklist(company_id, month)
+
+
+@app.post("/api/checklist")
+def set_close_checklist(body: ChecklistIn, user: dict = Depends(current_user)):
+    need_company(user, body.company_id)
+    need(user, "analyst")
+    if not re.fullmatch(r"\d{4}-\d{2}", body.month):
+        raise HTTPException(400, "Month must look like 2026-10.")
+    try:
+        db.set_checklist(body.company_id, body.month, body.item, body.done, user)
+    except ValueError as e:
+        raise HTTPException(400, str(e))
+    db.audit(user, "checklist", body.company_id, f"{body.month}: {body.item[:60]} = {body.done}")
+    return {"ok": True}
+
+
+@app.post("/api/results/email")
+async def email_result(body: EmailResultIn, user: dict = Depends(current_user)):
+    """Email the written report to the signed-in person's own address."""
+    res = RESULTS.get(body.result_id)
+    if not res or res["user"] != user["id"]:
+        raise HTTPException(404, "That result is no longer available. Run it again.")
+    if not user.get("email"):
+        raise HTTPException(400, "Add your email address in Settings first.")
+    if not notify.email_configured():
+        raise HTTPException(400, "Email sending is not set up on this site yet.")
+    text = res.get("ctx") or (res.get("pdf") or {}).get("insight") or ""
+    ok = await asyncio.to_thread(notify.send_email, user["email"], "Your report from Reconciliation Solutions", text[:60000])
+    if not ok:
+        raise HTTPException(502, "The email could not be sent. Try again in a minute.")
+    db.audit(user, "result_emailed", res.get("company"), "")
+    return {"ok": True, "to": user["email"]}
+
+
+@app.get("/status")
+def status_page():
+    with_db = True
+    try:
+        with db._db() as con:
+            con.execute("SELECT 1").fetchone()
+    except Exception:  # noqa: BLE001
+        with_db = False
+    ai_key = bool("".join(os.getenv("GEMINI_API_KEY", "").split()))
+    last = AI_EVENTS[-1] if AI_EVENTS else None
+    return Response(content=pages.status_page(with_db, ai_key, last), media_type="text/html")
+
+
+@app.get("/privacy")
+def privacy_page():
+    return Response(content=pages.legal_page("privacy"), media_type="text/html")
+
+
+@app.get("/terms")
+def terms_page():
+    return Response(content=pages.legal_page("terms"), media_type="text/html")
+
+
+@app.get("/security")
+def security_page():
+    return Response(content=pages.legal_page("security"), media_type="text/html")
 
 
 @app.post("/api/forecast")
