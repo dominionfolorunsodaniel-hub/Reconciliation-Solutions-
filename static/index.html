@@ -517,6 +517,11 @@
   html[data-theme=dark] #app .ss-kpi, html[data-theme=dark] #app .ss-box { background:#0e1729; }
   .ans-label { font-size:12px; font-weight:700; letter-spacing:.06em; text-transform:uppercase; color:var(--brand,#2b59ff); margin:10px 0 -4px; }
   .full-panel > summary { font-weight:600; cursor:pointer; }
+  .rdash-cards { display:grid; grid-template-columns:repeat(auto-fit,minmax(130px,1fr)); gap:10px; margin:12px 0; }
+  .rdash-cards > div { background:var(--a-tint,#f1f5ff); border:1px solid var(--a-line,#dbe4ff); border-radius:10px; padding:10px 12px; }
+  .rdash-cards b { display:block; font-size:20px; } .rdash-cards small { color:#6b7385; }
+  .rdash-charts { display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:10px; } @media(max-width:700px){ .rdash-charts { grid-template-columns:1fr; } }
+  .mm-pick { width:20px; height:20px; }
 </style>
 <style>
 /* ===== landing additions: sample check, contact form, honeypot ===== */
@@ -1603,7 +1608,7 @@ html[data-theme=dark] .d-kpi, html[data-theme=dark] .d-kpi b, html[data-theme=da
           <p>Reconcile ATM, POS and bank reports and check bank statements. Built for teams that handle sensitive financial data.</p>
         </div>
         <nav aria-label="Product"><h4>Product</h4><ul><li><a href="#features">Features</a></li><li><a href="#statement">Statement check</a></li><li><a href="#pricing">Pricing</a></li><li><a href="#about">About</a></li><li><a href="#faq">FAQ</a></li><li><a href="/whats-new">What's new</a></li><li><a href="/for/pos-agents">For POS agents</a></li><li><a href="/for/atm-operators">For ATM operators</a></li><li><a href="/for/petrol-stations">For petrol stations</a></li><li><a href="/for/supermarkets">For shops</a></li></ul></nav>
-        <nav aria-label="Legal"><h4>Legal</h4><ul><li><button type="button" class="lp-foot-btn" data-legal="terms">Terms of Service</button></li><li><button type="button" class="lp-foot-btn" data-legal="privacy">Privacy Policy</button></li></ul></nav>
+        <nav aria-label="Legal"><h4>Legal</h4><ul><li><button type="button" class="lp-foot-btn" data-legal="terms">Terms of Service</button></li><li><button type="button" class="lp-foot-btn" data-legal="privacy">Privacy Policy</button></li><li><a href="/security">Security</a></li><li><a href="/status">System status</a></li></ul></nav>
         <div><h4>Contact</h4><ul><li><a href="mailto:reconciliationsolutionsupport@gmail.com">reconciliationsolutionsupport@gmail.com</a></li><li><a href="#contact">Send us a message</a></li><li><a href="https://t.me/COLDFX26" target="_blank" rel="noopener">Telegram: t.me/COLDFX26</a></li></ul></div>
       </div>
       <div class="lp-foot-bar"><span id="svcStatus" class="lp-status" hidden></span><span>&copy; <span id="ftYear">2026</span> Reconciliation Solutions. All rights reserved.</span><span>Data encrypted &middot; Two-factor sign-in available</span></div>
@@ -2114,14 +2119,29 @@ html[data-theme=dark] .d-kpi, html[data-theme=dark] .d-kpi b, html[data-theme=da
     </div>
     <div class="error" id="rErr"></div>
     <div id="rOut" class="hidden" style="margin-top:10px">
+      <div id="rDash" class="hidden"><div class="rdash-cards" id="rDashCards"></div><div class="rdash-charts"><div><canvas id="rChartA" height="170"></canvas></div><div><canvas id="rChartB" height="170"></canvas></div></div></div>
       <div id="rQuality" class="rq hidden"></div>
       <div id="rSettleBox" class="hidden"><h3 style="margin:12px 0 6px">Daily settlement</h3><small class="mute">Expected comes from the first report, settled from the second. Delay is the days between their dates.</small><div class="tablewrap"><table id="rSettle"></table></div></div>
       <pre class="recon" id="rText"></pre>
       <span class="row"><a id="rDownload"><button class="ghost">Download Excel (all details)</button></a><a id="rPdf"><button class="ghost">Download PDF</button></a><a id="rPack"><button class="ghost">Month-end pack (ZIP)</button></a><button type="button" class="ghost" id="rCases">Review cases</button></span>
+      <div id="rTools" class="hidden">
+        <div class="row" style="margin:10px 0"><input type="text" id="rLookupIn" placeholder="Look up a reference, e.g. RA2009" style="flex:1;min-width:180px"><button class="ghost" id="rLookupBtn" type="button">Look up</button>
+          <button class="ghost" id="rEmailBtn" type="button">Email me this report</button></div>
+        <div class="ss-flag hidden" id="rLookupOut" style="white-space:pre-wrap"></div>
+        <div class="row" style="margin:6px 0"><button type="button" id="rMatchBtn" disabled>Match the 2 selected by hand</button><small class="mute" id="rMatchHint">Tick one "Only in bank" row and one "Only in ledger" row that are really the same transaction.</small></div>
+        <div id="rManualList"></div>
+      </div>
       <div class="tablewrap" style="margin-top:10px"><table id="rTable"></table></div>
       <div class="mute" id="rInfo"></div>
       <div id="rAsk"></div>
     </div>
+  </section>
+
+  <section class="card" id="closeCard" data-views="reconciliation">
+    <h2>Month-end close checklist</h2>
+    <div class="mute">Tick each step as you finish it. The checklist is saved for this company and month, and everyone on the team sees the same ticks.</div>
+    <div class="row" style="margin:8px 0"><label for="closeMonth">Month</label><input type="month" id="closeMonth"></div>
+    <div id="closeList"></div><div class="mute" id="closeProgress"></div>
   </section>
 
   <section class="card" id="operationsCard" data-views="reconciliation discrepancies insights plan settings">
@@ -2205,6 +2225,7 @@ html[data-theme=dark] .d-kpi, html[data-theme=dark] .d-kpi b, html[data-theme=da
     <h2 style="margin-top:12px">AI connection check</h2>
     <div class="mute">Tests each AI model with one tiny request and tells you exactly why answers are slow or failing.</div>
     <button type="button" id="aiCheckBtn" style="margin:8px 0">Run AI check</button>
+    <a href="/api/audit/export.csv" class="admin-only"><button type="button" class="ghost" style="margin:0 0 8px">Download audit trail (CSV)</button></a>
     <pre id="aiCheckOut" class="mute" style="white-space:pre-wrap;font-size:12.5px"></pre>
     <h2 style="margin-top:12px">Customer registration requests</h2>
     <div class="mute">Public sign-up requests stay pending until you approve them. Approved customers get Analyst access to their own company only.</div>
@@ -2647,7 +2668,7 @@ $("rBtn").onclick = async () => {
           const body = st.slice(0, 31).map(row => { const tr = el("tr"); cols.forEach(c => { const v = row[c];
             tr.append(el("td", v == null ? "" : (money.has(c) ? Number(v).toLocaleString("en-NG", { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : String(v)))); }); return tr; });
           $("rSettle").replaceChildren(head, ...body); } }
-      fillTable($("rTable"), r.columns, r.rows);
+      fillTable($("rTable"), r.columns, r.rows); if (window.reconExtras) window.reconExtras(r);
       $("rInfo").textContent = r.total_problem_rows ? `${r.total_problem_rows} unmatched/mismatched row(s)` + (r.total_problem_rows > r.rows.length ? ` - showing ${r.rows.length}, download Excel for all.` : "") : "Everything matched.";
     }
   } catch (e) { $("rErr").textContent = e.message; }
@@ -4408,6 +4429,74 @@ $("aiCheckBtn").onclick = async () => {
   } catch (e) { out.textContent = "Check failed: " + (e.message || e); }
   b.disabled = false;
 };
+
+/* ---------- reconciliation: dashboard, manual match, lookup, email, month-end checklist ---------- */
+(function () {
+  const N = v => "₦" + Number(v || 0).toLocaleString("en-NG", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  const ids = () => ({ company_id: Number($("company").value), report_a: Number($("rA").value), report_b: Number($("rB").value) });
+  window.reconExtras = function (r) {
+    const bl = r.engine === "bank-ledger" && r.totals;
+    $("rDash").classList.toggle("hidden", !bl); $("rTools").classList.toggle("hidden", !bl);
+    if (S.rc1) { S.rc1.destroy(); S.rc1 = null; } if (S.rc2) { S.rc2.destroy(); S.rc2 = null; }
+    if (!bl) return;
+    const t = r.totals, b = t.bank, l = t.ledger, total = (r.summary || []).reduce((a, s) => a + (s.Count || 0), 0);
+    const cards = [["Total records", total], ["Matched", t.matched_count], ["Matched by hand", t.manual_count || 0], ["Needing attention", t.unmatched_count],
+      ["Amount differences", N(t.mismatch_value)], ["Only in bank", N(t.bank_only_value)], ["Only in ledger", N(t.ledger_only_value)], ["Total discrepancy", N(t.total_discrepancy)]];
+    $("rDashCards").replaceChildren(...cards.map(([k, v]) => { const d = el("div"); d.append(el("b", String(v)), el("small", k)); return d; }));
+    if (window.Chart) {
+      S.rc1 = new Chart($("rChartA"), { type: "bar", data: { labels: ["Credits", "Debits", "Net movement"], datasets: [
+        { label: "Bank", data: [b.credit_total, b.debit_total, b.net_movement], backgroundColor: "rgba(43,89,255,.7)" },
+        { label: "Ledger", data: [l.credit_total, l.debit_total, l.net_movement], backgroundColor: "rgba(18,35,79,.7)" }] }, options: { responsive: true, plugins: { title: { display: true, text: "Bank vs ledger totals" } } } });
+      const s = (r.summary || []).filter(x => x.Count > 0);
+      S.rc2 = new Chart($("rChartB"), { type: "bar", data: { labels: s.map(x => x.Status), datasets: [{ label: "Records", data: s.map(x => x.Count), backgroundColor: "rgba(43,89,255,.6)" }] },
+        options: { indexAxis: "y", responsive: true, plugins: { legend: { display: false }, title: { display: true, text: "Records by result" } } } });
+    }
+    // tick boxes on the one-sided rows
+    const tbl = $("rTable"), trs = [...tbl.rows].slice(1);
+    const sh = el("th", "Pick"); tbl.rows[0].prepend(sh);
+    trs.forEach((tr, i) => { const row = r.rows[i] || {}, td = el("td");
+      if (row.Status === "Only in bank" || row.Status === "Only in ledger") { const c = document.createElement("input"); c.type = "checkbox"; c.className = "mm-pick"; c.dataset.side = row.Status === "Only in bank" ? "bank" : "ledger"; c.dataset.ref = row.Reference; c.onchange = refreshPick; td.append(c); }
+      tr.prepend(td); });
+    refreshPick(); loadManual();
+  };
+  function picks() { return [...document.querySelectorAll("#rTable .mm-pick:checked")]; }
+  function refreshPick() { const p = picks(), nb = p.filter(x => x.dataset.side === "bank").length, nl = p.filter(x => x.dataset.side === "ledger").length;
+    $("rMatchBtn").disabled = !(nb === 1 && nl === 1); }
+  $("rMatchBtn").onclick = async () => {
+    const p = picks(), bank = p.find(x => x.dataset.side === "bank"), led = p.find(x => x.dataset.side === "ledger"); if (!bank || !led) return;
+    const reason = prompt(`Why are ${bank.dataset.ref} (bank) and ${led.dataset.ref} (ledger) the same transaction?`, ""); if (!reason) return;
+    try { await jpost("/api/manual-matches", { ...ids(), bank_ref: bank.dataset.ref, ledger_ref: led.dataset.ref, reason }); $("rBtn").click(); } catch (e) { $("rErr").textContent = e.message; }
+  };
+  async function loadManual() {
+    const cid = Number($("company").value); if (!cid) return; let rows = [];
+    try { rows = (await api(`/api/companies/${cid}/manual-matches`)).filter(m => m.report_a === Number($("rA").value) && m.report_b === Number($("rB").value)); } catch (e) { /* viewer */ }
+    $("rManualList").replaceChildren(...(rows.length ? [el("small", "Matched by hand:", "mute")] : []), ...rows.map(m => { const d = el("div", `${m.bank_ref} ↔ ${m.ledger_ref} - ${m.reason} (${m.created_by_name}) `, "ss-flag");
+      const u = el("button", "Undo", "ghost"); u.type = "button"; u.onclick = async () => { await fetch(`/api/manual-matches/${m.id}?company_id=${cid}`, { method: "DELETE", credentials: "same-origin" }); $("rBtn").click(); }; d.append(u); return d; }));
+  }
+  $("rLookupBtn").onclick = async () => {
+    const ref = $("rLookupIn").value.trim(); if (!ref) return; const box = $("rLookupOut"); box.classList.remove("hidden"); box.textContent = "Looking up...";
+    try { const r = await jpost("/api/reconcile/lookup", { ...ids(), reference: ref }); box.textContent = r.found ? r.explanation : r.message; } catch (e) { box.textContent = e.message; }
+  };
+  $("rLookupIn").addEventListener("keydown", e => { if (e.key === "Enter") $("rLookupBtn").click(); });
+  $("rEmailBtn").onclick = async () => {
+    if (!S.reconResultId) return; $("rEmailBtn").disabled = true;
+    try { const r = await jpost("/api/results/email", { result_id: S.reconResultId }); $("rLookupOut").classList.remove("hidden"); $("rLookupOut").textContent = "Sent to " + r.to + "."; } catch (e) { $("rLookupOut").classList.remove("hidden"); $("rLookupOut").textContent = e.message; }
+    $("rEmailBtn").disabled = false;
+  };
+  // month-end checklist
+  const cm = $("closeMonth"); if (cm && !cm.value) cm.value = new Date().toISOString().slice(0, 7);
+  async function loadClose() {
+    const cid = $("company").value; if (!cid || !cm.value) return; let rows = [];
+    try { rows = await api(`/api/companies/${cid}/checklist?month=${cm.value}`); } catch (e) { $("closeList").textContent = e.message; return; }
+    $("closeList").replaceChildren(...rows.map(it => { const lab = el("label"); lab.style.cssText = "display:flex;gap:10px;align-items:center;padding:6px 0";
+      const c = document.createElement("input"); c.type = "checkbox"; c.checked = it.done; c.className = "mm-pick";
+      c.onchange = async () => { try { await jpost("/api/checklist", { company_id: Number(cid), month: cm.value, item: it.item, done: c.checked }); loadClose(); } catch (e) { c.checked = !c.checked; } };
+      lab.append(c, el("span", it.item + (it.done && it.done_by ? ` (${it.done_by})` : ""))); return lab; }));
+    const done = rows.filter(x => x.done).length; $("closeProgress").textContent = `${done} of ${rows.length} steps done` + (done === rows.length ? " - month closed." : ".");
+  }
+  cm.onchange = loadClose; $("company").addEventListener("change", loadClose); document.addEventListener("click", e => { if (e.target.closest && e.target.closest('[data-nav="reconciliation"]')) setTimeout(loadClose, 300); });
+  setTimeout(loadClose, 1500);
+})();
 </script>
 </body>
 </html>
