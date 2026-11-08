@@ -625,6 +625,50 @@ def public_contact(body: ContactIn, request: Request):
         raise HTTPException(400, str(e))
 
 
+AI_EVENTS: list = []   # recent times the AI could not answer (for the admin AI check)
+
+
+@app.get("/api/admin/ai-check")
+async def admin_ai_check(user: dict = Depends(current_user)):
+    """Admin only: send one tiny request to each Gemini model and report exactly what happens (status, speed, reason)."""
+    need(user, "admin")
+    import httpx
+    key = "".join(os.getenv("GEMINI_API_KEY", "").split()).strip("\"'")
+    if key.upper().startswith("GEMINI_API_KEY="):
+        key = key.split("=", 1)[1].strip("\"'")
+    models = [os.getenv("GEMINI_MODEL", core.MODEL).strip() or core.MODEL] + [m.strip() for m in os.getenv("GEMINI_FALLBACK_MODELS", "gemini-flash-lite-latest,gemini-3.7-flash").split(",") if m.strip()]
+    result = {"key_present": bool(key), "key_length": len(key), "call_timeout_s": core.AI_CALL_TIMEOUT, "question_budget_s": core.ANALYZE_BUDGET,
+              "thinking_level": core.THINKING_LEVEL, "models": [], "recent_problems": AI_EVENTS[-10:][::-1]}
+    if not key:
+        result["advice"] = "GEMINI_API_KEY is not set in Render."
+        return result
+    for m in dict.fromkeys(models):
+        t0 = time.monotonic()
+        row = {"model": m}
+        try:
+            async with httpx.AsyncClient(timeout=httpx.Timeout(25, connect=8)) as c:
+                r = await c.post(f"https://generativelanguage.googleapis.com/v1beta/models/{m}:generateContent", headers={"x-goog-api-key": key, "content-type": "application/json"},
+                                 json={"contents": [{"role": "user", "parts": [{"text": "Reply with the single word OK."}]}], "generationConfig": {"maxOutputTokens": 8}})
+            row["http"] = r.status_code
+            row["seconds"] = round(time.monotonic() - t0, 1)
+            if r.is_error:
+                try:
+                    row["reason"] = r.json().get("error", {}).get("message", "")[:200]
+                except ValueError:
+                    row["reason"] = r.text[:200]
+            row["verdict"] = ("Working" if r.status_code == 200 else "Model name not found: fix GEMINI_MODEL" if r.status_code == 404 else
+                              "Rate limit / quota reached: wait or enable billing" if r.status_code == 429 else "Google is overloaded right now" if r.status_code in (500, 502, 503, 504) else
+                              "API key rejected: check GEMINI_API_KEY" if r.status_code in (400, 401, 403) else "Problem: see reason")
+            if r.status_code == 200 and row["seconds"] > 8:
+                row["verdict"] = "Working but slow for a tiny request"
+        except httpx.TimeoutException:
+            row.update({"http": None, "seconds": round(time.monotonic() - t0, 1), "verdict": "Timed out (no answer in 25 s)"})
+        except httpx.RequestError as e:
+            row.update({"http": None, "seconds": round(time.monotonic() - t0, 1), "verdict": "Could not connect: " + type(e).__name__})
+        result["models"].append(row)
+    return result
+
+
 @app.get("/api/admin/contact-messages")
 def admin_contact_messages(user: dict = Depends(current_user)):
     need(user, "admin")
@@ -839,12 +883,24 @@ async def analyze(body: AnalyzeIn, user: dict = Depends(current_user)):
                 out = {"plan": {"intent": "everything"}, "res": full, "filtered": df, "keys": [], "metric": "", "title": "Everything in this file",
                        "insight": fullread.describe(df), "full": True}
             else:
-                out = await core.analyze(df, body.question, body.prev_plan, INSIGHTS)
                 import deepdive
+                try:
+                    out = await core.analyze(df, body.question, body.prev_plan, INSIGHTS)
+                except Exception as ai_err:  # noqa: BLE001
+                    AI_EVENTS.append({"time": time.strftime("%Y-%m-%d %H:%M:%S"), "problem": str(ai_err)[:300]})
+                    del AI_EVENTS[:-30]
+                    msg = str(ai_err).lower()
+                    if not any(k in msg for k in ("slow right now", "rate limit", "could not connect", "no answer", "empty answer", "time budget")):
+                        raise
+                    # The AI is busy: do not leave the person with an error. Give the exact, complete analysis of the file now.
+                    full = df.drop(columns=["_rows"], errors="ignore").reset_index(drop=True)
+                    out = {"plan": {"intent": "everything"}, "res": full, "filtered": df, "keys": [], "metric": "", "title": "Exact analysis of your file", "fallback": True,
+                           "insight": ("The AI is busy right now, so the written explanation of your question is not available. Below is the exact analysis of your whole file, "
+                                       "calculated by the application. Ask again in a minute for the AI explanation.\n\n" + fullread.describe(df))}
                 dd = deepdive.detail(out, len(df)) if out.get("res") is not None and not out.get("clarify") and out.get("keys") is not None else ""
                 if dd:
-                    out["insight"] = out["insight"] + "\n\n" + dd
-            if ckey and not out.get("clarify") and out.get("res") is not None and "could not turn this into an exact" not in out.get("insight", ""):
+                    out["full_analysis"] = dd      # kept apart from the answer to the question that was asked
+            if ckey and not out.get("fallback") and not out.get("clarify") and out.get("res") is not None and "could not turn this into an exact" not in out.get("insight", ""):
                 ANSWER_CACHE[ckey] = (time.time(), out)
                 while len(ANSWER_CACHE) > 100:
                     ANSWER_CACHE.pop(next(iter(ANSWER_CACHE)))
@@ -854,16 +910,17 @@ async def analyze(body: AnalyzeIn, user: dict = Depends(current_user)):
     if out.get("clarify"):
         finish_plan_usage(reservation, False)
         return {"clarify": out["clarify"]}
-    finish_plan_usage(reservation, True)
+    finish_plan_usage(reservation, not out.get("fallback"))   # a question the AI could not answer is not charged
 
     res = out["res"]
     db.log_query(body.company_id, body.report_id, body.question, out["plan"], user["id"])
     db.audit(user, "analyze", body.company_id, body.question[:200])
+    both_text = out["insight"] + (("\n\nFULL ANALYSIS OF THE FILE\n" + out["full_analysis"]) if out.get("full_analysis") else "")
     xlsx, chart_png = await asyncio.gather(     # build the Excel file and the chart picture at the same time
-        asyncio.to_thread(core.make_excel, res, out["filtered"], out["plan"], out["insight"]),
+        asyncio.to_thread(core.make_excel, res, out["filtered"], out["plan"], both_text),
         asyncio.to_thread(core.make_chart_png, res, out["keys"], out["metric"], out["plan"].get("chart", "bar"), out["title"]),
     )
-    pdf = {"title": out["title"], "question": body.question, "insight": out["insight"], "table": res,
+    pdf = {"title": out["title"], "question": body.question, "insight": both_text, "table": res,
            "chart": chart_png.getvalue() if chart_png else None, "total_rows": len(res)}
     response = {
         "title": out["title"],
@@ -872,6 +929,8 @@ async def analyze(body: AnalyzeIn, user: dict = Depends(current_user)):
         "total_rows": len(res),
         "chart": core.chart_payload(res, out["keys"], out["metric"], out["plan"].get("chart", "bar")),
         "insight": out["insight"],
+        "full_analysis": out.get("full_analysis") or "",
+        "fallback": bool(out.get("fallback")),
         "plan": out["plan"],
         "result_id": _store_result(xlsx.getvalue(), user, body.company_id, pdf),
     }
