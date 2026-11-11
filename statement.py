@@ -657,6 +657,22 @@ def build_many(items: list[tuple[str, pd.DataFrame]], from_month: str | None = N
                           "money_out": round(float(x.loc[x[core.CRED_COL] == "Debit", core.AMT_COL].sum()), 2)})
     out["totals"]["net_movement"] = round(out["totals"]["money_in"] - out["totals"]["money_out"], 2)
     out["transactions"] = transactions_table(x)
+    out["tx_frame"] = x          # the exact rows the figures were calculated from (shared with the verified facts)
+    try:   # transaction-by-transaction investigation; it must never break the statement check
+        import txaudit
+        audits = []
+        for (label, _, xi, _), ic in zip(parts, integ_list):
+            audits.append((label, txaudit.audit(xi.reset_index(drop=True), ic)))
+        if len(audits) == 1:
+            out["audit"] = audits[0][1]
+        else:
+            ft = pd.concat([a["findings_table"].assign(Account=lbl) for lbl, a in audits], ignore_index=True) if audits else pd.DataFrame()
+            out["audit"] = {"totals": None, "notes": [n for _, a in audits for n in a["notes"]], "findings_table": ft,
+                            "findings": [{**f, "title": f"{f['title']} ({lbl})"} for lbl, a in audits for f in a["findings"]],
+                            "no_second_file": audits[0][1]["no_second_file"],
+                            "text": "\n\n".join(f"===== {lbl or 'Account'} =====\n{a['text']}" for lbl, a in audits)}
+    except Exception:  # noqa: BLE001
+        out["audit"] = None
     out.update({"table": table, "notes": notes, "period": f"{table['Month'].iloc[0]} to {table['Month'].iloc[-1]}",
                 "months_available": all_months, "categories": cats, "accounts": [p[0] for p in parts],
                 "forecast": forecast(table)})
@@ -828,6 +844,11 @@ def excel(r: dict) -> io.BytesIO:
     tips = pd.DataFrame({"Good signs": pd.Series(r["strengths"], dtype=object), "Worries": pd.Series(r["concerns"], dtype=object),
                          "How to improve": pd.Series(r["advice"], dtype=object)})
     sheets = {"Summary": summary, "Month by month": r["table"], "Score breakdown": factors, "Tips": tips}
+    au = r.get("audit")
+    if au:
+        if len(au["findings_table"]):
+            sheets["Investigation findings"] = au["findings_table"]
+        sheets["Investigation report"] = pd.DataFrame({"Detailed investigation report": au["text"].split("\n")})
     tx = r.get("transactions")
     if tx is not None and len(tx):
         sheets["All transactions"] = tx

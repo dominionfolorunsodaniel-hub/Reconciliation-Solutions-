@@ -51,14 +51,14 @@ def _row(r, ref, date, desc, amt) -> str:
     return " | ".join(bits)
 
 
-def detail(out: dict, total_rows: int | None = None) -> str:
+def detail(out: dict, total_rows: int | None = None, whole_file_verified: bool = False) -> str:
     try:
-        return _detail(out, total_rows)
+        return _detail(out, total_rows, whole_file_verified)
     except Exception:  # noqa: BLE001  never break an answer
         return ""
 
 
-def _detail(out: dict, total_rows) -> str:
+def _detail(out: dict, total_rows, whole_file_verified: bool = False) -> str:
     res, keys, metric, f = out.get("res"), out.get("keys") or [], out.get("metric"), out.get("filtered")
     if f is None or res is None:
         return ""
@@ -85,6 +85,9 @@ def _detail(out: dict, total_rows) -> str:
             share = f"{val / tot * 100:.1f}%" if tot else "n/a"
             L.append(f"   {rank_pos}. {' | '.join(str(res.loc[i, k]) for k in keys)}: {_n(val)} ({share})")
 
+    if whole_file_verified:      # totals, duplicates, unusual values and data quality come from the verified whole-file facts instead
+        L += ["", "Totals, duplicate references, unusual transactions and data-quality checks for the whole file are in the verified analysis below."]
+        return "\n".join(L)
     # 2. the underlying rows
     amt, ref = _money_col(f), _col(f, REF_RX)
     date, desc = _col(f, DATE_RX), _col(f, DESC_RX, skip=(ref,))

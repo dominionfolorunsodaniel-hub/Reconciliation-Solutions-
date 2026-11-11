@@ -41,6 +41,8 @@ import portal
 import receipts
 import recon
 import report_pdf
+import facts
+facts.install_grounding()     # the AI is given the verified facts (wraps two core functions; core.py itself is not edited)
 import safety
 import scheduler
 import sharing
@@ -972,6 +974,57 @@ def _store_result(data: bytes, user: dict, company_id: int, pdf: dict | None = N
 
 ANSWER_CACHE: dict = {}   # (user, company, report, question) -> (time, result); repeat questions answer instantly
 
+FACTS_CACHE: dict = {}      # (company, report, rows) -> (time, verified facts)
+
+
+def _facts_for(company_id: int, report_id, df):
+    """The verified dataset of the whole file (None when the file is not a list of money in/out)."""
+    key = (company_id, report_id, len(df))
+    hit = FACTS_CACHE.get(key)
+    if hit and time.time() - hit[0] < 1800:
+        return hit[1]
+    F = facts.build(df)
+    FACTS_CACHE[key] = (time.time(), F)
+    while len(FACTS_CACHE) > 40:
+        FACTS_CACHE.pop(next(iter(FACTS_CACHE)))
+    return F
+
+
+def _apply_facts(out: dict, F: dict, n_rows: int) -> dict:
+    """Make the answer, the detailed analysis and the PDF agree with the verified facts."""
+    out["facts"] = F
+    insight = out.get("insight") or ""
+    cut = insight.find("\n\nHOW THIS WAS WORKED OUT:")
+    head, tail = (insight[:cut], insight[cut:]) if cut >= 0 else (insight, "")
+    whole = out.get("filtered") is not None and len(out["filtered"]) >= n_rows
+    issues = [] if out.get("full") else facts.check_narrative(head, F, whole)
+    if issues:
+        try:
+            figs = core.key_figures(out["res"], out.get("keys") or [], out.get("metric"))
+        except Exception:  # noqa: BLE001
+            figs = []
+        head = ("ANSWER: " + (f"{len(out['res']):,} result row(s). " if out.get("res") is not None and len(out["res"]) else "")
+                + "The exact figures are in the table below.\n" + ("BREAKDOWN:\n" + "\n".join("- " + f for f in figs) + "\n" if figs else "")
+                + "\nNOTE: the written explanation was replaced because it " + "; ".join(issues) + ". The figures here and the verified analysis are exact.")
+    if not F["validation"]["ok"]:
+        head = ("VERIFICATION WARNING: " + str(F["validation"]["total"] - F["validation"]["passed"]) + " cross-check(s) failed, so treat these figures with care until the cause is found (see the Validation sheet).\n\n") + head
+    out["insight"] = head + tail
+    full = out.get("full_analysis") or ""
+    out["full_analysis"] = (full + "\n\n" if full else "") + facts.analysis_text(F)
+    return out
+
+
+def _make_pdf(company: dict, p: dict) -> bytes:
+    if p.get("verified"):
+        try:
+            return report_pdf.build_analytics_pdf(company["name"], p["title"], p["question"], p.get("answer"), p["verified"], p.get("table"),
+                                                  p.get("chart"), db.get_branding(company["id"]), p.get("extra_tables"))
+        except Exception:  # noqa: BLE001   never fail to give the person a PDF
+            logging.getLogger("web").exception("structured PDF failed; using the plain one")
+    return report_pdf.build_pdf(company["name"], p["title"], p["question"], p["insight"], p["table"],
+                                p["chart"], db.get_branding(company["id"]), p.get("total_rows"), p.get("extra_tables"))
+
+
 
 @app.post("/api/analyze")
 async def analyze(body: AnalyzeIn, user: dict = Depends(current_user)):
@@ -988,6 +1041,8 @@ async def analyze(body: AnalyzeIn, user: dict = Depends(current_user)):
             out = None
         if out is None:
             df = await asyncio.to_thread(db.resolve_frame, body.company_id, body.report_id)
+            F = await asyncio.to_thread(_facts_for, body.company_id, body.report_id, df)
+            facts.CURRENT.set(F)          # the AI is given these verified facts, and may not contradict them
             import fullread
             if fullread.wants_everything(body.question) and not body.prev_plan:
                 full = df.drop(columns=["_rows"], errors="ignore").reset_index(drop=True)
@@ -1008,9 +1063,11 @@ async def analyze(body: AnalyzeIn, user: dict = Depends(current_user)):
                     out = {"plan": {"intent": "everything"}, "res": full, "filtered": df, "keys": [], "metric": "", "title": "Exact analysis of your file", "fallback": True,
                            "insight": ("The AI is busy right now, so the written explanation of your question is not available. Below is the exact analysis of your whole file, "
                                        "calculated by the application. Ask again in a minute for the AI explanation.\n\n" + fullread.describe(df))}
-                dd = deepdive.detail(out, len(df)) if out.get("res") is not None and not out.get("clarify") and out.get("keys") is not None else ""
+                dd = deepdive.detail(out, len(df), whole_file_verified=bool(F)) if out.get("res") is not None and not out.get("clarify") and out.get("keys") is not None else ""
                 if dd:
                     out["full_analysis"] = dd      # kept apart from the answer to the question that was asked
+            if F and not out.get("clarify") and out.get("res") is not None:
+                out = _apply_facts(out, F, len(df))
             if ckey and not out.get("fallback") and not out.get("clarify") and out.get("res") is not None and "could not turn this into an exact" not in out.get("insight", ""):
                 ANSWER_CACHE[ckey] = (time.time(), out)
                 while len(ANSWER_CACHE) > 100:
@@ -1031,8 +1088,13 @@ async def analyze(body: AnalyzeIn, user: dict = Depends(current_user)):
         asyncio.to_thread(core.make_excel, res, out["filtered"], out["plan"], both_text),
         asyncio.to_thread(core.make_chart_png, res, out["keys"], out["metric"], out["plan"].get("chart", "bar"), out["title"]),
     )
+    F = out.get("facts")
+    xdata = xlsx.getvalue()
+    if F:
+        xdata = await asyncio.to_thread(facts.add_sheets, xdata, F)
     pdf = {"title": out["title"], "question": body.question, "insight": both_text, "table": res,
-           "chart": chart_png.getvalue() if chart_png else None, "total_rows": len(res)}
+           "chart": chart_png.getvalue() if chart_png else None, "total_rows": len(res),
+           "verified": F, "answer": out["insight"]}
     response = {
         "title": out["title"],
         "columns": list(res.columns),
@@ -1043,7 +1105,8 @@ async def analyze(body: AnalyzeIn, user: dict = Depends(current_user)):
         "full_analysis": out.get("full_analysis") or "",
         "fallback": bool(out.get("fallback")),
         "plan": out["plan"],
-        "result_id": _store_result(xlsx.getvalue(), user, body.company_id, pdf),
+        "verified": facts.compact(F) if F else None,
+        "result_id": _store_result(xdata, user, body.company_id, pdf),
     }
     return response
 
@@ -1091,6 +1154,12 @@ async def statement_score(body: StatementIn, user: dict = Depends(current_user))
     finish_plan_usage(reservation, True)
 
     text = statement.summary_text(r)
+    au = r.get("audit")
+    F = None
+    if r.get("tx_frame") is not None:
+        multi = len(r.get("accounts", [])) > 1
+        F = await asyncio.to_thread(facts.build, r["tx_frame"], None if multi else au, "", multi)
+    facts.CURRENT.set(F)          # the AI is given these verified facts, and may not contradict them
     simple = None
     if INSIGHTS:
         simple = await core.summarize("Explain this bank statement result and loan-readiness score in simple words", r["table"],
@@ -1099,11 +1168,17 @@ async def statement_score(body: StatementIn, user: dict = Depends(current_user))
             bad = core.unverified_figures(simple, text + " " + r["table"].to_string())
             if bad:
                 simple += "\n\nPlease double-check these figures, I could not match them directly: " + ", ".join(bad) + "."
-    au = r.get("audit")
+            issues = facts.check_narrative(simple, F, True) if F else []
+            if issues:
+                simple = "The AI summary was withheld because it " + "; ".join(issues) + ". The verified figures and analysis below are exact."
     full = ((simple + "\n\n") if simple else "") + text + (("\n\n" + au["text"]) if au else "")
+    if F:
+        full += "\n\n" + facts.analysis_text(F, sections=("daily", "quality", "validation", "recommendations"))
     db.audit(user, "statement_score", body.company_id,
              f"report={body.report_id or body.report_ids}; score={r['score']}; months={r['totals']['months']}; balance_check={r['integrity']['status']}; flags={len(r['flags'])}")
     xlsx = await asyncio.to_thread(statement.excel, r)
+    if F:
+        xlsx = io.BytesIO(await asyncio.to_thread(facts.add_sheets, xlsx.getvalue() if hasattr(xlsx, "getvalue") else xlsx, F))
     png = await asyncio.to_thread(statement.chart_png, r["table"])
     tx = r.get("transactions")
     extra_tables = []
@@ -1111,10 +1186,12 @@ async def statement_score(body: StatementIn, user: dict = Depends(current_user))
         att = tx[tx["Flag"] != ""]
         if len(att):
             extra_tables.append(("Transactions to check (duplicates and unusual entries)", att, 30))
-        extra_tables.insert(0, ("Investigation findings: exact references, dates and amounts", au["findings_table"], None)) if au is not None and len(au["findings_table"]) else None
+        if not F:
+            extra_tables.insert(0, ("Investigation findings: exact references, dates and amounts", au["findings_table"], None)) if au is not None and len(au["findings_table"]) else None
         extra_tables.append(("All transactions", tx, None))
     pdf = {"title": f"Statement check: {r['verdict']} ({r['score']}/100)", "question": f"Period {r['period']}", "insight": full,
-           "table": r["table"], "chart": png, "total_rows": len(r["table"]), "extra_tables": extra_tables}
+           "table": r["table"], "chart": png, "total_rows": len(r["table"]), "extra_tables": extra_tables,
+           "verified": F, "answer": ((simple + "\n\n") if simple else "") + text}
     t = r["table"]
     response = {
         "score": r["score"], "verdict": r["verdict"], "eligibility": r["eligibility"], "factors": r["factors"],
@@ -1124,7 +1201,7 @@ async def statement_score(body: StatementIn, user: dict = Depends(current_user))
         "integrity": r["integrity"], "flags": r["flags"], "categories": statement.categories_json(r.get("categories")),
         "forecast": r.get("forecast"),
         "audit": ({"totals": au["totals"], "notes": au["notes"], "findings": au["findings"], "text": au["text"], "no_second_file": au["no_second_file"]} if au else None),
-        "accounts": r.get("accounts", []),
+        "accounts": r.get("accounts", []), "verified": facts.compact(F) if F else None,
         "columns": list(t.columns), "rows": json.loads(t.to_json(orient="records")),
         "tx_columns": list(tx.columns) if tx is not None else [],
         "transactions": json.loads(tx.head(5000).to_json(orient="records")) if tx is not None else [],
@@ -1939,8 +2016,7 @@ def download_pdf(result_id: str, user: dict = Depends(current_user)):
     if not p:
         raise HTTPException(404, "No PDF for this result.")
     company = db.get_company(item["company"])
-    pdf = report_pdf.build_pdf(company["name"], p["title"], p["question"], p["insight"], p["table"],
-                               p["chart"], db.get_branding(company["id"]), p.get("total_rows"), p.get("extra_tables"))
+    pdf = _make_pdf(company, p)
     db.audit(user, "export_pdf", item["company"], p["title"][:100])
     return StreamingResponse(iter([pdf]), media_type="application/pdf",
                              headers={"Content-Disposition": 'attachment; filename="report.pdf"'})
@@ -1957,8 +2033,7 @@ def download_pack(result_id: str, user: dict = Depends(current_user)):
     with zipfile.ZipFile(buf, "w", zipfile.ZIP_DEFLATED) as z:
         z.writestr("details.xlsx", item["data"])
         if p:
-            z.writestr("summary.pdf", report_pdf.build_pdf(company["name"], p["title"], p["question"], p["insight"], p["table"],
-                                                           p["chart"], db.get_branding(company["id"]), p.get("total_rows"), p.get("extra_tables")))
+            z.writestr("summary.pdf", _make_pdf(company, p))
     db.audit(user, "export_pack", item["company"], (p or {}).get("title", "pack")[:100])
     return StreamingResponse(iter([buf.getvalue()]), media_type="application/zip",
                              headers={"Content-Disposition": 'attachment; filename="month-end-pack.zip"'})
