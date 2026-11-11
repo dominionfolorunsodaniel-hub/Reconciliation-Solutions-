@@ -4,20 +4,21 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#0b5ce6">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml"><link rel="icon" href="/static/icon-192.png" sizes="192x192" type="image/png">
 <link rel="manifest" href="/manifest.webmanifest">
 <link rel="apple-touch-icon" href="/static/apple-touch-icon.png">
 <meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-title" content="Report Analyzer"><meta name="apple-mobile-web-app-status-bar-style" content="default">
-<title>Reconciliation Solutions - turn any report into answers</title>
-<meta name="description" content="Report Analyzer reconciles ATM, POS and bank reports in seconds, checks bank statements, and answers questions about your data in plain English. Built for finance and operations teams in Nigeria.">
+<meta name="apple-mobile-web-app-title" content="RECONZA"><meta name="apple-mobile-web-app-status-bar-style" content="default">
+<title>RECONZA - turn any report into answers</title>
+<meta name="description" content="RECONZA reconciles ATM, POS and bank reports in seconds, checks bank statements, and answers questions about your data in plain English. Built for finance and operations teams in Nigeria.">
 <link rel="canonical" href="__BASE__/">
-<meta property="og:type" content="website"><meta property="og:site_name" content="Reconciliation Solutions">
-<meta property="og:title" content="Reconciliation Solutions - turn any report into answers">
-<meta property="og:description" content="Report Analyzer reconciles ATM, POS and bank reports in seconds, checks bank statements, and answers questions about your data in plain English. Built for finance and operations teams in Nigeria.">
+<meta property="og:type" content="website"><meta property="og:site_name" content="RECONZA">
+<meta property="og:title" content="RECONZA - turn any report into answers">
+<meta property="og:description" content="RECONZA reconciles ATM, POS and bank reports in seconds, checks bank statements, and answers questions about your data in plain English. Built for finance and operations teams in Nigeria.">
 <meta property="og:url" content="__BASE__/"><meta property="og:image" content="__BASE__/static/icon-512.png">
-<meta name="twitter:card" content="summary"><meta name="twitter:title" content="Report Analyzer - turn any report into answers">
-<meta name="twitter:description" content="Report Analyzer reconciles ATM, POS and bank reports in seconds, checks bank statements, and answers questions about your data in plain English. Built for finance and operations teams in Nigeria.">
-<script type="application/ld+json">{"@context": "https://schema.org", "@graph": [{"@type": "Organization", "name": "Reconciliation Solutions", "url": "__BASE__/", "email": "reconciliationsolutionsupport@gmail.com", "sameAs": ["https://t.me/COLDFX26"]}, {"@type": "SoftwareApplication", "name": "Report Analyzer", "applicationCategory": "BusinessApplication", "operatingSystem": "Web", "description": "Reconciles ATM, POS and bank reports, checks bank statements and answers questions about your data in plain English.", "publisher": {"@type": "Organization", "name": "Reconciliation Solutions"}, "inLanguage": "en-NG"}]}</script>
+<meta name="twitter:card" content="summary"><meta name="twitter:title" content="RECONZA - turn any report into answers">
+<meta name="twitter:description" content="RECONZA reconciles ATM, POS and bank reports in seconds, checks bank statements, and answers questions about your data in plain English. Built for finance and operations teams in Nigeria.">
+<script type="application/ld+json">{"@context": "https://schema.org", "@graph": [{"@type": "Organization", "name": "RECONZA", "url": "__BASE__/", "email": "reconciliationsolutionsupport@gmail.com", "sameAs": ["https://t.me/COLDFX26"]}, {"@type": "SoftwareApplication", "name": "RECONZA", "applicationCategory": "BusinessApplication", "operatingSystem": "Web", "description": "Reconciles ATM, POS and bank reports, checks bank statements and answers questions about your data in plain English.", "publisher": {"@type": "Organization", "name": "RECONZA"}, "inLanguage": "en-NG"}]}</script>
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap">
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
@@ -28,6 +29,14 @@
   html { scroll-behavior:smooth; }
   body { margin:0; font:15px/1.5 system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif; background:var(--bg); color:var(--ink); }
   .hidden { display:none !important; }
+  .gate-off { display:none !important; }
+  .rolechip { display:inline-block; padding:2px 9px; border-radius:999px; font-size:11.5px; font-weight:700; letter-spacing:.02em; background:rgba(43,89,255,.12); color:#2b59ff; border:1px solid rgba(43,89,255,.28); }
+  .rolechip.owner { background:#0f172a; color:#fff; border-color:#0f172a; }
+  .rolechip.viewer { background:rgba(100,116,139,.14); color:#475569; border-color:rgba(100,116,139,.3); }
+  .rolegrid { display:grid; gap:8px; grid-template-columns:repeat(auto-fit,minmax(200px,1fr)); margin:10px 0 14px; }
+  .rolegrid > div { border:1px solid var(--line); border-radius:10px; padding:10px; font-size:13px; line-height:1.5; }
+  .tmrow { display:flex; flex-wrap:wrap; gap:8px; align-items:center; justify-content:space-between; }
+  .tmrow .who { font-weight:600; }
   button { padding:10px 16px; border:0; border-radius:10px; background:linear-gradient(135deg,var(--brand),var(--brand2)); color:#fff; font:inherit; font-weight:600; cursor:pointer; transition:transform .15s, box-shadow .15s, opacity .15s; }
   button:hover { transform:translateY(-1px); box-shadow:0 8px 20px rgba(43,89,255,.28); }
   button:disabled { opacity:.55; cursor:wait; transform:none; box-shadow:none; }
@@ -1108,7 +1117,7 @@ input:not([type=checkbox]):not([type=radio]):not([type=file]):not([type=color]):
 input:not([type=checkbox]):not([type=radio]):not([type=file]):not([type=color]):not(:placeholder-shown):user-invalid { border-color:#b42318; box-shadow:0 0 0 3px rgba(180,35,24,.12); }
 </style>
 <style id="blue">
-/* ===== BLUE REBRAND (from the Reconciliation Solutions mockup) ===== */
+/* ===== BLUE REBRAND (from the RECONZA mockup) ===== */
 #landing.lp .lp-logo-ic, .hdr-brand svg, .sb-logo svg { fill:currentColor; }
 #landing.lp .lp-logo-ic { color:var(--lp-brand); }
 #landing.lp .lp-brand { display:inline-flex; align-items:center; gap:10px; font-weight:800; color:var(--lp-ink); text-decoration:none; }
@@ -1266,7 +1275,7 @@ html[data-theme=dark] .d-kpi, html[data-theme=dark] .d-kpi b, html[data-theme=da
 <a class="skip-link" href="#top">Skip to main content</a>
 <svg width="0" height="0" style="position:absolute;overflow:hidden" aria-hidden="true" focusable="false">
     <defs>
-      <symbol id="i-upload" viewBox="0 0 24 24"><path d="M7 18a4.5 4.5 0 0 1-.6-8.96A6 6 0 0 1 17.9 8.6 4.8 4.8 0 0 1 17 18"/><path d="m12 11-3 3m3-3 3 3m-3-3v9"/></symbol><symbol id="i-bars" viewBox="0 0 24 24"><path d="M5 20V11m7 9V4m7 16v-6"/></symbol><symbol id="i-checkc" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="m8 12.3 2.7 2.7L16 9.5"/></symbol><symbol id="i-play" viewBox="0 0 24 24"><path d="M8 5v14l11-7z" fill="currentColor" stroke="none"/></symbol><symbol id="i-frag" viewBox="0 0 24 24"><rect x="3" y="3" width="8" height="8" rx="2"/><rect x="13" y="3" width="8" height="8" rx="2"/><rect x="3" y="13" width="8" height="8" rx="2"/><path d="M17 14v6m-3-3h6"/></symbol><symbol id="i-mess" viewBox="0 0 24 24"><path d="M6 3h8l4 4v14H6z"/><path d="M9 11h6M9 14h6M9 17h3"/></symbol><symbol id="i-hour" viewBox="0 0 24 24"><path d="M6 3h12M6 21h12M7 3c0 5 5 5 5 9s-5 4-5 9m10-18c0 5-5 5-5 9s5 4 5 9"/></symbol><symbol id="i-bolt" viewBox="0 0 24 24"><path d="M13 2 4 14h7l-1 8 9-12h-7z"/></symbol><symbol id="i-shieldcheck" viewBox="0 0 24 24"><path d="M12 3 5 6v6c0 4.2 2.9 7.4 7 9 4.1-1.6 7-4.8 7-9V6z"/><path d="m9 12 2.2 2.2L15.5 10"/></symbol><symbol id="i-plug" viewBox="0 0 24 24"><path d="M9 2v5M15 2v5M6 7h12v4a6 6 0 0 1-12 0z"/><path d="M12 17v5"/></symbol><symbol id="i-logo" viewBox="0 0 32 32"><rect x="4" y="4" width="5.2" height="24" rx="1.6"/><path d="M9.2 4h9.3a7.6 7.6 0 0 1 0 15.2H9.2v-4.6h9.3a3 3 0 0 0 0-6H9.2z"/><path d="M15.4 19.6h5.8L27.6 28h-6z"/><rect x="11.2" y="21.5" width="3.2" height="6.5" rx="1" opacity=".55"/></symbol>
+      <symbol id="i-upload" viewBox="0 0 24 24"><path d="M7 18a4.5 4.5 0 0 1-.6-8.96A6 6 0 0 1 17.9 8.6 4.8 4.8 0 0 1 17 18"/><path d="m12 11-3 3m3-3 3 3m-3-3v9"/></symbol><symbol id="i-bars" viewBox="0 0 24 24"><path d="M5 20V11m7 9V4m7 16v-6"/></symbol><symbol id="i-checkc" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="m8 12.3 2.7 2.7L16 9.5"/></symbol><symbol id="i-play" viewBox="0 0 24 24"><path d="M8 5v14l11-7z" fill="currentColor" stroke="none"/></symbol><symbol id="i-frag" viewBox="0 0 24 24"><rect x="3" y="3" width="8" height="8" rx="2"/><rect x="13" y="3" width="8" height="8" rx="2"/><rect x="3" y="13" width="8" height="8" rx="2"/><path d="M17 14v6m-3-3h6"/></symbol><symbol id="i-mess" viewBox="0 0 24 24"><path d="M6 3h8l4 4v14H6z"/><path d="M9 11h6M9 14h6M9 17h3"/></symbol><symbol id="i-hour" viewBox="0 0 24 24"><path d="M6 3h12M6 21h12M7 3c0 5 5 5 5 9s-5 4-5 9m10-18c0 5-5 5-5 9s5 4 5 9"/></symbol><symbol id="i-bolt" viewBox="0 0 24 24"><path d="M13 2 4 14h7l-1 8 9-12h-7z"/></symbol><symbol id="i-shieldcheck" viewBox="0 0 24 24"><path d="M12 3 5 6v6c0 4.2 2.9 7.4 7 9 4.1-1.6 7-4.8 7-9V6z"/><path d="m9 12 2.2 2.2L15.5 10"/></symbol><symbol id="i-plug" viewBox="0 0 24 24"><path d="M9 2v5M15 2v5M6 7h12v4a6 6 0 0 1-12 0z"/><path d="M12 17v5"/></symbol><symbol id="i-logo" viewBox="0 0 1000 1000"><path d="M0.0,997.0 L1.0,998.0 L177.4,998.0 L231.7,996.0 L282.0,996.0 L286.5,994.0 L299.5,994.0 L302.4,992.0 L309.4,992.0 L312.4,990.0 L316.9,990.0 L319.9,988.0 L323.4,988.0 L326.4,986.0 L329.8,986.0 L332.3,984.1 L335.3,984.1 L337.8,982.1 L340.8,982.1 L343.3,980.1 L345.3,980.1 L348.3,978.1 L355.3,976.1 L357.2,974.1 L359.2,974.1 L360.7,972.6 L368.2,969.6 L368.7,968.6 L382.2,961.6 L382.7,960.6 L398.6,950.7 L409.1,942.2 L450.4,902.3 L519.7,831.6 L626.8,724.5 L696.6,653.2 L696.6,651.7 L640.3,595.4 L638.8,595.4 L471.4,762.3 L381.2,851.0 L364.2,866.5 L359.7,869.0 L349.8,876.9 L343.3,880.9 L341.8,880.9 L336.3,884.9 L325.4,890.4 L322.4,890.9 L319.9,892.9 L317.4,892.9 L315.4,894.9 L311.9,894.9 L309.4,896.9 L306.4,896.9 L303.4,898.9 L300.0,898.9 L297.0,900.8 L292.0,900.8 L289.0,902.8 L281.5,902.8 L278.0,904.8 L92.7,904.8 L91.2,902.8 L93.2,873.9 L93.2,765.8 L95.2,759.8 L95.2,747.4 L97.2,743.9 L97.2,738.4 L99.2,735.4 L99.2,731.4 L101.1,728.0 L101.1,724.5 L103.1,722.0 L103.1,719.0 L105.1,716.0 L107.1,709.0 L109.1,706.0 L109.6,703.5 L111.1,702.0 L113.6,695.6 L115.1,694.1 L115.6,691.6 L129.0,670.2 L155.0,638.3 L192.3,598.9 L192.3,597.4 L164.9,568.5 L132.0,536.1 L130.5,536.1 L103.6,563.0 L93.7,575.0 L81.7,586.9 L78.2,591.9 L67.3,603.4 L63.3,609.4 L57.8,614.8 L55.8,618.8 L47.8,628.8 L47.3,630.8 L38.4,643.7 L37.9,646.2 L32.4,654.7 L27.9,664.7 L25.9,667.2 L23.9,673.6 L17.9,685.6 L17.9,688.1 L15.9,690.6 L15.9,693.1 L14.0,696.6 L14.0,699.6 L12.0,702.5 L12.0,705.0 L10.0,708.5 L10.0,712.0 L8.0,715.0 L8.0,719.5 L6.0,722.5 L6.0,727.5 L4.0,730.9 L4.0,744.9 L2.0,750.4 L2.0,902.3 L0.0,954.7ZM643.7,321.4 L585.9,378.7 L585.9,380.2 L853.0,648.2 L870.5,670.2 L880.9,686.6 L880.9,688.1 L884.9,694.1 L884.9,696.1 L886.9,698.1 L886.9,700.0 L890.9,706.5 L890.9,709.5 L894.9,718.0 L894.9,722.0 L896.9,724.0 L896.9,728.5 L898.9,731.4 L898.9,737.4 L900.8,740.4 L900.8,748.9 L902.8,752.9 L902.8,768.8 L904.8,777.8 L904.8,898.9 L903.8,902.3 L901.8,904.8 L730.4,904.8 L726.5,902.8 L715.5,902.8 L712.5,900.8 L706.5,900.8 L704.0,898.9 L700.0,898.9 L697.6,896.9 L694.6,896.9 L692.1,894.9 L689.6,894.9 L675.6,888.9 L667.2,883.4 L664.2,882.4 L660.2,878.9 L655.7,876.4 L650.7,871.4 L643.7,866.5 L598.4,821.1 L596.4,821.1 L537.1,879.9 L536.6,882.4 L584.5,930.2 L603.4,946.7 L608.9,950.2 L610.4,952.2 L634.3,967.6 L641.3,970.6 L642.8,972.1 L645.2,972.6 L646.7,974.1 L648.7,974.1 L650.7,976.1 L652.7,976.1 L655.2,978.1 L657.7,978.1 L660.7,980.1 L662.7,980.1 L665.2,982.1 L667.7,982.1 L669.7,983.6 L673.6,984.1 L676.6,986.0 L679.6,986.0 L682.6,988.0 L685.6,988.0 L688.6,990.0 L692.6,990.0 L696.6,992.0 L702.0,992.0 L705.5,994.0 L717.5,994.0 L722.0,996.0 L769.3,996.0 L817.1,998.0 L999.0,998.0 L1000.0,997.0 L1000.0,948.7 L999.0,939.2 L998.0,906.3 L998.0,761.8 L996.0,755.4 L996.0,734.9 L994.0,731.4 L994.0,723.0 L992.0,719.5 L992.0,714.5 L990.0,711.0 L990.0,706.5 L988.0,704.5 L988.0,700.5 L986.0,698.1 L986.0,694.6 L984.1,692.1 L984.1,688.6 L982.1,686.1 L982.1,682.6 L980.1,680.6 L980.1,678.1 L978.1,675.1 L978.1,672.6 L976.1,670.2 L976.1,668.7 L970.1,657.2 L969.6,654.7 L962.1,642.3 L962.1,640.8 L956.2,632.8 L955.7,630.3 L952.7,627.3 L951.2,623.8 L948.2,620.8 L945.7,616.3 L936.7,606.9 L932.7,601.4 L843.0,511.7 L763.8,436.5 L728.5,401.1 L698.6,373.2 L654.2,328.8 L645.2,321.4ZM996.0,3.0 L995.0,2.0 L805.7,4.0 L717.5,4.0 L712.5,6.0 L703.0,6.0 L700.0,8.0 L694.1,8.0 L690.6,10.0 L686.1,10.0 L683.1,12.0 L678.6,12.0 L676.6,14.0 L672.6,14.0 L670.2,15.9 L666.7,15.9 L664.2,17.9 L661.7,17.9 L653.7,21.9 L651.2,21.9 L648.7,23.9 L646.7,23.9 L645.2,25.4 L642.8,25.9 L640.3,27.9 L638.8,27.9 L632.3,31.9 L625.8,34.4 L599.9,50.8 L586.4,61.8 L312.9,335.3 L283.0,366.2 L276.5,373.7 L276.5,375.2 L332.3,431.5 L334.3,431.5 L445.4,322.4 L480.8,286.5 L549.1,220.7 L584.5,184.9 L618.8,152.5 L649.7,127.6 L662.2,119.1 L664.7,118.6 L672.1,113.6 L678.6,111.1 L681.1,109.1 L688.1,107.1 L690.6,105.1 L693.6,105.1 L696.6,103.1 L699.1,103.1 L702.0,101.1 L705.5,101.1 L708.0,99.2 L712.0,99.2 L714.5,97.2 L718.0,97.2 L721.0,95.2 L873.9,95.2 L899.9,93.7 L902.8,97.2 L900.8,125.6 L900.8,239.2 L898.9,245.1 L898.9,263.6 L896.9,267.1 L896.9,274.0 L894.9,277.0 L894.9,281.5 L892.9,284.0 L892.9,287.5 L890.9,290.0 L890.9,292.0 L888.9,294.5 L888.9,296.5 L882.9,307.9 L882.4,310.4 L880.9,311.9 L880.9,313.4 L867.0,335.8 L863.5,339.3 L863.0,341.3 L857.0,347.8 L855.0,351.3 L846.5,360.2 L844.5,363.7 L805.2,407.1 L805.2,409.6 L860.0,464.9 L865.5,469.9 L867.5,470.4 L918.8,418.5 L921.8,414.1 L937.7,395.6 L938.7,393.1 L948.2,381.2 L948.7,379.2 L952.2,375.2 L952.2,373.7 L958.1,365.2 L958.1,363.7 L960.1,361.7 L964.1,353.3 L966.1,350.8 L966.1,349.3 L968.1,346.8 L968.1,345.3 L972.1,337.8 L972.1,335.8 L975.6,329.8 L976.1,325.9 L978.1,323.4 L978.1,320.9 L980.1,317.9 L980.1,314.9 L982.1,311.9 L982.1,308.4 L984.1,305.4 L984.1,301.9 L986.0,298.5 L986.0,294.0 L988.0,291.5 L988.0,286.0 L990.0,283.0 L990.0,275.5 L992.0,271.5 L992.0,258.6 L994.0,253.6 L994.0,204.8 L996.0,157.0ZM1.0,2.0 L0.0,3.0 L0.0,40.4 L2.0,86.7 L2.0,246.1 L4.0,253.1 L4.0,269.1 L6.0,272.5 L6.0,277.5 L8.0,280.0 L8.0,284.5 L10.0,287.5 L10.0,291.5 L12.0,294.5 L12.0,297.5 L14.0,300.9 L14.0,303.4 L15.9,306.9 L15.9,309.4 L17.9,311.9 L17.9,314.9 L21.9,322.9 L21.9,325.4 L23.9,327.4 L23.9,329.3 L25.9,332.3 L25.9,333.8 L30.4,343.3 L37.9,355.8 L37.9,357.2 L39.9,359.2 L40.4,361.7 L43.3,365.2 L43.8,367.2 L45.8,369.2 L51.8,379.2 L61.8,391.1 L65.3,396.6 L83.7,416.0 L214.3,545.6 L256.1,585.5 L297.5,627.3 L355.3,683.1 L357.7,683.1 L416.0,624.3 L416.0,621.3 L321.9,524.7 L179.4,382.2 L141.5,341.8 L139.0,337.8 L131.0,329.3 L128.6,324.9 L125.1,321.4 L124.1,318.9 L121.1,315.4 L115.1,305.4 L115.1,303.9 L113.6,302.4 L113.1,300.0 L109.1,293.5 L109.1,291.5 L105.1,284.0 L105.1,282.0 L103.1,279.5 L103.1,277.0 L101.1,274.0 L101.1,270.1 L99.2,267.6 L99.2,260.1 L97.2,256.6 L97.2,240.2 L95.2,233.2 L95.2,119.1 L93.7,104.6 L93.7,96.2 L95.7,93.7 L110.6,93.7 L128.1,95.2 L261.1,95.2 L267.6,97.2 L285.5,97.2 L289.0,99.2 L296.5,99.2 L299.5,101.1 L303.4,101.1 L305.9,103.1 L308.9,103.1 L320.9,109.1 L322.9,109.1 L325.9,111.1 L327.4,111.1 L347.3,123.1 L359.7,133.0 L405.6,176.9 L407.6,176.4 L444.9,139.0 L468.9,116.6 L467.9,114.1 L422.0,68.8 L393.1,45.8 L375.7,34.4 L373.2,33.9 L371.2,31.9 L369.7,31.9 L368.2,30.4 L359.2,25.9 L357.7,25.9 L351.3,21.9 L349.3,21.9 L346.3,19.9 L343.8,19.9 L341.3,17.9 L338.8,17.9 L330.3,14.0 L326.9,14.0 L323.4,12.0 L320.4,12.0 L317.4,10.0 L312.4,10.0 L309.9,8.0 L304.4,8.0 L301.4,6.0 L287.0,6.0 L281.0,4.0 L99.2,4.0 L40.4,2.0Z" fill="currentColor" stroke="none" fill-rule="evenodd"/></symbol>
       <symbol id="i-file" viewBox="0 0 24 24"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5M9 13h6M9 17h6"/></symbol>
       <symbol id="i-chat" viewBox="0 0 24 24"><path d="M21 12a8 8 0 0 1-11.6 7.1L4 20.5l1.4-4.6A8 8 0 1 1 21 12z"/></symbol>
       <symbol id="i-scale" viewBox="0 0 24 24"><path d="M12 4v16M6 20h12M5 7h14M5 7l-3 7a3.5 3.5 0 0 0 6 0zM19 7l-3 7a3.5 3.5 0 0 0 6 0z"/></symbol>
@@ -1304,7 +1313,7 @@ html[data-theme=dark] .d-kpi, html[data-theme=dark] .d-kpi b, html[data-theme=da
 
   <header class="lp-nav">
     <div class="lp-wrap lp-nav-in">
-      <a class="lp-brand" href="#top" aria-label="Reconciliation Solutions home"><svg class="lp-ic lp-logo-ic" aria-hidden="true"><use href="#i-logo"/></svg><span class="lp-brand-t">Reconciliation<br>Solutions</span></a>
+      <a class="lp-brand" href="#top" aria-label="RECONZA home"><svg class="lp-ic lp-logo-ic" aria-hidden="true"><use href="#i-logo"/></svg><span class="lp-brand-t" style="letter-spacing:.09em;font-weight:800">RECONZA</span></a>
       <nav class="lp-links" aria-label="Page sections">
         <a href="#top" class="is-on">Home</a><a href="#features">Features</a><a href="#pricing">Pricing</a><a href="#about">About</a><a href="#faq">FAQ</a><a href="#contact">Contact</a>
       </nav>
@@ -1316,7 +1325,7 @@ html[data-theme=dark] .d-kpi, html[data-theme=dark] .d-kpi b, html[data-theme=da
   <section class="lp-hero">
     <div class="lp-wrap lp-hero-in">
       <div class="lp-hero-copy">
-        <p class="lp-eyebrow"><svg class="lp-ic" aria-hidden="true"><use href="#i-bolt"/></svg>Smart Reconciliation. Greater Clarity.</p>
+        <p class="lp-eyebrow"><svg class="lp-ic" aria-hidden="true"><use href="#i-bolt"/></svg>We don&rsquo;t guess, we uncover.</p>
         <h1>Turn Complex Financial Reports into <span class="lp-hl">Clear Results</span></h1>
         <p class="lp-lead">Analyze, compare and reconcile your ATM, POS and bank reports with ease. Find discrepancies, ensure accuracy and make better financial decisions.</p>
         <div class="lp-actions">
@@ -1404,7 +1413,7 @@ html[data-theme=dark] .d-kpi, html[data-theme=dark] .d-kpi b, html[data-theme=da
 
   <section class="lp-sec lp-problem" id="problem">
     <div class="lp-wrap">
-      <div class="lp-head"><p class="lp-kicker">Why it is hard</p><h2>Reconciliation is a pain for almost every finance team</h2><p>Three things make it slow. Report Analyzer is built to remove each one.</p></div>
+      <div class="lp-head"><p class="lp-kicker">Why it is hard</p><h2>Reconciliation is a pain for almost every finance team</h2><p>Three things make it slow. RECONZA is built to remove each one.</p></div>
       <div class="lp-grid lp-grid-3">
         <article class="lp-card"><span class="lp-ic-bubble"><svg aria-hidden="true"><use href="#i-frag"/></svg></span><h3>Fragmented systems</h3><p>The switch, the ledger and the bank each give you a different file. We compare them side by side, so you do not have to merge them by hand.</p></article>
         <article class="lp-card"><span class="lp-ic-bubble"><svg aria-hidden="true"><use href="#i-mess"/></svg></span><h3>Messy, unstructured data</h3><p>Different column names, dates and formats are normal. Upload CSV, Excel or PDF and we read them as they are.</p></article>
@@ -1512,7 +1521,7 @@ html[data-theme=dark] .d-kpi, html[data-theme=dark] .d-kpi b, html[data-theme=da
 
   <section class="lp-sec lp-alt" id="about">
     <div class="lp-wrap lp-narrow">
-      <div class="lp-head"><h2>Our story</h2><p>How a dream, a TikTok post and a question to my dad became Reconciliation Solutions.</p></div>
+      <div class="lp-head"><h2>Our story</h2><p>How a dream, a TikTok post and a question to my dad became RECONZA.</p></div>
       <div class="lp-story">
         <p>I am a young Nigerian with a dream of becoming known, of building something that people talk about. For a long time that dream came with limits. There were things I did not have and doors that did not open. But I made one decision early and I have kept it: I never gave up.</p>
         <details class="lp-more">
@@ -1529,11 +1538,11 @@ html[data-theme=dark] .d-kpi, html[data-theme=dark] .d-kpi b, html[data-theme=da
             <p>He told me about the section where he belongs at his place of work. He explained how much effort goes into checking and matching records by hand, and said that if a website could do this work, it would bring ease, not only to his section but to the country.</p>
             <h3>Chapter 5: Day and night</h3>
             <p>That answer gave me a direction. I started working day and night to turn it into something real. My goal is bigger than one website. I want to help make Nigeria one of the top ten countries in the world for able, hardworking young people and teenagers, and to show what Nigerians are made of.</p>
-            <p>That work became <b>Reconciliation Solutions</b>, and the tool at its heart, <b>Report Analyzer</b>: a website that matches ATM, POS and bank reports, finds what is missing, and answers your questions in plain English.</p>
+            <p>That work became <b>RECONZA</b>: a website that matches ATM, POS and bank reports, finds what is missing, and answers your questions in plain English.</p>
             <h3>Chapter 6: Where you can find me</h3>
             <p>I do not run support on WhatsApp. My WhatsApp account keeps getting banned, so most of my operations run on Telegram instead. You can reach me there at <a href="https://t.me/COLDFX26" target="_blank" rel="noopener">t.me/COLDFX26</a>, or by email at <a href="mailto:reconciliationsolutionsupport@gmail.com">reconciliationsolutionsupport@gmail.com</a>.</p>
             <h3>What comes next</h3>
-            <p>I hope this website reaches the whole world, so that people can see what Nigerians are made of. If Report Analyzer helps you, please share it with your colleagues, your team and your friends, so we can grow together.</p>
+            <p>I hope this website reaches the whole world, so that people can see what Nigerians are made of. If RECONZA helps you, please share it with your colleagues, your team and your friends, so we can grow together.</p>
           </div>
         </details>
         <p class="lp-story-sign"><a href="https://t.me/COLDFX26" target="_blank" rel="noopener">Message me on Telegram</a> <span aria-hidden="true">&middot;</span> <a href="mailto:reconciliationsolutionsupport@gmail.com">Email us</a></p>
@@ -1574,7 +1583,7 @@ html[data-theme=dark] .d-kpi, html[data-theme=dark] .d-kpi b, html[data-theme=da
         <details><summary>Can I talk to someone before I sign up?</summary><p>Yes. Use the contact form on this page or email <a href="mailto:reconciliationsolutionsupport@gmail.com">reconciliationsolutionsupport@gmail.com</a> and we will reply.</p></details>
         <details><summary>How do I get started?</summary><p>Choose "Request an account" in the sign-in box. Once an administrator approves it, sign in and open <b>Settings</b> first. Save your email there (it is used for password resets and plan reminders) and add your company logo so it appears on your PDF reports. Then upload your first report.</p></details>
         <details><summary>Can I put my company logo on my reports?</summary><p>Yes, every customer can. In Settings, add your company name, logo and brand colour once. Your PDF reports then show your logo and colour, with a faint copy of the logo as the page background.</p></details>
-        <details><summary>Who built Report Analyzer?</summary><p>Report Analyzer is built in Nigeria by a young Nigerian developer, for ATM, POS and finance teams. <a href="#about">Read the full story</a>.</p></details>
+        <details><summary>Who built RECONZA?</summary><p>RECONZA is built in Nigeria by a young Nigerian developer, for ATM, POS and finance teams. <a href="#about">Read the full story</a>.</p></details>
         <details><summary>Do you have a WhatsApp number?</summary><p>No. Our WhatsApp account keeps getting banned, so most of our operations run on Telegram: <a href="https://t.me/COLDFX26" target="_blank" rel="noopener">t.me/COLDFX26</a>. You can also email <a href="mailto:reconciliationsolutionsupport@gmail.com">reconciliationsolutionsupport@gmail.com</a> or use the contact form on this page.</p></details>
       </div>
     </div>
@@ -1608,14 +1617,14 @@ html[data-theme=dark] .d-kpi, html[data-theme=dark] .d-kpi b, html[data-theme=da
     <div class="lp-wrap">
       <div class="lp-foot-top">
         <div>
-          <a class="lp-brand" href="#top"><svg class="lp-ic lp-logo-ic" aria-hidden="true"><use href="#i-logo"/></svg><span>Reconciliation Solutions</span></a>
+          <a class="lp-brand" href="#top"><svg class="lp-ic lp-logo-ic" aria-hidden="true"><use href="#i-logo"/></svg><span>RECONZA</span></a>
           <p>Reconcile ATM, POS and bank reports and check bank statements. Built for teams that handle sensitive financial data.</p>
         </div>
         <nav aria-label="Product"><h4>Product</h4><ul><li><a href="#features">Features</a></li><li><a href="#statement">Statement check</a></li><li><a href="#pricing">Pricing</a></li><li><a href="#about">About</a></li><li><a href="#faq">FAQ</a></li><li><a href="/whats-new">What's new</a></li><li><a href="/for/pos-agents">For POS agents</a></li><li><a href="/for/atm-operators">For ATM operators</a></li><li><a href="/for/petrol-stations">For petrol stations</a></li><li><a href="/for/supermarkets">For shops</a></li></ul></nav>
         <nav aria-label="Legal"><h4>Legal</h4><ul><li><button type="button" class="lp-foot-btn" data-legal="terms">Terms of Service</button></li><li><button type="button" class="lp-foot-btn" data-legal="privacy">Privacy Policy</button></li><li><a href="/security">Security</a></li><li><a href="/status">System status</a></li></ul></nav>
         <div><h4>Contact</h4><ul><li><a href="mailto:reconciliationsolutionsupport@gmail.com">reconciliationsolutionsupport@gmail.com</a></li><li><a href="#contact">Send us a message</a></li><li><a href="https://t.me/COLDFX26" target="_blank" rel="noopener">Telegram: t.me/COLDFX26</a></li></ul></div>
       </div>
-      <div class="lp-foot-bar"><span id="svcStatus" class="lp-status" hidden></span><span>&copy; <span id="ftYear">2026</span> Reconciliation Solutions. All rights reserved.</span><span>Data encrypted &middot; Two-factor sign-in available</span></div>
+      <div class="lp-foot-bar"><span id="svcStatus" class="lp-status" hidden></span><span>&copy; <span id="ftYear">2026</span> RECONZA. All rights reserved.</span><span>Data encrypted &middot; Two-factor sign-in available</span></div>
     </div>
   </footer>
 </div>
@@ -1623,7 +1632,7 @@ html[data-theme=dark] .d-kpi, html[data-theme=dark] .d-kpi b, html[data-theme=da
 <!-- ======================= APP ======================= -->
 <div id="app" class="hidden" data-view="dashboard">
 <aside id="v2Sidebar" class="sb" aria-label="App sections">
-  <div class="sb-brand"><span class="sb-logo"><svg class="svg-ic" aria-hidden="true"><use href="#i-logo"/></svg></span><div><b>Reconciliation Solutions</b><small>Smart Reconciliation. Greater Clarity.</small></div></div>
+  <div class="sb-brand"><span class="sb-logo"><svg class="svg-ic" aria-hidden="true"><use href="#i-logo"/></svg></span><div><b>RECONZA</b><small>We don&rsquo;t guess, we uncover.</small></div></div>
   <nav class="sb-nav">
     <button type="button" class="sb-item" data-nav="dashboard"><span class="ic"><svg class="svg-ic" aria-hidden="true"><use href="#i-home"/></svg></span><span>Dashboard</span></button>
     <button type="button" class="sb-item admin-only hidden" data-nav="overview"><span class="ic"><svg class="svg-ic" aria-hidden="true"><use href="#i-chart"/></svg></span><span>Owner Overview</span></button>
@@ -1636,10 +1645,11 @@ html[data-theme=dark] .d-kpi, html[data-theme=dark] .d-kpi b, html[data-theme=da
     <button type="button" class="sb-item" data-nav="reconciliation"><span class="ic"><svg class="svg-ic" aria-hidden="true"><use href="#i-scale"/></svg></span><span>Reconciliation</span></button>
     <button type="button" class="sb-item" data-nav="discrepancies"><span class="ic"><svg class="svg-ic" aria-hidden="true"><use href="#i-alert"/></svg></span><span>Discrepancies</span></button>
     <button type="button" class="sb-item" data-nav="notifications"><span class="ic"><svg class="svg-ic" aria-hidden="true"><use href="#i-bell"/></svg></span><span>Notifications</span><span class="sb-count hidden" id="sbNotifCount">0</span></button>
+    <button type="button" class="sb-item gate-off gate-team" data-nav="myteam"><span class="ic"><svg class="svg-ic" aria-hidden="true"><use href="#i-users"/></svg></span><span>My Team</span></button>
     <button type="button" class="sb-item admin-only hidden" data-nav="team"><span class="ic"><svg class="svg-ic" aria-hidden="true"><use href="#i-users"/></svg></span><span>Team &amp; Access</span></button>
     <button type="button" class="sb-item admin-only hidden" data-nav="resets"><span class="ic"><svg class="svg-ic" aria-hidden="true"><use href="#i-shieldcheck"/></svg></span><span>Password resets</span></button>
     <button type="button" class="sb-item admin-only hidden" data-nav="broadcast"><span class="ic"><svg class="svg-ic" aria-hidden="true"><use href="#i-megaphone"/></svg></span><span>Broadcast</span></button>
-    <button type="button" class="sb-item" data-nav="plan"><span class="ic"><svg class="svg-ic" aria-hidden="true"><use href="#i-card"/></svg></span><span>Plan &amp; Billing</span></button>
+    <button type="button" class="sb-item gate-owner" data-nav="plan"><span class="ic"><svg class="svg-ic" aria-hidden="true"><use href="#i-card"/></svg></span><span>Plan &amp; Billing</span></button>
     <button type="button" class="sb-item" data-nav="donations"><span class="ic"><svg class="svg-ic" aria-hidden="true"><use href="#i-heart"/></svg></span><span>Donations</span></button>
     <button type="button" class="sb-item" data-nav="support"><span class="ic"><svg class="svg-ic" aria-hidden="true"><use href="#i-support"/></svg></span><span>Support</span></button>
     <button type="button" class="sb-item" data-nav="help"><span class="ic"><svg class="svg-ic" aria-hidden="true"><use href="#i-mess"/></svg></span><span>Help</span></button>
@@ -1649,32 +1659,32 @@ html[data-theme=dark] .d-kpi, html[data-theme=dark] .d-kpi b, html[data-theme=da
   <div class="sb-label">Quick actions</div>
   <button type="button" class="sb-q analyst-up hidden" data-nav="upload"><span>Upload a Report</span><i>›</i></button>
   <button type="button" class="sb-q" data-nav="analytics"><span>View Analytics</span><i>›</i></button>
-  <a class="sb-q" href="mailto:reconciliationsolutionsupport@gmail.com?subject=Report%20Analyzer%20support"><span>Email support</span><i>›</i></a>
+  <a class="sb-q" href="mailto:reconciliationsolutionsupport@gmail.com?subject=RECONZA%20support"><span>Email support</span><i>›</i></a>
   <div class="sb-card">
     <b>Support Our Mission</b>
-    <p>Help us keep Report Analyzer running and improving.</p>
+    <p>Help us keep RECONZA running and improving.</p>
     <button type="button" class="sb-btn" data-nav="donations">Donate Now</button>
   </div>
   <div class="sb-card sb-plan">
     <small>Current Plan</small><b id="sbPlanName">-</b>
     <div class="sb-bar"><i id="sbPlanBar"></i></div><small id="sbPlanUse"></small>
-    <button type="button" class="sb-btn" data-nav="plan">View Plans</button>
+    <button type="button" class="sb-btn gate-owner" data-nav="plan">View Plans</button>
   </div>
   <div class="sb-label sb-mobile-only">Account</div>
   <button type="button" class="sb-q sb-mobile-only" id="sbTheme"><span>Switch light / dark mode</span><i>›</i></button>
   <button type="button" class="sb-q sb-mobile-only" id="sbLogout"><span>Log out</span><i>›</i></button>
-  <div class="sb-ver">Report Analyzer · V2<br><a data-legal="terms">Terms</a> · <a data-legal="privacy">Privacy</a></div>
+  <div class="sb-ver">RECONZA · V2<br><a data-legal="terms">Terms</a> · <a data-legal="privacy">Privacy</a></div>
 </aside>
 <div class="sb-scrim" id="sbScrim"></div>
 <div class="shell">
 <header class="app">
   <button type="button" class="sb-burger" id="sbToggle" aria-label="Open menu"><svg class="svg-ic" aria-hidden="true"><use href="#i-menu"/></svg></button>
-  <span class="hdr-brand"><svg class="svg-ic" aria-hidden="true"><use href="#i-logo"/></svg><span>Reconciliation Solutions</span></span>
+  <span class="hdr-brand"><svg class="svg-ic" aria-hidden="true"><use href="#i-logo"/></svg><span>RECONZA</span></span>
   <div class="app-search"><svg class="svg-ic" aria-hidden="true"><use href="#i-search"/></svg><input type="text" id="dSearch" placeholder="Search your reports…" autocomplete="off" aria-label="Search reports"></div>
   <span class="hdr-spacer"></span>
   <button class="ghost admin-only hidden" id="adminBtn">Admin</button>
   <button class="ghost v2-help-link v2-tour-launch" id="v2TourLaunch" type="button">Help</button>
-  <button type="button" class="ghost hidden" id="installBtn" title="Install Report Analyzer on this device">Install app</button>
+  <button type="button" class="ghost hidden" id="installBtn" title="Install RECONZA on this device">Install app</button>
   <button class="ghost" id="twofaBtn"> 2FA</button>
   <button type="button" class="ghost" id="themeBtn" aria-label="Dark mode" title="Switch to dark mode">Dark</button>
   <div class="bell-wrap"><button type="button" class="ghost bell" id="bellBtn" aria-label="Notifications" title="Notifications"><svg class="svg-ic" aria-hidden="true"><use href="#i-bell"/></svg><span class="bell-label">Notifications</span><span id="bellBadge" class="bell-badge hidden">0</span></button><div id="bellPanel" class="bell-panel hidden"></div></div>
@@ -1742,7 +1752,7 @@ html[data-theme=dark] .d-kpi, html[data-theme=dark] .d-kpi b, html[data-theme=da
 
   <section class="d-upgrade" id="dUpgrade" data-views="dashboard">
     <div class="txt"><b>Ready to unlock more features?</b><span>Upgrade your plan for more analyses, team members and automated reports.</span></div>
-    <button type="button" data-nav="plan">View Plans →</button>
+    <button type="button" class="gate-owner" data-nav="plan">View Plans →</button>
   </section>
 
   <section class="d-panel" data-views="reports">
@@ -1850,7 +1860,7 @@ html[data-theme=dark] .d-kpi, html[data-theme=dark] .d-kpi b, html[data-theme=da
 
   <section class="card" data-views="support" id="supportCard">
     <h2>Support</h2>
-    <p class="d-sub">Write to the Report Analyzer team here. We reply in this same place and you get a notification. You can also email <a href="mailto:reconciliationsolutionsupport@gmail.com">reconciliationsolutionsupport@gmail.com</a>.</p>
+    <p class="d-sub">Write to the RECONZA team here. We reply in this same place and you get a notification. You can also email <a href="mailto:reconciliationsolutionsupport@gmail.com">reconciliationsolutionsupport@gmail.com</a>.</p>
     <div class="urow" id="tkNew"><b>Start a new conversation</b>
       <div style="display:grid;gap:8px;margin-top:6px"><input type="text" id="tkSubject" maxlength="120" placeholder="Title, e.g. My payment is not showing"><textarea id="tkBody" rows="4" maxlength="3000" placeholder="Tell us what happened…"></textarea>
       <div class="row"><button type="button" id="tkSend">Send</button><span class="mute" id="tkMsg"></span></div></div></div>
@@ -1867,7 +1877,7 @@ html[data-theme=dark] .d-kpi, html[data-theme=dark] .d-kpi b, html[data-theme=da
     <div id="helpList" class="help-list"></div>
   </section>
 
-  <section class="card analyst-up hidden" id="apiCard" data-views="settings">
+  <section class="card analyst-up hidden gate-coadmin" id="apiCard" data-views="settings">
     <h2>API access <small class="mute">for lenders and developers</small></h2>
     <div class="mute">Let your own system send a statement and get the score back automatically. Each call uses one check from your plan. Keep keys secret: anyone with the key can spend your checks.</div>
     <div class="row" style="margin:8px 0"><input type="text" id="akLabel" maxlength="60" placeholder="Name this key, e.g. Loan app"><button type="button" id="akMake">Create key</button></div>
@@ -1899,7 +1909,7 @@ html[data-theme=dark] .d-kpi, html[data-theme=dark] .d-kpi b, html[data-theme=da
   </section>
 
   <section class="d-panel" data-views="notifications">
-    <div class="d-head"><div><h3>Notifications</h3><p class="d-sub">News and announcements from the Report Analyzer team.</p></div><button type="button" class="ghost" id="notifReadAll">Mark all as read</button></div>
+    <div class="d-head"><div><h3>Notifications</h3><p class="d-sub">News and announcements from the RECONZA team.</p></div><button type="button" class="ghost" id="notifReadAll">Mark all as read</button></div>
     <div id="notifList" style="display:grid;gap:10px"></div>
   </section>
 
@@ -1932,12 +1942,12 @@ html[data-theme=dark] .d-kpi, html[data-theme=dark] .d-kpi b, html[data-theme=da
 
   <section class="d-panel" data-views="donations">
     <h3>Support Our Mission</h3>
-    <p>Report Analyzer exists to make financial reconciliation simple and affordable for teams like yours. Your support helps cover hosting, security and new features.</p>
+    <p>RECONZA exists to make financial reconciliation simple and affordable for teams like yours. Your support helps cover hosting, security and new features.</p>
     <p class="mute">Online donations are still being set up. If you would like to support the project today, email us and we will share the details.</p>
-    <a class="d-btn" href="mailto:reconciliationsolutionsupport@gmail.com?subject=Supporting%20Report%20Analyzer">Email us</a>
+    <a class="d-btn" href="mailto:reconciliationsolutionsupport@gmail.com?subject=Supporting%20RECONZA">Email us</a>
   </section>
 
-  <section class="card hidden analyst-up" id="brandCard" data-views="settings">
+  <section class="card hidden analyst-up gate-coadmin" id="brandCard" data-views="settings">
     <h2>Company logo and colour</h2>
     <div class="mute">Add your logo once. It then appears at the top of every PDF you download, with a coloured top edge and a faint copy of the logo as the page background.</div>
     <div class="brand-grid">
@@ -1995,7 +2005,7 @@ html[data-theme=dark] .d-kpi, html[data-theme=dark] .d-kpi b, html[data-theme=da
     </div>
     <div class="row" style="margin-top:10px">
       <select id="report"></select>
-      <button class="danger admin-only hidden" id="delReport">Delete report</button>
+      <button class="danger gate-coadmin" id="delReport">Delete report</button>
     </div>
     <div class="mute" id="preview" style="margin-top:8px"></div>
   </section>
@@ -2172,13 +2182,13 @@ html[data-theme=dark] .d-kpi, html[data-theme=dark] .d-kpi b, html[data-theme=da
       <div class="analytics-grid"><div class="analytics-panel"><h3>Daily reconciliation activity</h3><canvas id="trendRunsChart"></canvas></div><div class="analytics-panel"><h3>Matched vs discrepancy rows</h3><canvas id="trendQualityChart"></canvas></div></div>
       <div id="reconHistory" class="mute"></div>
     </div>
-    <div class="urow" data-views="reconciliation">
+    <div class="urow gate-coadmin" data-views="reconciliation">
       <b>Scheduled automatic reconciliation</b>
       <div class="row"><select id="opsReportA"></select><span>vs</span><select id="opsReportB"></select></div>
       <div class="row"><input type="number" id="scheduleHours" min="1" max="2160" value="24" style="max-width:140px" title="Hours between runs"><input type="text" id="scheduleNote" placeholder="Optional matching instruction"><button id="addSchedule">Create schedule</button></div>
       <div id="scheduleMsg" class="mute"></div><div id="scheduleList" class="mute"></div>
     </div>
-    <div class="urow" data-views="settings">
+    <div class="urow gate-coadmin" data-views="settings">
       <b>Email alerts &amp; usage warnings</b>
       <div class="mute">Set up to 10 notification email addresses separated by commas. Email delivery requires SMTP environment variables.</div>
       <div class="row"><input type="text" id="notifyEmails" placeholder="finance@example.com, owner@example.com"><input type="number" id="quotaThreshold" min="1" max="100" value="80" style="max-width:120px" title="Usage warning percent"><button id="saveNotify">Save notification settings</button></div>
@@ -2188,7 +2198,7 @@ html[data-theme=dark] .d-kpi, html[data-theme=dark] .d-kpi b, html[data-theme=da
       <b>Billing history &amp; invoices</b>
       <button id="loadInvoices" class="ghost">Load invoices / receipts</button><div id="invoiceList" class="mute"></div>
     </div>
-    <div class="urow admin-only hidden" data-views="settings">
+    <div class="urow gate-coadmin" data-views="settings">
       <b>External accounting integrations</b>
       <div class="mute">Create a scoped token for the generic report-import API. Vendor-specific QuickBooks/Xero/etc. adapters still require their provider credentials and mapping.</div>
       <div class="row"><input type="text" id="integrationLabel" placeholder="Integration label, e.g. Accounting export"><button id="createIntegration">Create integration token</button><button id="loadIntegrations" class="ghost">List tokens</button></div>
@@ -2203,7 +2213,7 @@ html[data-theme=dark] .d-kpi, html[data-theme=dark] .d-kpi b, html[data-theme=da
     <div id="opsError" class="error"></div>
   </section>
 
-  <section class="card analyst-up hidden" id="digestCard" data-views="settings">
+  <section class="card analyst-up hidden gate-coadmin" id="digestCard" data-views="settings">
     <h2>Scheduled digests</h2>
     <div class="mute">Runs a question on a schedule and sends the answer + PDF to this company's linked Telegram users. Times use the server's timezone.</div>
     <ul id="digestList" style="margin:8px 0"></ul>
@@ -2222,21 +2232,47 @@ html[data-theme=dark] .d-kpi, html[data-theme=dark] .d-kpi b, html[data-theme=da
     <ul id="history"></ul>
   </section>
 
+  <section class="card gate-off gate-team" id="myTeamCard" data-views="myteam">
+    <h2>My team</h2>
+    <div class="mute" id="mtSeats">Loading…</div>
+    <div class="rolegrid">
+      <div><span class="rolechip owner">Owner</span><br>The person who created the account. Does everything, and is the only one who can add people, change roles and manage billing.</div>
+      <div><span class="rolechip">Admin</span><br>Controls the company: deletes reports, sets logo, API keys, schedules and alerts. Cannot change roles or billing.</div>
+      <div><span class="rolechip">Analyst</span><br>Does the work: uploads files, asks questions, reconciles, scores statements.</div>
+      <div><span class="rolechip viewer">Viewer</span><br>Read-only. Sees the dashboard, reports, results and cases. Cannot upload, ask or change anything.</div>
+    </div>
+    <div id="mtList"></div>
+    <div class="error" id="mtErr"></div>
+    <div id="mtAdd" class="gate-owner" style="margin-top:14px">
+      <h3 style="margin:0 0 6px">Add a team member</h3>
+      <div class="mute" style="margin-bottom:8px">Create their login and tell them the username and temporary password. They sign in and change the password in Settings. Only you, the owner, can do this.</div>
+      <div class="row">
+        <input type="text" id="mtUser" placeholder="Username" maxlength="40" autocomplete="off">
+        <input type="password" id="mtPass" placeholder="Temporary password (10+ chars)" autocomplete="new-password">
+        <select id="mtRole"><option value="analyst">Analyst</option><option value="viewer">Viewer</option><option value="admin">Admin</option></select>
+        <button type="button" id="mtAddBtn">Add</button>
+      </div>
+      <div class="mute" id="mtMsg"></div>
+    </div>
+    <h3 style="margin:16px 0 6px">Recent activity in your company</h3>
+    <div id="mtActivity" class="mute">Nothing yet.</div>
+  </section>
+
   <section class="card hidden" id="adminCard" data-views="team plan settings">
     <h2 data-views="team">Admin - users &amp; access</h2>
     <div data-views="team">
-    <div class="mute" style="margin-bottom:8px">Owner controls: customer accounts are created as analysts and assigned to their own company. They cannot see other companies unless you explicitly assign access. Telegram ID links a customer to the bot.</div>
+    <div class="mute" style="margin-bottom:8px">Site-owner controls: each customer account is the Owner of its own company and manages its own team. They cannot see other companies unless you explicitly assign access. Telegram ID links a customer to the bot.</div>
     <h2 style="margin-top:12px">AI connection check</h2>
     <div class="mute">Tests each AI model with one tiny request and tells you exactly why answers are slow or failing.</div>
     <button type="button" id="aiCheckBtn" style="margin:8px 0">Run AI check</button>
     <a href="/api/audit/export.csv" class="admin-only"><button type="button" class="ghost" style="margin:0 0 8px">Download audit trail (CSV)</button></a>
     <pre id="aiCheckOut" class="mute" style="white-space:pre-wrap;font-size:12.5px"></pre>
     <h2 style="margin-top:12px">Customer registration requests</h2>
-    <div class="mute">Public sign-up requests stay pending until you approve them. Approved customers get Analyst access to their own company only.</div>
+    <div class="mute">Public sign-up requests stay pending until you approve them. Approved customers become the Owner of their own company only; they add their own team (Admin, Analyst, Viewer) from My Team.</div>
     <div class="row" style="margin:8px 0"><button class="ghost" id="refreshRegs">Refresh requests</button><span class="mute" id="regAdminMsg"></span></div>
     <div id="registrationRequests"></div>
     <h2 style="margin-top:16px">Onboard a new customer manually</h2>
-    <div class="mute">Creates a separate company and customer login together. Use a unique company name; the new customer role is fixed to Analyst, not Admin. Password must be at least 10 characters.</div>
+    <div class="mute">Creates a separate company and customer login together. Use a unique company name; the new customer becomes the Owner of that company, never a site admin. Password must be at least 10 characters.</div>
     <div class="row" style="margin-top:8px">
       <input type="text" id="custCompany" placeholder="Company name" maxlength="120">
       <input type="text" id="custUsername" placeholder="Customer username" maxlength="40" autocomplete="off">
@@ -2303,8 +2339,8 @@ html[data-theme=dark] .d-kpi, html[data-theme=dark] .d-kpi b, html[data-theme=da
     <div id="legalTerms">
       <h2 style="margin:0">Terms of Service</h2>
       <p class="mute">Last updated: October 2026</p>
-      <h3>1. About Report Analyzer</h3>
-      <p>Report Analyzer helps you read, analyze and reconcile financial reports (CSV, Excel and PDF). It is an analysis aid. It is not accounting, tax, audit or legal advice. Results, including AI-generated answers, can be wrong, so please check important figures against your original records before acting on them.</p>
+      <h3>1. About RECONZA</h3>
+      <p>RECONZA helps you read, analyze and reconcile financial reports (CSV, Excel and PDF). It is an analysis aid. It is not accounting, tax, audit or legal advice. Results, including AI-generated answers, can be wrong, so please check important figures against your original records before acting on them.</p>
       <h3>2. Your account</h3>
       <p>Accounts are approved by an administrator. Keep your password private, use two-factor login where possible, and tell us quickly if you think someone else has accessed your account. You are responsible for what happens under your account. Each company's data is kept separate from other companies.</p>
       <h3>3. Acceptable use</h3>
@@ -2346,14 +2382,14 @@ html[data-theme=dark] .d-kpi, html[data-theme=dark] .d-kpi b, html[data-theme=da
       <h3>5. Telegram</h3>
       <p>If you link your Telegram ID, we may send you alerts and files there. When a customer attaches a payment screenshot, our Telegram bot forwards it to our administrators so they can confirm the payment.</p>
       <h3>6. Who else sees it</h3>
-      <p>Only the service providers we need to run Report Analyzer (such as hosting, database, AI, Telegram and email services), and authorities if the law requires it.</p>
+      <p>Only the service providers we need to run RECONZA (such as hosting, database, AI, Telegram and email services), and authorities if the law requires it.</p>
       <h3>7. Keeping and deleting data</h3>
       <p>We keep your data while your account is active. You can ask us to delete your reports or your whole account at any time, and we will do so, including from backups in due course.</p>
       <h3>8. Your choices</h3>
       <p>You can ask to see, correct or delete your information. Email us at <a href="mailto:reconciliationsolutionsupport@gmail.com">reconciliationsolutionsupport@gmail.com</a> or write to us from the Support section after you sign in.</p>
       <p>If website analytics is switched on, we count page visits (which page, device type, rough location) to improve the site. No report data is ever included.</p>
       <h3>9. Children</h3>
-      <p>Report Analyzer is for businesses and is not meant for anyone under 18.</p>
+      <p>RECONZA is for businesses and is not meant for anyone under 18.</p>
       <h3>10. Changes</h3>
       <p>If we change this policy we will update the date above.</p>
     </div>
@@ -2476,15 +2512,33 @@ $("lBtn").onclick = async () => {
 ["lUser", "lPass", "lCode"].forEach(id => $(id).addEventListener("keydown", e => { if (e.key === "Enter") $("lBtn").click(); }));
 $("logout").onclick = async () => { await jpost("/api/logout", {}); showLanding(); };
 
+const ROLE_LABEL = { owner: "Owner", admin: "Admin", analyst: "Analyst", viewer: "Viewer", platform: "Site admin" };
+function companyRank() {
+  if (!S.user) return 0;
+  if (S.user.role === "admin") return 99;
+  return { viewer: 1, analyst: 2, admin: 3, owner: 4 }[S.user.company_role] || (S.user.role === "viewer" ? 1 : 2);
+}
+/* Hide what a person's role cannot use. The server enforces the same rules; this only keeps the screen tidy. */
+function applyRoleGates() {
+  const rank = companyRank(), site = S.user.role === "admin";
+  const g = (sel, ok) => document.querySelectorAll(sel).forEach(e => e.classList.toggle("gate-off", !ok));
+  g(".gate-owner", rank >= 4);
+  g(".gate-coadmin", rank >= 3);
+  g(".gate-team", !site && rank >= 3);
+  const viewer = rank < 2;
+  ["analytics", "statement", "batch", "upload"].forEach(v => document.querySelectorAll(`[data-nav="${v}"]`).forEach(e => e.classList.toggle("gate-off", viewer)));
+  ["v2-ask", "v2-compare", "ssCard", "batchCard", "resultCard"].forEach(id => { const e = document.getElementById(id); if (e) e.classList.toggle("gate-off", viewer); });
+}
 async function start() {
   S.user = await api("/api/me");
   showApp();
-  $("who").textContent = `${S.user.username} · ${S.user.role}`;
+  $("who").textContent = `${S.user.username} · ${ROLE_LABEL[S.user.company_role] || S.user.role}`;
   const admin = S.user.role === "admin", canUp = S.user.role !== "viewer";
   document.querySelectorAll(".admin-only").forEach(e => e.classList.toggle("hidden", !admin));
   document.querySelectorAll(".analyst-up").forEach(e => e.classList.toggle("hidden", !canUp));
-  $("adminCard").classList.add("hidden"); $("twofaCard").classList.add("hidden");
+  $("adminCard").classList.add("hidden"); $("twofaCard").classList.remove("hidden"); renderTwofa();
   $("billingCard").classList.toggle("hidden", admin);
+  applyRoleGates();
   if (S.user.needs_2fa_setup) {
     document.querySelectorAll("main > section").forEach(s => s.classList.add("hidden"));
     $("twofaCard").classList.remove("hidden"); $("twofaMsg").textContent = "Admin accounts must turn on two-factor login before continuing."; renderTwofa(); return;
@@ -2493,7 +2547,7 @@ async function start() {
   try { fill($("bCo"), S.companies, c => c.name, c => c.id); await loadBranding(); } catch (e) { /* branding is optional */ }
   if (window.refreshSetup) window.refreshSetup();
   /* new customers go to Settings first (until they have saved an email) */
-  let tourSeen = false; try { tourSeen = localStorage.getItem("ra_v2_tour_seen") === "1"; } catch (e) {}
+  let tourSeen = false; try { tourSeen = localStorage.getItem("ra_tour_v34") === "1"; } catch (e) {}
   if (tourSeen && !admin && canUp && !S.user.email && window.navigate) { try { window.navigate("settings"); setTimeout(() => { const a = document.getElementById("accountCard"); if (a) a.scrollIntoView({ block: "start" }); }, 60); } catch (e) {} }
 }
 
@@ -2524,7 +2578,7 @@ function renderTwofa() {
   $("twofaStatus").textContent = on ? "Two-factor login is ON " : "Two-factor login is OFF";
   $("twofaSetup").classList.toggle("hidden", on); $("twofaOff").classList.toggle("hidden", !on); $("twofaSecretBox").classList.add("hidden"); $("twofaErr").textContent = "";
 }
-$("twofaBtn").onclick = () => { $("twofaCard").classList.toggle("hidden"); renderTwofa(); };
+$("twofaBtn").onclick = () => { $("twofaCard").classList.remove("hidden"); renderTwofa(); };
 $("twofaStart").onclick = async () => { try { const r = await api("/api/2fa/setup", { method: "POST" }); $("twofaSecret").textContent = r.secret; $("twofaUri").href = r.uri; $("twofaSecretBox").classList.remove("hidden"); } catch (e) { $("twofaErr").textContent = e.message; } };
 $("twofaEnable").onclick = async () => { try { await jpost("/api/2fa/enable", { code: $("twofaCode").value }); location.reload(); } catch (e) { $("twofaErr").textContent = e.message; } };
 $("twofaDisable").onclick = async () => { const pw = prompt("Enter your password to turn off two-factor login:"); if (!pw) return; try { await jpost("/api/2fa/disable", { password: pw }); location.reload(); } catch (e) { $("twofaErr").textContent = e.message; } };
@@ -2758,7 +2812,7 @@ async function loadSchedules() {
 }
 async function loadNotifySettings() { try { const s=await api(`/api/companies/${opsCid()}/notification-settings`); $("notifyEmails").value=(s.emails||[]).join(", "); $("quotaThreshold").value=s.quota_threshold||80; }catch(e){$("notifyMsg").textContent=" "+e.message;} }
 async function loadInvoices() { const rows=await api(`/api/billing/invoices?company_id=${opsCid()}`),host=$("invoiceList");host.replaceChildren();if(!rows.length){host.textContent="No paid invoices/receipts yet.";return;}rows.forEach(i=>{const row=el("div",`${i.invoice_number} · ${i.plan.toUpperCase()} · ₦${Number(i.amount_ngn).toLocaleString()} · ${i.status} · ${i.issued_at} UTC`,"urow");const a=el("a","Download PDF receipt");a.href=`/api/billing/invoices/${i.id}/pdf`;a.target="_blank";a.rel="noopener";row.appendChild(a);host.appendChild(row)}); }
-async function loadIntegrations() { const host=$("integrationList");host.replaceChildren();if(S.user.role!=="admin"){host.textContent="Integration token management is available to company administrators.";return;}const rows=await api(`/api/companies/${opsCid()}/integrations/tokens`);if(!rows.length){host.textContent="No integration tokens created.";return;}rows.forEach(t=>{const row=el("div",`${t.label} · created ${t.created_at} · last used ${t.last_used_at||"never"} · ${t.revoked_at?"REVOKED":"active"}`,"urow");if(!t.revoked_at){const b=el("button","Revoke token","danger");b.onclick=async()=>{if(!confirm("Revoke this integration token? Connected imports will stop working."))return;try{await api(`/api/companies/${opsCid()}/integrations/tokens/${t.id}`,{method:"DELETE"});await loadIntegrations()}catch(e){$("integrationMsg").textContent=" "+e.message}};row.appendChild(b)}host.appendChild(row)}); }
+async function loadIntegrations() { const host=$("integrationList");host.replaceChildren();if(companyRank()<3){host.textContent="Integration token management is available to company administrators.";return;}const rows=await api(`/api/companies/${opsCid()}/integrations/tokens`);if(!rows.length){host.textContent="No integration tokens created.";return;}rows.forEach(t=>{const row=el("div",`${t.label} · created ${t.created_at} · last used ${t.last_used_at||"never"} · ${t.revoked_at?"REVOKED":"active"}`,"urow");if(!t.revoked_at){const b=el("button","Revoke token","danger");b.onclick=async()=>{if(!confirm("Revoke this integration token? Connected imports will stop working."))return;try{await api(`/api/companies/${opsCid()}/integrations/tokens/${t.id}`,{method:"DELETE"});await loadIntegrations()}catch(e){$("integrationMsg").textContent=" "+e.message}};row.appendChild(b)}host.appendChild(row)}); }
 async function refreshOperations() { $("opsError").textContent=""; try { await Promise.all([loadCases(),loadTrends(),loadReconHistory(),loadSchedules(),loadNotifySettings(),loadInvoices(),loadIntegrations()]); } catch(e) { $("opsError").textContent=" "+e.message; } }
 $("opsCompany").onchange=()=>{ $("company").value=$("opsCompany").value; loadReports().then(refreshOperations).catch(e=>$("opsError").textContent=" "+e.message); };
 $("opsRefresh").onclick=refreshOperations;
@@ -2952,37 +3006,111 @@ $("backupBtn").onclick = async () => { $("backupBtn").disabled = true; try { con
 
 api("/api/me").then(start).catch(showLanding);
 
+
+/* ---------- My Team (owner manages, admin can look) ---------- */
+(function () {
+  const LBL = { owner: "Owner", admin: "Admin", analyst: "Analyst", viewer: "Viewer" };
+  const ACTIONS = { team_add: "added a team member", team_role: "changed a role", team_remove: "removed a team member", team_password_reset: "reset a password",
+    upload: "uploaded", delete_report: "deleted a report", login: "signed in", api_key_create: "created an API key", reconcile: "ran a reconciliation" };
+  let last = null;
+  async function load() {
+    const cid = Number($("company").value); if (!cid || !S.user) return;
+    $("mtErr").textContent = "";
+    try {
+      const d = await api(`/api/companies/${cid}/team`); last = d;
+      $("mtSeats").textContent = `${d.members.filter(m => m.active).length} of ${d.limit} seat(s) used on the ${d.plan} plan.` + (d.can_manage ? "" : " Only the owner can change the team.");
+      $("mtAdd").classList.toggle("gate-off", !d.can_manage);
+      const host = $("mtList"); host.replaceChildren();
+      d.members.forEach(m => {
+        const row = el("div", "", "urow"); const top = el("div", "", "tmrow");
+        const left = el("div"); left.append(el("span", m.username, "who"), document.createTextNode("  "), el("span", LBL[m.company_role] || m.company_role, "rolechip " + m.company_role));
+        if (!m.active) left.append(document.createTextNode("  "), el("span", "removed", "mute"));
+        if (m.email) left.append(document.createTextNode("  "), el("span", m.email, "mute"));
+        left.append(document.createTextNode("  "), el("span", m.two_factor ? "2FA on" : "", "mute"));
+        top.append(left);
+        if (d.can_manage && m.company_role !== "owner" && m.active) {
+          const acts = el("div", "", "row");
+          const sel = el("select"); ["admin", "analyst", "viewer"].forEach(r => { const o = el("option", LBL[r]); o.value = r; if (r === m.company_role) o.selected = true; sel.append(o); });
+          sel.onchange = async () => { try { await jsend("PATCH", `/api/companies/${cid}/team/${m.id}`, { role: sel.value }); $("mtMsg").textContent = `${m.username} is now ${LBL[sel.value]}.`; load(); } catch (e) { $("mtErr").textContent = e.message; load(); } };
+          const pw = el("button", "Reset password"); pw.type = "button"; pw.className = "ghost";
+          pw.onclick = async () => { const v = prompt(`New temporary password for ${m.username} (10+ characters):`); if (!v) return; try { await jpost(`/api/companies/${cid}/team/${m.id}/password`, { password: v }); $("mtMsg").textContent = `Password changed for ${m.username}. They were signed out everywhere.`; } catch (e) { $("mtErr").textContent = e.message; } };
+          const rm = el("button", "Remove"); rm.type = "button"; rm.className = "danger";
+          rm.onclick = async () => { if (!confirm(`Remove ${m.username} from your team? They will lose access immediately.`)) return; try { await api(`/api/companies/${cid}/team/${m.id}`, { method: "DELETE" }); load(); } catch (e) { $("mtErr").textContent = e.message; } };
+          acts.append(sel, pw, rm); top.append(acts);
+        }
+        row.append(top); host.append(row);
+      });
+    } catch (e) { $("mtErr").textContent = e.message; }
+    try {
+      const a = await api(`/api/companies/${cid}/activity`), box = $("mtActivity"); box.replaceChildren();
+      if (!a.length) box.textContent = "Nothing yet.";
+      a.forEach(x => { const line = el("div", `${(x.time || "").replace("T", " ").slice(0, 16)}  ${x.user || "system"} ${ACTIONS[x.action] || x.action}${x.detail ? " - " + String(x.detail).slice(0, 90) : ""}`); line.style.fontSize = "12.5px"; line.style.padding = "3px 0"; box.append(line); });
+    } catch (e) { /* activity is optional */ }
+  }
+  window.loadMyTeam = load;
+  $("mtAddBtn").onclick = async () => {
+    const cid = Number($("company").value); $("mtErr").textContent = ""; $("mtMsg").textContent = "";
+    try {
+      await jpost(`/api/companies/${cid}/team`, { username: $("mtUser").value.trim(), password: $("mtPass").value, role: $("mtRole").value });
+      $("mtMsg").textContent = `Added ${$("mtUser").value.trim()}. Give them the username and the temporary password.`; $("mtUser").value = ""; $("mtPass").value = ""; load();
+    } catch (e) { $("mtErr").textContent = e.message; }
+  };
+  /* load whenever the page switches to My Team, however it got there (menu, tour button, link) */
+  new MutationObserver(() => { if (document.getElementById("app").getAttribute("data-view") === "myteam") load(); })
+    .observe(document.getElementById("app"), { attributes: true, attributeFilter: ["data-view"] });
+  $("company").addEventListener("change", () => { if (document.getElementById("app").getAttribute("data-view") === "myteam") load(); });
+})();
+
 /* Beginner-friendly guided tour and sidebar helpers */
 (function(){
- const steps=[
-  {title:"Welcome to Report Analyzer!",body:"First, open Settings in the menu: save your email and add your company logo. Then use the menu to jump to any part of the app. You can come back to this guide any time.",target:"#v2-home"},
-  {title:"Add your files",body:"Choose your company, then upload the report you want to check. You can also pick a report you already added.",target:"#v2-files"},
-  {title:"Ask a question",body:"Ask a question about your report using everyday words. For example: “Which payments failed?”",target:"#v2-ask"},
-  {title:"Compare two files",body:"Use this part to compare two reports and find numbers that do not match.",target:"#v2-compare"},
-  {title:"See your results",body:"After you run a check, look here for the answer and any differences that need attention.",target:"#resultCard"},
-  {title:"Get help any time",body:"Tap Help in the top bar to see this tour again. On a phone, tap the ☰ button at the top left to open the menu.",target:"#guideCard"}
- ];
+ function stepsFor(){
+  let cr="analyst"; try{ cr=(S.user&&(S.user.company_role||(S.user.role==="viewer"?"viewer":"analyst")))||"analyst"; if(S.user&&S.user.role==="admin")cr="platform"; }catch(e){}
+  const can=(cr!=="viewer");
+  const who={owner:"You are the Owner of this company account. You can do everything, and you decide who joins your team and what each person can do.",
+    admin:"You are an Admin. You control the company: delete reports, set your logo, create API keys and schedules.",
+    analyst:"You are an Analyst. You do the work: upload files, ask questions, reconcile and score statements.",
+    viewer:"You have view-only access. You can see the dashboard, reports and results, but you cannot change anything.",
+    platform:"You are signed in as the site owner."}[cr]||"";
+  const s=[{title:"Welcome to RECONZA",body:"We don't guess, we uncover. "+who+" Open Settings first to save your email, then use the menu to go anywhere."}];
+  if(can){
+   s.push({title:"Add your files",body:"Choose your company, then upload the report you want to check. You can also pick a report you already added."});
+   s.push({title:"Ask a question",body:"Ask a question about your report using everyday words. For example: “Which payments failed?”"});
+   s.push({title:"Compare two files",body:"Use Reconciliation to compare two reports and find numbers that do not match."});
+  } else {
+   s.push({title:"What you can see",body:"Open My Reports and Reconciliation to follow how the work is going. If you need to upload or ask questions, ask your company owner to make you an Analyst."});
+  }
+  s.push({title:"See your results",body:"After a check runs, the answer and any differences that need attention show up here, with downloads you can keep."});
+  s.push({title:"Your account is protected",body:"Every time someone signs in from a new phone or computer, we email a 6-digit code to confirm it is really you, so a stolen password alone cannot open your account. Make sure your email is saved in Settings. For the strongest protection, also turn on an authenticator app under Two-factor login in Settings.",go:"settings",goLabel:"Open security settings",goTarget:"twofaCard"});
+  if(cr==="owner"){
+   s.push({title:"Add your team",body:"Open My Team to add colleagues and choose their role: Admin, Analyst or Viewer. Only you, the owner, can change roles, so everyone sees only what they should.",go:"myteam",goLabel:"Open My Team"});
+  }
+  s.push({title:"Get help any time",body:"Tap Help in the top bar to see this tour again. On a phone, tap the ☰ button at the top left to open the menu."});
+  return s;
+ }
  let step=0, overlay=null;
  function showStep(n){
+  const steps=stepsFor();
   step=Math.max(0,Math.min(n,steps.length-1));
   if(!overlay){overlay=document.createElement("div");overlay.className="v2-tour-backdrop";overlay.id="v2TourOverlay";overlay.setAttribute("role","dialog");overlay.setAttribute("aria-modal","true");document.body.appendChild(overlay);}
   const s=steps[step];
-  overlay.innerHTML='<div class="v2-tour-card"><div class="v2-tour-progress">STEP '+(step+1)+' OF '+steps.length+'</div><h2></h2><p></p><div class="v2-tour-actions"><button type="button" class="secondary" id="v2TourSkip">Skip tour</button><button type="button" class="secondary" id="v2TourBack">Back</button><button type="button" id="v2TourNext">'+(step===steps.length-1?'Finish':'Next')+'</button></div></div>';
+  overlay.innerHTML='<div class="v2-tour-card"><div class="v2-tour-progress">STEP '+(step+1)+' OF '+steps.length+'</div><h2></h2><p></p><div class="v2-tour-actions">'+(s.go?'<button type="button" class="secondary" id="v2TourGo"></button>':'')+'<button type="button" class="secondary" id="v2TourSkip">Skip tour</button><button type="button" class="secondary" id="v2TourBack">Back</button><button type="button" id="v2TourNext">'+(step===steps.length-1?'Finish':'Next')+'</button></div></div>';
   overlay.querySelector("h2").textContent=s.title; overlay.querySelector("p").textContent=s.body;
   overlay.querySelector("#v2TourBack").disabled=step===0;
   overlay.querySelector("#v2TourSkip").onclick=closeTour;
   overlay.querySelector("#v2TourBack").onclick=()=>showStep(step-1);
   overlay.querySelector("#v2TourNext").onclick=()=>step===steps.length-1?closeTour():showStep(step+1);
+  const go=overlay.querySelector("#v2TourGo");
+  if(go){go.textContent=s.goLabel||"Open"; go.onclick=()=>{ if(overlay){overlay.remove();overlay=null;} try{localStorage.setItem("ra_tour_v34","1");}catch(e){} if(window.navigate)window.navigate(s.go); if(s.goTarget)setTimeout(()=>{const t=document.getElementById(s.goTarget); if(t)t.scrollIntoView({block:"start"});},80); };}
  }
- function closeTour(){if(overlay){overlay.remove();overlay=null;}try{localStorage.setItem("ra_v2_tour_seen","1");}catch(e){}
+ function closeTour(){if(overlay){overlay.remove();overlay=null;}try{localStorage.setItem("ra_tour_v34","1");}catch(e){}
   try{ if(window.S||typeof S!=="undefined"){ if(S.user && S.user.role!=="admin" && S.user.role!=="viewer" && !S.user.email && window.navigate){ window.navigate("settings"); setTimeout(function(){var a=document.getElementById("accountCard"); if(a) a.scrollIntoView({block:"start"});},60); } } }catch(e){} }
  function ready(){
   const app=document.getElementById("app");
-  if(app){let navDone=false;const obs=new MutationObserver(()=>{if(navDone&&app.classList.contains("v2-nav-ready"))return;if(!app.classList.contains("hidden")){navDone=true;if(!app.classList.contains("v2-nav-ready"))app.classList.add("v2-nav-ready");let seen=false;try{seen=localStorage.getItem("ra_v2_tour_seen")==="1";}catch(e){}if(!seen&&!overlay)setTimeout(()=>{if(!app.classList.contains("hidden")&&!overlay)showStep(0);},900);}});obs.observe(app,{attributes:true,attributeFilter:["class"]});if(!app.classList.contains("hidden"))app.classList.add("v2-nav-ready");}
+  if(app){let navDone=false;const obs=new MutationObserver(()=>{if(navDone&&app.classList.contains("v2-nav-ready"))return;if(!app.classList.contains("hidden")){navDone=true;if(!app.classList.contains("v2-nav-ready"))app.classList.add("v2-nav-ready");let seen=false;try{seen=localStorage.getItem("ra_tour_v34")==="1";}catch(e){}if(!seen&&!overlay)setTimeout(()=>{if(!app.classList.contains("hidden")&&!overlay)showStep(0);},900);}});obs.observe(app,{attributes:true,attributeFilter:["class"]});if(!app.classList.contains("hidden"))app.classList.add("v2-nav-ready");}
   const launch=document.getElementById("v2TourLaunch");
   if(launch)launch.addEventListener("click",()=>showStep(0));
   document.querySelectorAll(".app-sidebar a").forEach(a=>a.addEventListener("click",e=>{const target=document.querySelector(a.getAttribute("href"));if(target){e.preventDefault();target.scrollIntoView({behavior:"smooth",block:"start"});}}));
-  let seen=false;try{seen=localStorage.getItem("ra_v2_tour_seen")==="1";}catch(e){}
+  let seen=false;try{seen=localStorage.getItem("ra_tour_v34")==="1";}catch(e){}
   if(!seen){const appEl=document.getElementById("app");if(appEl&&!appEl.classList.contains("hidden"))setTimeout(()=>showStep(0),900);}
  }
  if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",ready);else ready();
@@ -3422,7 +3550,7 @@ api("/api/me").then(start).catch(showLanding);
   function renderNotifPage() {
     const host = $("notifList"); if (!host) return;
     host.replaceChildren();
-    if (!news.length) { host.append(el("div", "No announcements yet. When the Report Analyzer team shares news, you will see it here.", "mute")); return; }
+    if (!news.length) { host.append(el("div", "No announcements yet. When the RECONZA team shares news, you will see it here.", "mute")); return; }
     news.forEach(n => host.append(newsCard(n)));
   }
   async function markRead(ids) {
@@ -3744,7 +3872,7 @@ api("/api/me").then(start).catch(showLanding);
   mountAsk("caseAsk", "cases", () => ({ company_id: Number($("company").value) }),
     ["How many cases are still open?", "Which case should I handle first?", "Explain what 'accepted' means", "Summarise the cases for my boss"], "Ask about your cases");
   mountAsk("helpAsk", "help", () => ({}),
-    ["How do I compare two reports?", "Why did my upload not use a check?", "How do I share a result with a lender?", "Wetin be Statement Score?"], "Ask how to use Report Analyzer");
+    ["How do I compare two reports?", "Why did my upload not use a check?", "How do I share a result with a lender?", "Wetin be Statement Score?"], "Ask how to use RECONZA");
   (function () {
     const notes = ["match Reference with Ref No", "match RRN with transaction id and amount with value", "ignore differences under 10 naira", "match Reference with Ref No, tolerance of ₦50"];
     notes.forEach(q => { const b = el("button", q, "chip"); b.type = "button"; b.onclick = () => { $("rNote").value = q; $("rNote").focus(); }; $("rHowChips").append(b); });
@@ -3864,7 +3992,7 @@ api("/api/me").then(start).catch(showLanding);
       $("refStats").textContent = `${r.joined} joined with your code · ${r.rewarded} subscribed. You and your friend each get ${r.bonus_days} bonus day(s) when they subscribe.`;
       const link = location.origin + "/?ref=" + r.code;
       $("refLink").value = link;
-      $("refShare").href = "https://wa.me/?text=" + encodeURIComponent("I use Report Analyzer to match ATM/POS reports and bank statements in seconds. Sign up here: " + link + " (referral code " + r.code + ")");
+      $("refShare").href = "https://wa.me/?text=" + encodeURIComponent("I use RECONZA to match ATM/POS reports and bank statements in seconds. Sign up here: " + link + " (referral code " + r.code + ")");
     } catch (e) { $("refStats").textContent = ""; }
   }
   $("acctEmailSave").onclick = async () => {
@@ -3993,7 +4121,7 @@ api("/api/me").then(start).catch(showLanding);
       rows.forEach(m => {
         const box = el("div", "", "urow");
         box.append(el("b", `${m.name} · ${m.email}` + (m.company ? ` · ${m.company}` : "")), el("div", m.message), el("small", (m.created_at || "").slice(0, 16) + " UTC", "mute"));
-        const reply = el("a", "Reply by email"); reply.href = "mailto:" + encodeURIComponent(m.email).replace("%40", "@") + "?subject=" + encodeURIComponent("Re: your message to Report Analyzer"); reply.style.marginRight = "12px";
+        const reply = el("a", "Reply by email"); reply.href = "mailto:" + encodeURIComponent(m.email).replace("%40", "@") + "?subject=" + encodeURIComponent("Re: your message to RECONZA"); reply.style.marginRight = "12px";
         const done = el("button", "Mark handled", "ghost"); done.type = "button";
         done.onclick = async () => { try { await api("/api/admin/contact-messages/" + m.id + "/handled", { method: "POST" }); } catch (e) {} loadContactAdmin(); };
         const row = el("div"); row.style.marginTop = "6px"; row.append(reply, done); box.append(row); host.append(box);
@@ -4094,7 +4222,7 @@ api("/api/me").then(start).catch(showLanding);
 
 </script>
 
-<a class="support-contact" id="floatSupport" href="mailto:reconciliationsolutionsupport@gmail.com?subject=Report%20Analyzer%20support" aria-label="Contact Report Analyzer support by email">
+<a class="support-contact" id="floatSupport" href="mailto:reconciliationsolutionsupport@gmail.com?subject=RECONZA%20support" aria-label="Contact RECONZA support by email">
   <span class="wa-icon" aria-hidden="true"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="#fff" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 7l9 6 9-6"/></svg></span>
   <span>Contact support<small>We reply by email</small></span>
 </a>
@@ -4257,7 +4385,7 @@ api("/api/me").then(start).catch(showLanding);
   var canHover = window.matchMedia && window.matchMedia("(hover:hover) and (pointer:fine)").matches;
   var armed = false; setTimeout(function () { armed = true; }, 15000);   /* not in the first 15 seconds */
   if (canHover) document.documentElement.addEventListener("mouseleave", function (ev) { if (armed && ev.clientY <= 0) open(); });
-  var CHECK = "RECONCILIATION CHECKLIST (ATM / POS)\n\n1. Agree the period and time zone of both reports before you compare anything.\n2. Confirm the totals: count and value of transactions in each report.\n3. Match on a unique reference (RRN or STAN plus terminal ID), not on amount alone.\n4. List items in the switch log that are missing from the ledger, and the reverse.\n5. Check matched items for amount differences, including charges and fees.\n6. Look at reversals and failed transactions, and confirm each was reversed once.\n7. Flag duplicates: the same reference, terminal and amount more than once.\n8. Record each exception with an owner and a date, and re-check it next cycle.\n\nReport Analyzer does steps 2 to 7 for you in seconds.";
+  var CHECK = "RECONCILIATION CHECKLIST (ATM / POS)\n\n1. Agree the period and time zone of both reports before you compare anything.\n2. Confirm the totals: count and value of transactions in each report.\n3. Match on a unique reference (RRN or STAN plus terminal ID), not on amount alone.\n4. List items in the switch log that are missing from the ledger, and the reverse.\n5. Check matched items for amount differences, including charges and fees.\n6. Look at reversals and failed transactions, and confirm each was reversed once.\n7. Flag duplicates: the same reference, terminal and amount more than once.\n8. Record each exception with an owner and a date, and re-check it next cycle.\n\nRECONZA does steps 2 to 7 for you in seconds.";
   var go = document.getElementById("exitGo");
   if (go) go.addEventListener("click", async function () {
     var em = (document.getElementById("exitEmail").value || "").trim(), err = document.getElementById("exitErr"); err.textContent = "";
@@ -4319,7 +4447,7 @@ api("/api/me").then(start).catch(showLanding);
       document.getElementById("reviews").hidden=false;
     }
     if(x.screenshot){
-      const art=document.querySelector(".lp-hero-art"); if(art){const i=document.createElement("img"); i.src=x.screenshot; i.alt="Reconciliation Solutions dashboard"; i.className="lp-hero-shot"; art.replaceChildren(i); art.removeAttribute("aria-hidden");}
+      const art=document.querySelector(".lp-hero-art"); if(art){const i=document.createElement("img"); i.src=x.screenshot; i.alt="RECONZA dashboard"; i.className="lp-hero-shot"; art.replaceChildren(i); art.removeAttribute("aria-hidden");}
     }
   }catch(e){}
 })();

@@ -1,13 +1,13 @@
 {
-  "name": "Report Analyzer",
-  "short_name": "Report Analyzer",
+  "name": "RECONZA",
+  "short_name": "RECONZA",
   "description": "Turn ATM/POS reports and bank statements into answers, reconciliations and loan-readiness scores.",
   "start_url": "/",
   "scope": "/",
   "display": "standalone",
   "orientation": "portrait-primary",
-  "background_color": "#ffffff",
-  "theme_color": "#ffffff",
+  "background_color": "#0f1a2e",
+  "theme_color": "#0f1a2e",
   "icons": [
     {"src": "/static/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any"},
     {"src": "/static/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any"},

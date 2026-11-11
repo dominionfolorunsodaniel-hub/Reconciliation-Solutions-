@@ -1,5 +1,17 @@
 [
  {
+  "date": "2026-11-11",
+  "title": "RECONZA: team roles and a new look",
+  "changes": [
+   "We are now RECONZA - we don't guess, we uncover",
+   "My Team: the company owner adds people as Admin, Analyst or Viewer and can change or remove them any time",
+   "Viewers see results read-only; analysts do the work; admins control the company; only the owner manages the team and billing",
+   "Activity list: see who did what in your company",
+   "The guided tour now explains how your account is protected (email code on new devices and optional authenticator app)",
+   "Two-factor login is now always visible in Settings, including on phones"
+  ]
+ },
+ {
   "date": "2026-11-08",
   "title": "More control over reconciliation",
   "changes": [
