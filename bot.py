@@ -47,7 +47,7 @@ HELP = (
     "/delete ID - remove a report (admin)   /audit - recent activity (admin)\n"
     "/usage - today's AI usage (admin)   /whoami\n"
     "/plan - view company plan, prices, duration and usage   /upgrade PLAN TRANSFER_REFERENCE - request paid access\n"
-    "/guide - quick guide to using Report Analyzer"
+    "/guide - quick guide to using RECONZA"
 )
 
 
@@ -405,7 +405,7 @@ async def cmd_plan(update: Update, context: ContextTypes.DEFAULT_TYPE):
 @guard()
 async def cmd_guide(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await update.effective_message.reply_text(
-        "📘 REPORT ANALYZER QUICK GUIDE\n\n"
+        "📘 RECONZA QUICK GUIDE\n\n"
         "1. Upload a CSV, Excel or supported PDF report.\n"
         "2. Ask a question about totals, trends, branches, dates or failed transactions.\n"
         "3. Use /reports to view saved reports and /use ID to select one.\n"

@@ -165,7 +165,7 @@ def export_zip(user: dict) -> bytes:
         shares = _table(con, "SELECT created_at, title, expires_at, revoked, views FROM shared_results WHERE user_id = ?", (uid,))
         devices = _table(con, "SELECT label, ip, first_seen FROM known_devices WHERE user_id = ?", (uid,))
     readme = (
-        "Your Report Analyzer data\n"
+        "Your RECONZA data\n"
         f"Created: {_now()} UTC for user '{user['username']}'.\n\n"
         "This file holds the information the website keeps about YOUR account: profile, the companies you belong to, the\n"
         "list of reports (names and dates, not the files), the questions you asked, your activity log, your notifications,\n"

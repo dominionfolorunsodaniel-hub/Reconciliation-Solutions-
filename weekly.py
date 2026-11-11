@@ -50,7 +50,7 @@ def set_pref(user_id: int, enabled: bool) -> dict:
 def build_report(user: dict) -> tuple[str, str]:
     since = (dt.datetime.now(dt.timezone.utc) - dt.timedelta(days=7)).strftime(FMT)
     companies = db.list_companies(user)[:10]
-    lines = [f"Hello {user['username']},", "", "Here is your week on Report Analyzer.", ""]
+    lines = [f"Hello {user['username']},", "", "Here is your week on RECONZA.", ""]
     if not companies:
         lines.append("You are not linked to a company yet.")
     for c in companies:
@@ -77,8 +77,8 @@ def build_report(user: dict) -> tuple[str, str]:
             log.debug("plan status unavailable for %s", c["id"])
         lines.append("")
     lines += ["Tip: use Statement Score to turn any bank statement into monthly income, spending and a loan-readiness score.", "",
-              "You get this email because you turned on the weekly email. Turn it off any time in Settings.", "", "- Report Analyzer"]
-    return "Your Report Analyzer week", "\n".join(lines)
+              "You get this email because you turned on the weekly email. Turn it off any time in Settings.", "", "- RECONZA"]
+    return "Your RECONZA week", "\n".join(lines)
 
 
 def send_one(user_id: int) -> bool:

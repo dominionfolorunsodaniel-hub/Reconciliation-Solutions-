@@ -123,8 +123,8 @@ def _send_resend(to_email: str, subject: str, body: str) -> bool:
         import httpx
         r = httpx.post("https://api.resend.com/emails", timeout=15,
                        headers={"Authorization": f"Bearer {key}", "Content-Type": "application/json"},
-                       json={"from": os.getenv("RESEND_FROM", "Report Analyzer <onboarding@resend.dev>"),
-                             "to": [to_email], "subject": (subject or "Report Analyzer notification")[:180],
+                       json={"from": os.getenv("RESEND_FROM", "RECONZA <onboarding@resend.dev>"),
+                             "to": [to_email], "subject": (subject or "RECONZA notification")[:180],
                              "reply_to": os.getenv("SUPPORT_EMAIL", "reconciliationsolutionsupport@gmail.com"),
                              "text": (body or "")[:12000]})
         if r.status_code < 300:
@@ -146,7 +146,7 @@ def send_email(to_email: str, subject: str, body: str) -> bool:
     if not host or not sender or not to_email:
         return False
     msg = EmailMessage()
-    msg["Subject"] = (subject or "Report Analyzer notification")[:180]
+    msg["Subject"] = (subject or "RECONZA notification")[:180]
     msg["From"] = sender
     msg["To"] = to_email
     msg.set_content((body or "")[:12000])

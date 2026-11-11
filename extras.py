@@ -100,7 +100,7 @@ def tell_user(user_id: int, title: str, body: str, level: str = "info", email: b
         if email:
             u = db.get_user(user_id)
             if u and u.get("email"):
-                _mail_async(u["email"], f"Report Analyzer: {title}", f"{body}\n\n- Report Analyzer")
+                _mail_async(u["email"], f"RECONZA: {title}", f"{body}\n\n- RECONZA")
     except Exception:  # noqa: BLE001  (telling someone is never allowed to break the real action)
         log.exception("could not notify user %s", user_id)
 

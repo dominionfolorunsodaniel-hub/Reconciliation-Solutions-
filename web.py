@@ -75,7 +75,7 @@ async def lifespan(app: FastAPI):
         t.cancel()
 
 
-app = FastAPI(title="Report Analyzer", lifespan=lifespan)
+app = FastAPI(title="RECONZA", lifespan=lifespan)
 
 
 @app.exception_handler(StarletteHTTPException)
@@ -164,6 +164,13 @@ def need(user: dict, role: str) -> None:
         raise HTTPException(403, "Your role doesn't allow that.")
 
 
+def need_role(user: dict, role: str) -> None:
+    """What the person may do inside their company: viewer < analyst < admin < owner (the website owner counts as all)."""
+    if db.company_rank(user) < db.COMPANY_RANK[role]:
+        names = {"analyst": "an analyst", "admin": "a company admin", "owner": "the company owner"}
+        raise HTTPException(403, f"Only {names.get(role, role)} can do that. Ask your company owner to change your role.")
+
+
 def need_company(user: dict, company_id: int) -> None:
     if not db.can_access(user, company_id):
         raise HTTPException(403, "You don't have access to this company.")
@@ -180,6 +187,7 @@ def report_for(user: dict, report_id: int) -> dict:
 def public(user: dict) -> dict:
     return {"id": user["id"], "username": user["username"], "role": user["role"],
             "totp_enabled": user["totp_enabled"], "email": user.get("email"),
+            "company_role": db.effective_company_role(user),
             "needs_2fa_setup": REQUIRE_2FA_ADMINS and user["role"] == "admin" and not user["totp_enabled"]}
 
 
@@ -431,7 +439,7 @@ def register_email_code(body: EmailCodeIn, request: Request):
     except ValueError as e:
         raise HTTPException(429, str(e))
     EMAIL_CODE_SENDS[ip].append(now)
-    if not notify.send_email(email, "Your Reconciliation Solutions verification code",
+    if not notify.send_email(email, "Your RECONZA verification code",
                              f"Your verification code is {code}. It expires in {db.EMAIL_CODE_MINUTES} minutes.\n\nIf you did not ask for this, ignore this email."):
         raise HTTPException(502, "We could not send the email. Check the address and try again in a minute.")
     return {"ok": True}
@@ -643,6 +651,26 @@ def pwa_icon_maskable():
 @app.get("/static/apple-touch-icon.png")
 def pwa_apple_icon():
     return FileResponse(_STATIC / "apple-touch-icon.png", media_type="image/png", headers=_PWA_HEADERS)
+
+
+@app.get("/favicon.svg")
+def favicon_svg():
+    return FileResponse(_STATIC / "favicon.svg", media_type="image/svg+xml", headers=_PWA_HEADERS)
+
+
+@app.get("/favicon.ico")
+def favicon_ico():
+    return FileResponse(_STATIC / "icon-192.png", media_type="image/png", headers=_PWA_HEADERS)
+
+
+@app.get("/brand/{name}")
+def brand_file(name: str):
+    """RECONZA logo files (SVG and PNG) so you can download them from your own site."""
+    path = _STATIC / "brand" / name
+    if "/" in name or "\\" in name or not name.startswith("reconza-") or not path.is_file():
+        raise HTTPException(404, "Not found")
+    mt = "image/svg+xml" if name.endswith(".svg") else "image/png"
+    return FileResponse(path, media_type=mt, headers={"Cache-Control": "public, max-age=3600"})
 
 
 @app.get("/static/login-character.png")
@@ -907,7 +935,7 @@ def job_status(job_id: str, user: dict = Depends(current_user)):
 
 @app.delete("/api/reports/{report_id}")
 def delete_report(report_id: int, user: dict = Depends(current_user)):
-    need(user, "admin")
+    need_role(user, "admin")
     r = report_for(user, report_id)
     db.delete_report(report_id)
     db.audit(user, "delete_report", r["company_id"], f"#{report_id} {r['filename']}")
@@ -948,6 +976,7 @@ ANSWER_CACHE: dict = {}   # (user, company, report, question) -> (time, result);
 @app.post("/api/analyze")
 async def analyze(body: AnalyzeIn, user: dict = Depends(current_user)):
     need_company(user, body.company_id)
+    need_role(user, "analyst")
     reservation = reserve_plan_usage(user, body.company_id, "analysis_question")
     try:
         ckey = None
@@ -1047,6 +1076,7 @@ def _statement_items(user: dict, body: "StatementIn") -> list[tuple[str, "pd.Dat
 async def statement_score(body: StatementIn, user: dict = Depends(current_user)):
     """Monthly income / spending / what is left, a loan-readiness score, an authenticity check, unusual patterns and spending categories."""
     need_company(user, body.company_id)
+    need_role(user, "analyst")
     month_ok = re.compile(r"^\d{4}-(0[1-9]|1[0-2])$")
     for m in (body.from_month, body.to_month):
         if m and not month_ok.match(m):
@@ -1194,6 +1224,7 @@ class ShareIn(BaseModel):
 
 @app.post("/api/shares")
 def create_share(body: ShareIn, user: dict = Depends(current_user)):
+    need_role(user, "analyst")
     item = _owned_result(body.result_id, user)
     payload = item.get("share")
     if not payload:
@@ -1247,7 +1278,7 @@ def shared_pdf(token: str, request: Request):
     worry = "; ".join(d.get("concerns") or []) or "none noted"
     text = (f"Loan readiness {d['score']} out of 100 - {d['verdict']}. {d['eligibility']}\n\nGood signs: {good}\nConcerns: {worry}\n\n"
             f"Authenticity check: {(d.get('integrity') or {}).get('message') or 'not available'}\n\n{d['disclaimer']}")
-    pdf = report_pdf.build_pdf(d.get("company") or "Report Analyzer", f"Statement check: {d['verdict']} ({d['score']}/100)",
+    pdf = report_pdf.build_pdf(d.get("company") or "RECONZA", f"Statement check: {d['verdict']} ({d['score']}/100)",
                                f"Period {d['period']}", text, table, png, db.get_branding(d["_company_id"]), len(table))
     return StreamingResponse(iter([pdf]), media_type="application/pdf",
                              headers={"Content-Disposition": 'attachment; filename="statement-check.pdf"', "X-Robots-Tag": "noindex"})
@@ -1380,14 +1411,14 @@ API_HITS: dict[int, list[float]] = {}
 
 @app.get("/api/api-keys")
 def list_api_keys(company_id: int, user: dict = Depends(current_user)):
-    need(user, "analyst")
+    need(user, "analyst"); need_role(user, "admin")
     need_company(user, company_id)
     return apikeys.list_for_company(company_id)
 
 
 @app.post("/api/api-keys")
 def create_api_key(body: ApiKeyIn, user: dict = Depends(current_user)):
-    need(user, "analyst")
+    need(user, "analyst"); need_role(user, "admin")
     need_company(user, body.company_id)
     try:
         key, meta = apikeys.create(user["id"], body.company_id, body.label)
@@ -1399,7 +1430,7 @@ def create_api_key(body: ApiKeyIn, user: dict = Depends(current_user)):
 
 @app.delete("/api/api-keys/{key_id}")
 def revoke_api_key(key_id: int, company_id: int, user: dict = Depends(current_user)):
-    need(user, "analyst")
+    need(user, "analyst"); need_role(user, "admin")
     need_company(user, company_id)
     if not apikeys.revoke(key_id, company_id):
         raise HTTPException(404, "Key not found.")
@@ -1581,6 +1612,7 @@ async def weekly_test(user: dict = Depends(current_user_any)):
 @app.post("/api/reconcile")
 async def reconcile(body: ReconIn, user: dict = Depends(current_user)):
     need_company(user, body.company_id)
+    need_role(user, "analyst")
     ra, rb = report_for(user, body.report_a), report_for(user, body.report_b)
     if ra["company_id"] != body.company_id or rb["company_id"] != body.company_id:
         raise HTTPException(400, "Both reports must belong to the selected company.")
@@ -1730,6 +1762,7 @@ def delete_manual_match(match_id: int, company_id: int, user: dict = Depends(cur
 async def reconcile_lookup(body: LookupIn, user: dict = Depends(current_user)):
     """Everything the two files say about one reference. Pure arithmetic, no AI, so it is instant."""
     need_company(user, body.company_id)
+    need_role(user, "analyst")
     ra, rb = report_for(user, body.report_a), report_for(user, body.report_b)
     if ra["company_id"] != body.company_id or rb["company_id"] != body.company_id:
         raise HTTPException(400, "Both reports must belong to the selected company.")
@@ -1759,7 +1792,12 @@ async def reconcile_lookup(body: LookupIn, user: dict = Depends(current_user)):
 
 @app.get("/api/audit/export.csv")
 def export_audit_csv(company_id: int | None = None, user: dict = Depends(current_user)):
-    need(user, "admin")
+    if user["role"] == "admin":
+        pass
+    else:                                  # a company admin may export their own company's log, never the whole site's
+        if not company_id:
+            raise HTTPException(403, "Choose a company.")
+        need_company(user, company_id); need_role(user, "admin")
     import csv
     import io
     with db._db() as con:
@@ -1809,7 +1847,7 @@ async def email_result(body: EmailResultIn, user: dict = Depends(current_user)):
     if not notify.email_configured():
         raise HTTPException(400, "Email sending is not set up on this site yet.")
     text = res.get("ctx") or (res.get("pdf") or {}).get("insight") or ""
-    ok = await asyncio.to_thread(notify.send_email, user["email"], "Your report from Reconciliation Solutions", text[:60000])
+    ok = await asyncio.to_thread(notify.send_email, user["email"], "Your report from RECONZA", text[:60000])
     if not ok:
         raise HTTPException(502, "The email could not be sent. Try again in a minute.")
     db.audit(user, "result_emailed", res.get("company"), "")
@@ -1847,6 +1885,7 @@ def security_page():
 @app.post("/api/forecast")
 async def forecast_cash(body: ForecastIn, user: dict = Depends(current_user)):
     need_company(user, body.company_id)
+    need_role(user, "analyst")
     reservation = reserve_plan_usage(user, body.company_id, "forecast")
     days, buffer = min(max(body.days, 1), 30), min(max(body.buffer, 0.0), 1.0)
     try:
@@ -1937,7 +1976,7 @@ def get_branding(company_id: int, user: dict = Depends(current_user)):
 @app.put("/api/companies/{company_id}/branding")
 async def put_branding(company_id: int, display_name: str = Form(""), color: str = Form("#2b59ff"),
                        logo: UploadFile | None = File(None), user: dict = Depends(current_user)):
-    need(user, "analyst")            # every customer (analyst or admin) can brand their own company; viewers cannot
+    need(user, "analyst"); need_role(user, "admin")            # the company owner and company admins can brand their company
     need_company(user, company_id)   # ...but only a company they belong to
     if not db.get_company(company_id):
         raise HTTPException(404, "Unknown company")
@@ -1974,7 +2013,7 @@ def digests(company_id: int, user: dict = Depends(current_user)):
 
 @app.post("/api/companies/{company_id}/digests")
 def add_digest(company_id: int, body: DigestIn, user: dict = Depends(current_user)):
-    need(user, "analyst")
+    need(user, "analyst"); need_role(user, "admin")
     need_company(user, company_id)
     m = re.fullmatch(r"([01]?\d|2[0-3]):([0-5]\d)", body.time.strip())
     if not m or body.weekday not in range(-1, 7) or body.scope not in ("latest", "all"):
@@ -1992,7 +2031,7 @@ def delete_digest(digest_id: int, user: dict = Depends(current_user)):
     if not d:
         raise HTTPException(404, "Unknown digest")
     need_company(user, d["company_id"])
-    need(user, "analyst")
+    need(user, "analyst"); need_role(user, "admin")
     if user["role"] != "admin" and d["user_id"] != user["id"]:
         raise HTTPException(403, "Only the creator or an admin can delete this.")
     db.delete_digest(digest_id)
@@ -2020,7 +2059,7 @@ def admin_registration_decision(request_id: int, body: RegistrationDecisionIn,
     db.audit(user, f"registration_{result['status']}", result.get("company_id"),
              f"request={request_id}; username={result.get('username')}")
     if result.get("status") == "approved" and result.get("user_id"):
-        extras.tell_user(result["user_id"], "Welcome to Report Analyzer",
+        extras.tell_user(result["user_id"], "Welcome to RECONZA",
                          "Your account is approved. Upload your first report to get started. Your free trial is already running.", "success")
     return result
 
@@ -2099,6 +2138,7 @@ def billing_status(company_id: int, user: dict = Depends(current_user)):
 @app.post("/api/billing/payment-requests")
 def billing_payment_request(body: PaymentRequestIn, user: dict = Depends(current_user)):
     need_company(user, body.company_id)
+    need_role(user, "owner")
     if user.get("role") == "admin":
         raise HTTPException(400, "Admin accounts do not need customer subscriptions.")
     plan = db.PLANS.get(body.plan)
@@ -2141,6 +2181,7 @@ def _image_kind(data: bytes) -> tuple[str, str] | None:
 def billing_payment_proof(company_id: int = Form(...), file: UploadFile = File(...), user: dict = Depends(current_user)):
     """Customer attaches a screenshot of the transfer; the bot forwards it to the admin(s) on Telegram."""
     need_company(user, company_id)
+    need_role(user, "owner")
     if user.get("role") == "admin":
         raise HTTPException(400, "Admin accounts do not need customer subscriptions.")
     data = file.file.read(MAX_PROOF_BYTES + 1)
@@ -2203,7 +2244,7 @@ def admin_broadcast_send(body: BroadcastIn, user: dict = Depends(current_user)):
         with db._db() as con:
             rows = con.execute("SELECT email FROM users WHERE role <> 'admin' AND active = 1 AND email IS NOT NULL AND email <> ''").fetchall()
         for r in rows:
-            extras._mail_async(r["email"], f"Report Analyzer: {row['title']}", f"{row['body']}\n\n- Report Analyzer")
+            extras._mail_async(r["email"], f"RECONZA: {row['title']}", f"{row['body']}\n\n- RECONZA")
             emailed += 1
     row = dict(row)
     row["emailed"] = emailed
@@ -2235,10 +2276,10 @@ def password_reset_request(body: ResetRequestIn, request: Request):
     RESET_REQUESTS[key].append(now)
     result = db.create_password_reset(body.username)
     if result:
-        text = (f"Your Report Analyzer password reset code is {result['code']}\n"
+        text = (f"Your RECONZA password reset code is {result['code']}\n"
                 f"It expires in {db.RESET_MINUTES} minutes. If you did not ask for this, ignore this message.")
         if result["user"].get("email"):
-            extras._mail_async(result["user"]["email"], "Your Report Analyzer reset code", text)
+            extras._mail_async(result["user"]["email"], "Your RECONZA reset code", text)
         if result["user"].get("telegram_id"):
             notify.send_telegram(result["user"]["telegram_id"], "" + text)
         db.audit(result["user"], "password_reset_requested")
@@ -2291,7 +2332,7 @@ def admin_reset_decision(request_id: int, body: ResetDecisionIn, user: dict = De
     u, code = res["user"], res["code"]
     delivered = []
     if code and u:
-        text = (f"Your Reconciliation Solutions password reset was approved.\n\nYour code is {code}\n"
+        text = (f"Your RECONZA password reset was approved.\n\nYour code is {code}\n"
                 f"It works for {db.RESET_MINUTES} minutes. Go to the sign-in page, choose Forgot your password, enter your username, this code and a new password.\n"
                 "If you did not ask for this, ignore this message.")
         if u.get("email") and notify.email_configured():
@@ -2346,7 +2387,7 @@ def admin_billing_payment_decision(request_id: int, body: PaymentDecisionIn,
         company = db.get_company(row["company_id"])
         message = f"Payment verified for {company['name'] if company else 'company'}. Plan {row['plan'].upper()} is active. Invoice: {invoice['invoice_number']} for ₦{row['amount_ngn']:,}."
         notify.alert_company(row["company_id"], message)
-        notify.email_company(row["company_id"], "Report Analyzer payment approved", message)
+        notify.email_company(row["company_id"], "RECONZA payment approved", message)
         extras.tell_company(row["company_id"], "Payment approved",
                             f"Your {row['plan'].title()} plan is now active. Thank you! Your invoice is under Plan & Billing.", "success")
         extras.reward_referral_on_payment(row["company_id"])
@@ -2493,7 +2534,7 @@ def get_scheduled_reconciliations(company_id: int, user: dict = Depends(current_
 
 @app.post("/api/companies/{company_id}/scheduled-reconciliations")
 def add_scheduled_reconciliation(company_id: int, body: ScheduleIn, user: dict = Depends(current_user)):
-    need_company(user, company_id); need(user, "analyst")
+    need_company(user, company_id); need(user, "analyst"); need_role(user, "admin")
     a, b = report_for(user, body.report_a), report_for(user, body.report_b)
     if a["company_id"] != company_id or b["company_id"] != company_id:
         raise HTTPException(400, "Both reports must belong to the selected company.")
@@ -2506,7 +2547,7 @@ def add_scheduled_reconciliation(company_id: int, body: ScheduleIn, user: dict =
 
 @app.delete("/api/scheduled-reconciliations/{schedule_id}")
 def remove_scheduled_reconciliation(schedule_id: int, user: dict = Depends(current_user)):
-    need(user, "analyst")
+    need(user, "analyst"); need_role(user, "admin")
     with db._db() as con:
         row = con.execute("SELECT * FROM scheduled_reconciliations WHERE id=?", (schedule_id,)).fetchone()
     if not row: raise HTTPException(404, "Scheduled reconciliation not found.")
@@ -2525,7 +2566,7 @@ def get_notification_settings(company_id: int, user: dict = Depends(current_user
 
 @app.put("/api/companies/{company_id}/notification-settings")
 def put_notification_settings(company_id: int, body: NotificationSettingsIn, user: dict = Depends(current_user)):
-    need_company(user, company_id); need(user, "analyst")
+    need_company(user, company_id); need(user, "analyst"); need_role(user, "admin")
     try: ef.set_notification_emails(company_id, body.emails, body.quota_threshold)
     except ValueError as e: raise HTTPException(400, str(e))
     db.audit(user, "notification_settings_update", company_id, f"emails={len(body.emails)}; quota={body.quota_threshold}%")
@@ -2571,6 +2612,7 @@ class ProformaIn(BaseModel):
 def billing_proforma(body: ProformaIn, user: dict = Depends(current_user)):
     """A pro-forma invoice (a request for payment with the bank details) for a plan the company is thinking of buying."""
     need_company(user, body.company_id)
+    need_role(user, "owner")
     if body.plan not in db.SELF_SERVE_PLANS:
         raise HTTPException(400, "Choose one of the currently offered plans. Business and larger plans are arranged with us first: open Support.")
     company = db.get_company(body.company_id)
@@ -2585,10 +2627,89 @@ def billing_proforma(body: ProformaIn, user: dict = Depends(current_user)):
     return StreamingResponse(iter([pdf]), media_type="application/pdf", headers={"Content-Disposition": 'attachment; filename="invoice.pdf"'})
 
 
+
+# ----------------------- company team (owner manages, admin can look) ----------------------- #
+class TeamAddIn(BaseModel):
+    username: str
+    password: str
+    role: str
+
+
+class TeamRoleIn(BaseModel):
+    role: str
+
+
+class TeamPasswordIn(BaseModel):
+    password: str
+
+
+@app.get("/api/companies/{company_id}/team")
+def team_list(company_id: int, user: dict = Depends(current_user)):
+    need_company(user, company_id); need_role(user, "admin")
+    status = db.get_plan_status(company_id)
+    return {"members": db.list_team(company_id), "limit": status["team_limit"], "plan": status["plan"],
+            "can_manage": db.company_rank(user) >= db.COMPANY_RANK["owner"], "my_role": db.effective_company_role(user)}
+
+
+@app.post("/api/companies/{company_id}/team")
+def team_add(company_id: int, body: TeamAddIn, user: dict = Depends(current_user)):
+    need_company(user, company_id); need_role(user, "owner")
+    try:
+        m = db.add_team_member(company_id, body.username, body.password, body.role)
+    except ValueError as e:
+        raise HTTPException(400, str(e))
+    db.audit(user, "team_add", company_id, f"{m['username']} as {body.role}")
+    return {"ok": True, "username": m["username"], "role": body.role}
+
+
+@app.patch("/api/companies/{company_id}/team/{member_id}")
+def team_set_role(company_id: int, member_id: int, body: TeamRoleIn, user: dict = Depends(current_user)):
+    need_company(user, company_id); need_role(user, "owner")
+    try:
+        m = db.set_team_role(company_id, member_id, body.role)
+    except LookupError as e:
+        raise HTTPException(404, str(e))
+    except ValueError as e:
+        raise HTTPException(400, str(e))
+    db.audit(user, "team_role", company_id, f"{m['username']} is now {body.role}")
+    return {"ok": True}
+
+
+@app.post("/api/companies/{company_id}/team/{member_id}/password")
+def team_reset_password(company_id: int, member_id: int, body: TeamPasswordIn, user: dict = Depends(current_user)):
+    need_company(user, company_id); need_role(user, "owner")
+    try:
+        db.reset_team_password(company_id, member_id, body.password)
+    except LookupError as e:
+        raise HTTPException(404, str(e))
+    except ValueError as e:
+        raise HTTPException(400, str(e))
+    db.audit(user, "team_password_reset", company_id, f"member #{member_id}")
+    return {"ok": True}
+
+
+@app.delete("/api/companies/{company_id}/team/{member_id}")
+def team_remove(company_id: int, member_id: int, user: dict = Depends(current_user)):
+    need_company(user, company_id); need_role(user, "owner")
+    try:
+        db.remove_team_member(company_id, member_id)
+    except LookupError as e:
+        raise HTTPException(404, str(e))
+    except ValueError as e:
+        raise HTTPException(400, str(e))
+    db.audit(user, "team_remove", company_id, f"member #{member_id}")
+    return {"ok": True}
+
+
+@app.get("/api/companies/{company_id}/activity")
+def company_activity_log(company_id: int, user: dict = Depends(current_user)):
+    need_company(user, company_id); need_role(user, "admin")
+    return db.company_activity(company_id, 40)
+
 # ----------------------- secure generic external integration ----------------------- #
 @app.post("/api/companies/{company_id}/integrations/tokens")
 def create_integration_token(company_id: int, request: Request, user: dict = Depends(current_user)):
-    need_company(user, company_id); need(user, "admin")
+    need_company(user, company_id); need_role(user, "admin")
     label = request.query_params.get("label", "External accounting export")[:100]
     token = ef.create_integration_token(company_id, label, user["id"])
     db.audit(user, "integration_token_create", company_id, label)
@@ -2597,13 +2718,13 @@ def create_integration_token(company_id: int, request: Request, user: dict = Dep
 
 @app.get("/api/companies/{company_id}/integrations/tokens")
 def list_integration_tokens(company_id: int, user: dict = Depends(current_user)):
-    need_company(user, company_id); need(user, "admin")
+    need_company(user, company_id); need_role(user, "admin")
     return ef.list_integration_tokens(company_id)
 
 
 @app.delete("/api/companies/{company_id}/integrations/tokens/{token_id}")
 def revoke_integration_token(company_id: int, token_id: int, user: dict = Depends(current_user)):
-    need_company(user, company_id); need(user, "admin")
+    need_company(user, company_id); need_role(user, "admin")
     if not ef.revoke_integration_token(token_id, company_id): raise HTTPException(404, "Integration token not found.")
     db.audit(user, "integration_token_revoke", company_id, f"token={token_id}")
     return {"ok": True}
@@ -2650,6 +2771,7 @@ def my_referral(user: dict = Depends(current_user)):
 @app.post("/api/billing/redeem")
 def redeem_coupon(body: RedeemIn, user: dict = Depends(current_user)):
     need_company(user, body.company_id)
+    need_role(user, "owner")
     try:
         out = extras.redeem_days_coupon(body.code, body.company_id, user["id"])
     except ValueError as e:
@@ -2714,6 +2836,7 @@ def saved_questions(company_id: int, user: dict = Depends(current_user)):
 @app.post("/api/companies/{company_id}/saved-questions")
 def save_question(company_id: int, body: SavedQuestionIn, user: dict = Depends(current_user)):
     need_company(user, company_id)
+    need_role(user, "analyst")
     try:
         return extras.save_question(user["id"], company_id, body.question)
     except ValueError as e:

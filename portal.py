@@ -1,6 +1,6 @@
 """portal.py - customer registration requests and approval workflow.
 
-Uses the main Report Analyzer SQLite database so the existing encrypted backup process
+Uses the main RECONZA SQLite database so the existing encrypted backup process
 backs up these records too. Passwords are hashed before a request is stored.
 """
 import datetime as dt
@@ -142,11 +142,11 @@ def decide_registration(request_id: int, decision: str, admin: dict, note: str =
                   "company_name": req["company_name"], "user_id": user_id, "company_id": company_id}
     try:
         if req["email"]:
-            extras._mail_async(req["email"], "Welcome to Reconciliation Solutions",
+            extras._mail_async(req["email"], "Welcome to RECONZA",
                 f"Hello {req['username']},\n\nYour account for {req['company_name']} has been approved and you can sign in now.\n\n"
                 "First step: open Settings and save your email, company name, logo and brand colour. Your logo then appears on every PDF you download.\n"
                 "Then upload your bank statement and sales report and ask your first question.\n\n"
-                "Need help? Message us on Telegram: https://t.me/COLDFX26\n\nReconciliation Solutions")
+                "Need help? Message us on Telegram: https://t.me/COLDFX26\n\nRECONZA")
     except Exception:  # noqa: BLE001
         pass
     return result

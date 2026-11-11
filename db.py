@@ -189,6 +189,57 @@ def _now() -> str:
     return dt.datetime.now(dt.timezone.utc).strftime(FMT)
 
 
+# ---- company roles --------------------------------------------------------------- #
+# users.role stays the SITE-WIDE role (only the website owner is "admin").
+# users.company_role is what a person can do inside their own company:
+#   owner   - the person who created the company account: everything, plus team roles and billing
+#   admin   - controls the company: delete reports, API keys, integrations, schedules, branding
+#   analyst - does the work: upload, ask, reconcile, calculate
+#   viewer  - read-only: dashboard, reports, results
+COMPANY_RANK = {"viewer": 1, "analyst": 2, "admin": 3, "owner": 4}
+TEAM_ASSIGNABLE = ("admin", "analyst", "viewer")      # the owner can never be assigned: there is one per company
+
+
+def effective_company_role(user: dict) -> str:
+    if user.get("role") == "admin":
+        return "platform"                              # the website owner
+    cr = user.get("company_role")
+    if cr in COMPANY_RANK:
+        return cr
+    return "viewer" if user.get("role") == "viewer" else "analyst"
+
+
+def company_rank(user: dict) -> int:
+    r = effective_company_role(user)
+    return 99 if r == "platform" else COMPANY_RANK[r]
+
+
+def _backfill_company_roles(con) -> None:
+    """One time: the first customer login of each company becomes its owner, later ones analysts."""
+    rows = con.execute(
+        "SELECT u.id AS uid, u.role AS urole, uc.company_id AS cid FROM users u "
+        "LEFT JOIN user_companies uc ON uc.user_id = u.id "
+        "WHERE u.company_role IS NULL AND u.role <> 'admin' ORDER BY u.created_at, u.id").fetchall()
+    if not rows:
+        return
+    owners = {r["cid"] for r in con.execute(
+        "SELECT uc.company_id AS cid FROM users u JOIN user_companies uc ON uc.user_id = u.id "
+        "WHERE u.company_role = 'owner'").fetchall()}
+    done = set()
+    for r in rows:
+        if r["uid"] in done:
+            continue
+        done.add(r["uid"])
+        if r["urole"] == "viewer":
+            cr = "viewer"
+        elif r["cid"] is not None and r["cid"] not in owners:
+            cr = "owner"
+            owners.add(r["cid"])
+        else:
+            cr = "analyst"
+        con.execute("UPDATE users SET company_role = ? WHERE id = ?", (cr, r["uid"]))
+
+
 def _ensure_column(con, table: str, column: str, decl: str) -> None:
     if USE_PG:
         dbcompat.ensure_column(con, table, column, decl)
@@ -240,6 +291,8 @@ def _init_schema(_con) -> None:
     _ensure_column(_con, "users", "email", "TEXT")
     _ensure_column(_con, "users", "referral_code", "TEXT")
     _ensure_column(_con, "users", "referred_by", "INTEGER")
+    _ensure_column(_con, "users", "company_role", "TEXT")        # owner / admin / analyst / viewer inside the customer's company
+    _backfill_company_roles(_con)
     _con.executescript("CREATE TABLE IF NOT EXISTS reset_requests (id INTEGER PRIMARY KEY AUTOINCREMENT, user_id INTEGER NOT NULL, username TEXT NOT NULL, "
                        "note TEXT, status TEXT NOT NULL DEFAULT 'pending', created_at TEXT NOT NULL, decided_at TEXT, decided_by TEXT);")
     _con.executescript("CREATE TABLE IF NOT EXISTS password_resets (user_id INTEGER PRIMARY KEY, code_hash TEXT NOT NULL, "
@@ -325,8 +378,8 @@ def create_customer_account(company_name: str, username: str, password: str,
             company_id = cur.lastrowid
             _insert_trial_subscription(con, company_id)
             cur = con.execute(
-                "INSERT INTO users(username, password_hash, role, telegram_id, created_at) "
-                "VALUES (?, ?, 'analyst', ?, ?)",
+                "INSERT INTO users(username, password_hash, role, company_role, telegram_id, created_at) "
+                "VALUES (?, ?, 'analyst', 'owner', ?, ?)",
                 (username, password_hash, int(telegram_id) if telegram_id else None, _now()))
             user_id = cur.lastrowid
             con.execute("INSERT INTO user_companies(user_id, company_id) VALUES (?, ?)",
@@ -389,6 +442,7 @@ def _user(row) -> dict | None:
             "telegram_id": row["telegram_id"], "active": bool(row["active"]),
             "alerts": bool(row["alerts"]), "totp_enabled": bool(row["totp_enabled"]),
             "email": _col(row, "email"), "referral_code": _col(row, "referral_code"),
+            "company_role": _col(row, "company_role"),
             "created_at": row["created_at"]}
 
 
@@ -420,7 +474,7 @@ def validate_company_membership(company_ids, exclude_user_id: int | None = None)
             else:
                 count = con.execute("SELECT COUNT(*) AS n FROM user_companies WHERE company_id=? AND user_id<>?", (cid, exclude_user_id)).fetchone()["n"]
         if count >= status["team_limit"]:
-            raise ValueError(f"{status['plan'].title()} allows up to {status['team_limit']} team member(s) per company. Upgrade to Business to add more.")
+            raise ValueError(f"{status['plan'].title()} allows up to {status['team_limit']} team member(s) per company. Upgrade your plan to add more.")
 
 
 def set_user_companies(user_id: int, company_ids) -> None:
@@ -432,13 +486,101 @@ def set_user_companies(user_id: int, company_ids) -> None:
             con.execute("INSERT OR IGNORE INTO user_companies(user_id, company_id) VALUES (?, ?)", (user_id, cid))
 
 
+# ---- company team (managed by the company owner) -------------------------------- #
+def _team_row(con, company_id: int, user_id: int):
+    return con.execute(
+        "SELECT u.* FROM users u JOIN user_companies uc ON uc.user_id = u.id "
+        "WHERE uc.company_id = ? AND u.id = ? AND u.role <> 'admin'", (company_id, user_id)).fetchone()
+
+
+def list_team(company_id: int) -> list[dict]:
+    with _db() as con:
+        rows = con.execute(
+            "SELECT u.* FROM users u JOIN user_companies uc ON uc.user_id = u.id "
+            "WHERE uc.company_id = ? AND u.role <> 'admin' ORDER BY u.created_at, u.id", (company_id,)).fetchall()
+    out = []
+    for r in rows:
+        u = _user(r)
+        out.append({"id": u["id"], "username": u["username"], "email": u["email"],
+                    "company_role": effective_company_role(u), "active": u["active"],
+                    "two_factor": u["totp_enabled"], "created_at": u["created_at"]})
+    return sorted(out, key=lambda x: (-COMPANY_RANK.get(x["company_role"], 0), x["username"].lower()))
+
+
+def add_team_member(company_id: int, username: str, password: str, role: str) -> dict:
+    if role not in TEAM_ASSIGNABLE:
+        raise ValueError("Choose Admin, Analyst or Viewer.")
+    username = username.strip()
+    if not USERNAME_RE.match(username):
+        raise ValueError("Username: 3-40 characters - letters, digits or _ . @ -")
+    _check_password(password)
+    validate_company_membership([company_id])             # the plan's team limit
+    site_role = "viewer" if role == "viewer" else "analyst"
+    try:
+        with _db() as con:
+            cur = con.execute(
+                "INSERT INTO users(username, password_hash, role, company_role, created_at) VALUES (?,?,?,?,?)",
+                (username, security.hash_password(password), site_role, role, _now()))
+            uid = cur.lastrowid
+            con.execute("INSERT INTO user_companies(user_id, company_id) VALUES (?, ?)", (uid, company_id))
+    except IntegrityError as e:
+        raise ValueError("That username is already in use. Choose another.") from e
+    return get_user(uid)
+
+
+def set_team_role(company_id: int, user_id: int, role: str) -> dict:
+    if role not in TEAM_ASSIGNABLE:
+        raise ValueError("Choose Admin, Analyst or Viewer.")
+    with _db() as con:
+        row = _team_row(con, company_id, user_id)
+        if row is None:
+            raise LookupError("That person is not on this team.")
+        if effective_company_role(_user(row)) == "owner":
+            raise ValueError("The owner's role can't be changed.")
+        con.execute("UPDATE users SET company_role = ?, role = ? WHERE id = ?",
+                    (role, "viewer" if role == "viewer" else "analyst", user_id))
+    return get_user(user_id)
+
+
+def remove_team_member(company_id: int, user_id: int) -> None:
+    with _db() as con:
+        row = _team_row(con, company_id, user_id)
+        if row is None:
+            raise LookupError("That person is not on this team.")
+        if effective_company_role(_user(row)) == "owner":
+            raise ValueError("The owner can't be removed.")
+        con.execute("DELETE FROM user_companies WHERE user_id = ? AND company_id = ?", (user_id, company_id))
+        left = con.execute("SELECT COUNT(*) AS n FROM user_companies WHERE user_id = ?", (user_id,)).fetchone()["n"]
+        if not left:
+            con.execute("UPDATE users SET active = 0 WHERE id = ?", (user_id,))
+        con.execute("DELETE FROM sessions WHERE user_id = ?", (user_id,))
+
+
+def reset_team_password(company_id: int, user_id: int, password: str) -> None:
+    with _db() as con:
+        row = _team_row(con, company_id, user_id)
+        if row is None:
+            raise LookupError("That person is not on this team.")
+        if effective_company_role(_user(row)) == "owner":
+            raise ValueError("Use Settings to change your own password.")
+    update_user(user_id, password=password)      # also signs them out everywhere
+    forget_trusted_devices(user_id)
+
+
+def company_activity(company_id: int, limit: int = 40) -> list[dict]:
+    with _db() as con:
+        rows = con.execute("SELECT ts, username, action, detail FROM audit WHERE company_id = ? ORDER BY id DESC LIMIT ?",
+                           (company_id, int(limit))).fetchall()
+    return [{"time": r["ts"], "user": r["username"], "action": r["action"], "detail": r["detail"]} for r in rows]
+
+
 def _check_password(pw: str) -> None:
     if len(pw) < 10:
         raise ValueError("Password must be at least 10 characters.")
 
 
 def create_user(username: str, password: str, role: str = "analyst",
-                telegram_id: int | None = None, company_ids=()) -> dict:
+                telegram_id: int | None = None, company_ids=(), company_role: str | None = None) -> dict:
     username = username.strip()
     if not USERNAME_RE.match(username):
         raise ValueError("Username: 3-40 characters - letters, digits or _ . @ -")
@@ -449,8 +591,10 @@ def create_user(username: str, password: str, role: str = "analyst",
     try:
         with _db() as con:
             cur = con.execute(
-                "INSERT INTO users(username, password_hash, role, telegram_id, created_at) VALUES (?,?,?,?,?)",
-                (username, security.hash_password(password), role, telegram_id or None, _now()))
+                "INSERT INTO users(username, password_hash, role, company_role, telegram_id, created_at) VALUES (?,?,?,?,?,?)",
+                (username, security.hash_password(password), role,
+                 (company_role if company_role in COMPANY_RANK else (role if role in ("viewer", "analyst") else None)),
+                 telegram_id or None, _now()))
             uid = cur.lastrowid
     except IntegrityError as e:
         raise ValueError("That username or Telegram ID is already in use.") from e
@@ -466,6 +610,12 @@ def update_user(user_id: int, **f) -> dict | None:
         if f["role"] not in ROLES:
             raise ValueError("Unknown role.")
         sets.append("role = ?"); vals.append(f["role"])
+        cur_u = get_user(user_id)
+        if f["role"] == "viewer":
+            sets.append("company_role = ?"); vals.append("viewer")
+        elif f["role"] == "analyst":
+            keep = (cur_u or {}).get("company_role")
+            sets.append("company_role = ?"); vals.append(keep if keep in ("owner", "admin", "analyst") else "analyst")
     if "active" in f:
         sets.append("active = ?"); vals.append(1 if f["active"] else 0)
     if "alerts" in f:

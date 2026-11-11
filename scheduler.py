@@ -176,7 +176,7 @@ async def scheduled_reconciliation_loop():
                     company = db.get_company(job["company_id"])
                     message = f"Scheduled reconciliation complete for {company['name'] if company else 'company'}\nRun #{run_id}: {problem_count} discrepancy row(s), {cases} case(s) created."
                     await asyncio.to_thread(notify.alert_company, job["company_id"], message)
-                    await asyncio.to_thread(notify.email_company, job["company_id"], "Report Analyzer scheduled reconciliation", message)
+                    await asyncio.to_thread(notify.email_company, job["company_id"], "RECONZA scheduled reconciliation", message)
                     await asyncio.to_thread(db.audit, None, "scheduled_reconcile", job["company_id"], f"job={job['id']}; run={run_id}", "scheduler")
                     await asyncio.to_thread(ef.finish_schedule, job["id"], "completed", "")
                 except Exception as e:  # noqa: BLE001
@@ -221,10 +221,10 @@ async def subscription_reminder_loop():
                 key = f"subscription:{sub['id']}:72h"
                 if not await asyncio.to_thread(ef.log_notification_once, sub["company_id"], key):
                     continue
-                message = (f"⏰ Report Analyzer subscription reminder: {sub['company_name']} plan "
+                message = (f"⏰ RECONZA subscription reminder: {sub['company_name']} plan "
                            f"{sub['plan'].upper()} expires at {sub['expires_at']} UTC. Please arrange renewal before expiry.")
                 await asyncio.to_thread(notify.alert_company, sub["company_id"], message)
-                await asyncio.to_thread(notify.email_company, sub["company_id"], "Report Analyzer subscription renewal reminder", message)
+                await asyncio.to_thread(notify.email_company, sub["company_id"], "RECONZA subscription renewal reminder", message)
                 await asyncio.to_thread(db.audit, None, "renewal_reminder", sub["company_id"], f"subscription={sub['id']}; expires={sub['expires_at']}", "scheduler")
         except Exception:  # noqa: BLE001
             log.exception("subscription reminder loop failed")

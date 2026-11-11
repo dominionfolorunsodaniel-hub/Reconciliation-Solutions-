@@ -29,7 +29,7 @@ def _user(name: str) -> dict:
 
 
 def main() -> None:
-    p = argparse.ArgumentParser(description="Report Analyzer admin tool")
+    p = argparse.ArgumentParser(description="RECONZA admin tool")
     sub = p.add_subparsers(dest="cmd", required=True)
     for name in ("create-admin", "reset-password", "reset-2fa"):
         sub.add_parser(name).add_argument("username")

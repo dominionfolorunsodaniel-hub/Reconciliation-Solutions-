@@ -58,8 +58,8 @@ def _page(title: str, desc: str, body: str) -> str:
             f'<title>{html.escape(title)}</title><meta name="description" content="{html.escape(desc)}">'
             '<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>'
             '<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">'
-            f'<style>{_CSS}</style></head><body><div class="w"><header><a class="b" href="/">Reconciliation Solutions</a></header>{body}</div>'
-            '<footer>&copy; Reconciliation Solutions &middot; <a href="/">Home</a> &middot; <a href="/whats-new">What\'s new</a> &middot; <a href="/privacy">Privacy</a> &middot; <a href="/terms">Terms</a> &middot; <a href="/security">Security</a> &middot; <a href="/status">Status</a> &middot; '
+            f'<style>{_CSS}</style></head><body><div class="w"><header><a class="b" href="/">RECONZA</a></header>{body}</div>'
+            '<footer>&copy; RECONZA &middot; <a href="/">Home</a> &middot; <a href="/whats-new">What\'s new</a> &middot; <a href="/privacy">Privacy</a> &middot; <a href="/terms">Terms</a> &middot; <a href="/security">Security</a> &middot; <a href="/status">Status</a> &middot; '
             '<a href="https://t.me/COLDFX26">Telegram</a></footer></body></html>')
 
 
@@ -70,8 +70,8 @@ def niche_page(slug: str) -> str | None:
     items = "".join(f"<li>{html.escape(p)}</li>" for p in n["points"])
     body = (f'<h1>{html.escape(n["h1"])}</h1><p class="mute">For {html.escape(n["name"])}</p><div class="card"><p>{html.escape(n["intro"])}</p>'
             f'<ul>{items}</ul><p><a class="btn" href="/">Start free</a></p></div>'
-            '<p class="mute">Reconciliation Solutions compares reports and statements you upload. It does not move money or connect to your bank.</p>')
-    return _page(f'Reconciliation for {n["name"]} | Reconciliation Solutions', n["intro"], body)
+            '<p class="mute">RECONZA compares reports and statements you upload. It does not move money or connect to your bank.</p>')
+    return _page(f'Reconciliation for {n["name"]} | RECONZA', n["intro"], body)
 
 
 def changelog_page() -> str:
@@ -85,8 +85,8 @@ def changelog_page() -> str:
             continue
         pts = "".join(f"<li>{html.escape(str(p))}</li>" for p in it.get("changes", []))
         rows += f'<div class="card"><b>{html.escape(str(it.get("date", "")))}</b><h3 style="margin:6px 0">{html.escape(str(it.get("title", "")))}</h3><ul>{pts}</ul></div>'
-    body = "<h1>What's new</h1><p class=\"mute\">Recent improvements to Reconciliation Solutions.</p>" + (rows or "<p>Nothing yet.</p>")
-    return _page("What's new | Reconciliation Solutions", "Recent improvements to Reconciliation Solutions.", body)
+    body = "<h1>What's new</h1><p class=\"mute\">Recent improvements to RECONZA.</p>" + (rows or "<p>Nothing yet.</p>")
+    return _page("What's new | RECONZA", "Recent improvements to RECONZA.", body)
 
 
 # ---- trust pages and status page -------------------------------------------- #
@@ -103,7 +103,7 @@ _LEGAL = {
         ("Contact", f"Questions about privacy: {CONTACT}"),
     ]),
     "terms": ("Terms of Use", [
-        ("The service", "Reconciliation Solutions compares and analyses reports and statements you upload. It does not move money, connect to your bank or give financial, legal or tax advice."),
+        ("The service", "RECONZA compares and analyses reports and statements you upload. It does not move money, connect to your bank or give financial, legal or tax advice."),
         ("Your responsibility", "You must have the right to upload the files you upload. Check important results against your source records before acting on them. Reports are an aid to your own review."),
         ("Accuracy", "Calculations are done by the application and are shown with the method used. Files with missing, unusual or inconsistent data can produce results that need human review. We cannot guarantee that every discrepancy or error in your data will be found."),
         ("Plans and payment", "Paid plans give access for the stated period (for example 30 days). Plan limits apply to each period. Payments are confirmed by the site owner until automatic payments are available."),
@@ -127,7 +127,7 @@ def legal_page(kind: str) -> str:
     body = f"<h1>{html.escape(title)}</h1><p class=\"mute\">Last updated: 8 November 2026</p>" + "".join(
         f'<div class="card"><h3 style="margin:0 0 6px">{html.escape(h)}</h3><p>{html.escape(t)}</p></div>' for h, t in sections)
     body += '<p class="mute"><a href="/privacy">Privacy</a> &middot; <a href="/terms">Terms</a> &middot; <a href="/security">Security</a> &middot; <a href="/status">Status</a></p>'
-    return _page(f"{title} | Reconciliation Solutions", f"{title} for Reconciliation Solutions.", body)
+    return _page(f"{title} | RECONZA", f"{title} for RECONZA.", body)
 
 
 def status_page(db_ok: bool, ai_key: bool, last_ai_problem: dict | None) -> str:
@@ -141,4 +141,4 @@ def status_page(db_ok: bool, ai_key: bool, last_ai_problem: dict | None) -> str:
             + row("Website", True, "The site is responding.") + row("Database", db_ok, "Reports and accounts are readable." if db_ok else "The database did not respond.")
             + row("AI explanations", ai_key, ai_note)
             + '<p class="mute">Calculations, reconciliation and reports run inside the site and do not depend on the AI service.</p>')
-    return _page("Status | Reconciliation Solutions", "Live status of Reconciliation Solutions.", body)
+    return _page("Status | RECONZA", "Live status of RECONZA.", body)

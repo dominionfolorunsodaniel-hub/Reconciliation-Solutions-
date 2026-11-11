@@ -50,7 +50,7 @@ def _doc(title: str, number: str, meta: list[tuple[str, str]], rows: list[list[s
     small = ParagraphStyle("s", fontName=reg, fontSize=8.5, leading=12, textColor=colors.HexColor("#55607a"))
     buf = io.BytesIO()
     doc = SimpleDocTemplate(buf, pagesize=A4, leftMargin=2 * cm, rightMargin=2 * cm, topMargin=1.5 * cm, bottomMargin=1.5 * cm, title=title)
-    band = Table([[Paragraph(escape(title), h), Paragraph(f"<para align='right'><font color='white'>Report Analyzer<br/>{escape(number)}</font></para>", n)]], colWidths=[10 * cm, 7 * cm])
+    band = Table([[Paragraph(escape(title), h), Paragraph(f"<para align='right'><font color='white'>RECONZA<br/>{escape(number)}</font></para>", n)]], colWidths=[10 * cm, 7 * cm])
     band.setStyle(TableStyle([("BACKGROUND", (0, 0), (-1, -1), brand), ("PADDING", (0, 0), (-1, -1), 12), ("VALIGN", (0, 0), (-1, -1), "MIDDLE")]))
     story = [band, Spacer(1, 14)]
     mt = Table([[Paragraph(escape(k), b), Paragraph(escape(v), n)] for k, v in meta], colWidths=[4 * cm, 13 * cm])
@@ -104,5 +104,5 @@ def receipt_pdf(invoice: dict, company_name: str, pay: dict | None, sub: dict | 
     rows = [["Plan", "Includes", "Amount"],
             [plan["name"], f"{plan.get('monthly_limit', 0):,} checks a month; {plan.get('team_limit', 0)} team member(s)", _naira(invoice["amount_ngn"])]]
     return _doc("Receipt", invoice["invoice_number"], meta, rows, "Total paid", _naira(invoice["amount_ngn"]),
-                ["Payment was confirmed by a Report Analyzer administrator after a bank transfer.",
+                ["Payment was confirmed by a RECONZA administrator after a bank transfer.",
                  "This is a receipt for the subscription named above. It is not a tax invoice unless separately validated for local tax requirements."], branding)

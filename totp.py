@@ -41,6 +41,6 @@ def verify(secret: str, code: str, last_step: int = 0, t: float | None = None, w
     return None
 
 
-def uri(username: str, secret: str, issuer: str = "Report Analyzer") -> str:
+def uri(username: str, secret: str, issuer: str = "RECONZA") -> str:
     return (f"otpauth://totp/{quote(issuer)}:{quote(username)}?secret={secret}"
             f"&issuer={quote(issuer)}&digits=6&period={STEP}")
