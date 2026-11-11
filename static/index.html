@@ -2697,6 +2697,26 @@ function renderResult(r) {
   let fp = $("fullPanel"); if (!fp) { fp = document.createElement("details"); fp.id = "fullPanel"; fp.className = "calc-panel full-panel"; cp.after(fp); }
   fp.replaceChildren(); fp.hidden = !r.full_analysis;
   if (r.full_analysis) { const sm = document.createElement("summary"); sm.textContent = "Full analysis of the whole file (not just your question)"; const pre = document.createElement("pre"); pre.className = "calc-body"; pre.style.whiteSpace = "pre-wrap"; pre.textContent = r.full_analysis; fp.append(sm, pre); }
+  /* verified facts: a status line and the daily table (same numbers as the PDF and Excel) */
+  let vp = $("verifyPanel"); if (!vp) { vp = document.createElement("details"); vp.id = "verifyPanel"; vp.className = "calc-panel full-panel"; fp.after(vp); }
+  vp.replaceChildren(); vp.hidden = !r.verified;
+  if (r.verified) {
+    const v = r.verified, sm = document.createElement("summary");
+    sm.textContent = (v.ok ? "Verified: " : "Not fully verified: ") + v.passed + " of " + v.total + " cross-checks passed" + (v.daily && v.daily.length ? " - daily activity (" + v.daily.length + " day(s))" : "");
+    vp.append(sm);
+    const bx = document.createElement("div"); bx.className = "calc-body";
+    const ul = document.createElement("ul"); v.checks.forEach(c => { const li = document.createElement("li"); li.textContent = (c.ok ? "PASS  " : "FAIL  ") + c.check + " (" + c.detail + ")"; ul.append(li); }); bx.append(ul);
+    if (v.daily && v.daily.length) {
+      const wrap = document.createElement("div"); wrap.style.overflowX = "auto";
+      const tb = document.createElement("table"), hd = tb.createTHead().insertRow();
+      ["Date", "Txns", "Credits", "Debits", "Credit total", "Debit total", "Net", "Note"].forEach(h => { const th = document.createElement("th"); th.textContent = h; hd.append(th); });
+      const nf = n => Number(n).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+      const body = tb.createTBody();
+      v.daily.forEach(x => { const tr = body.insertRow(); [x.date, x.transactions, x.credit_count, x.debit_count, nf(x.credit_total), nf(x.debit_total), nf(x.net), (x.unusual && x.unusual.length) ? "Unusual" : ""].forEach(c => { tr.insertCell().textContent = c; }); if (x.unusual && x.unusual.length) tr.style.background = "rgba(255,170,0,.15)"; });
+      wrap.append(tb); bx.append(wrap);
+    }
+    vp.append(bx);
+  }
   const cv = $("chart"); if (S.chart) { S.chart.destroy(); S.chart = null; }
   if (r.chart) { cv.classList.remove("hidden"); const c = r.chart; S.chart = new Chart(cv, { type: c.type, data: { labels: c.labels, datasets: [{ label: c.metric, data: c.values, borderWidth: 2, backgroundColor: "rgba(11,92,230,.55)", borderColor: "#0b5ce6", tension: .3 }] }, options: { responsive: true, plugins: { legend: { display: c.type === "pie" } } } }); } else cv.classList.add("hidden");
   fillTable($("table"), r.columns, r.rows);

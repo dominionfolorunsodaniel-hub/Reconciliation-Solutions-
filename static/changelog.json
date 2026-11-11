@@ -1,6 +1,17 @@
 [
  {
   "date": "2026-11-11",
+  "title": "Verified analytics: one set of numbers everywhere",
+  "changes": [
+   "AI answers, tables, Excel and PDF now all read from one verified dataset",
+   "New daily activity summary: transactions, credits, debits and net per day, with unusual days explained",
+   "Duplicate references listed with every affected transaction; unusual transactions explained with exact references",
+   "Data-quality checks and a verification step that cross-checks every total before a report is made",
+   "New structured PDF: executive summary, financial breakdown, daily activity, findings, data quality, recommendations, Page X of Y"
+  ]
+ },
+ {
+  "date": "2026-11-11",
   "title": "RECONZA: team roles and a new look",
   "changes": [
    "We are now RECONZA - we don't guess, we uncover",
