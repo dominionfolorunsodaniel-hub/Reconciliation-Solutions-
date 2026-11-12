@@ -1270,6 +1270,45 @@ html[data-theme=dark] .d-kpi, html[data-theme=dark] .d-kpi b, html[data-theme=da
 <style id="help20">.help-list{margin-top:14px;display:grid;gap:8px}.help-item{border:1px solid var(--a-line,#dbe3f2);border-radius:10px;padding:10px 14px;background:#fff}.help-item summary{cursor:pointer;font-weight:700;min-height:32px}.help-item p{margin:8px 0 2px;color:#44506e}.case-ageing{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:8px 0}.age-chip{padding:4px 10px;border-radius:999px;font-size:13px;font-weight:600}.age-chip.a0{background:#dcfce7;color:#166534}.age-chip.a1{background:#dbeafe;color:#1e40af}.age-chip.a2{background:#fef3c7;color:#92400e}.age-chip.a3{background:#fee2e2;color:#991b1b}html[data-theme=dark] .help-item{background:#0e1729}html[data-theme=dark] .help-item p{color:#b7c3dd}</style>
 <style id="rq21">.rq{display:flex;gap:14px;align-items:center;padding:12px 14px;border:1px solid var(--a-line,#dbe3f2);border-radius:12px;background:#fff;margin:10px 0}.rq>b{color:#fff;border-radius:999px;padding:10px 16px;font-size:18px}.rq small{display:block;color:#5b6785}html[data-theme=dark] .rq{background:#0e1729}</style>
 <style id="rr21">.rr-list{display:grid;gap:10px;margin:12px 0}.rr-row{display:flex;flex-wrap:wrap;gap:10px;align-items:center;border:1px solid var(--a-line,#dbe3f2);border-radius:12px;padding:12px;background:#fff}.rr-row>div:first-child{flex:1 1 220px}html[data-theme=dark] .rr-row{background:#0e1729}</style>
+<style id="mz36">.mz-page{display:grid;gap:16px;margin-bottom:18px}.mz-page .mute{color:var(--mute)}
+.mz-card{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:18px;box-shadow:0 1px 2px rgba(10,18,54,.04)}
+.mz-card h2,.mz-card h3{margin:0 0 4px}.mz-sub{color:var(--mute);font-size:13px;margin:0 0 12px}
+.mz-hero{display:flex;flex-wrap:wrap;gap:18px;align-items:center;justify-content:space-between;background:linear-gradient(135deg,#0f1a2e,#1d3a8a 70%,#2b59ff);color:#fff;border:0;animation:mzin .35s ease both}
+.mz-hero .mz-sub,.mz-hero .mute{color:#cbd5e1}.mz-hero h2{font-size:22px;color:#fff}
+.mz-grid{display:grid;gap:14px;grid-template-columns:repeat(auto-fill,minmax(230px,1fr))}
+.mz-grid.wide{grid-template-columns:repeat(auto-fill,minmax(270px,1fr))}
+@keyframes mzin{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+.mz-b{display:inline-flex;align-items:center;gap:6px;padding:4px 10px 4px 8px;border-radius:999px;font-size:12px;font-weight:700;letter-spacing:.01em;white-space:nowrap;vertical-align:middle}
+.mz-b svg{width:14px;height:14px}.mz-b.lg{font-size:14px;padding:7px 14px 7px 11px}.mz-b.lg svg{width:18px;height:18px}
+.mz-b-starter{background:#e0f7f3;color:#0b7a6c;border:1px solid #9be0d4}.mz-b-professional{background:#ece9ff;color:#4a3fc4;border:1px solid #c3bbf7}
+.mz-b-business{background:linear-gradient(135deg,#fdf2c9,#f5d56b);color:#6b4e00;border:1px solid #e3be4b}.mz-b-regular{background:#eef1f7;color:#5a6479;border:1px solid #dbe1ee}
+.mz-hero .mz-b-starter,.mz-hero .mz-b-professional,.mz-hero .mz-b-regular{border-color:transparent}
+.mz-chip{display:inline-block;padding:2px 9px;border-radius:999px;font-size:11.5px;font-weight:700}
+.mz-ok{background:#e3f7ec;color:#13794a}.mz-wait{background:#fff3d6;color:#8a5a00}.mz-bad{background:#fde6e6;color:#b42323}.mz-gray{background:#eef1f7;color:#5a6479}
+.mz-bar{height:8px;border-radius:99px;background:rgba(127,140,170,.25);overflow:hidden;margin:6px 0}.mz-bar i{display:block;height:100%;background:linear-gradient(90deg,#06b6d4,#2b59ff);border-radius:99px;transition:width .6s ease}
+.mz-plan{position:relative;display:flex;flex-direction:column;gap:8px;transition:transform .2s,box-shadow .2s}.mz-plan:hover{transform:translateY(-2px);box-shadow:0 10px 26px rgba(10,18,54,.1)}
+.mz-plan.cur{border:2px solid var(--brand)}.mz-plan .pr{font-size:26px;font-weight:800}.mz-plan .pr small{font-size:12px;font-weight:500;color:var(--mute)}
+.mz-plan ul,.mz-list{list-style:none;margin:0;padding:0;display:grid;gap:6px;font-size:13.5px}.mz-plan li:before{content:"✓ ";color:#13794a;font-weight:800}.mz-plan li.no{color:var(--mute)}.mz-plan li.no:before{content:"– ";color:var(--mute)}
+.mz-btn{appearance:none;border:0;border-radius:11px;padding:10px 16px;font-weight:700;cursor:pointer;background:var(--brand);color:#fff;font-size:14px;text-decoration:none;display:inline-block;text-align:center}
+.mz-btn:hover{filter:brightness(1.07)}.mz-btn.ghost{background:transparent;color:var(--brand);border:1px solid var(--line)}.mz-btn.sm{padding:6px 11px;font-size:12.5px}.mz-btn.danger{background:#c53030}.mz-btn[disabled]{opacity:.55;cursor:default}
+.mz-tabs{display:flex;gap:6px;flex-wrap:wrap;border-bottom:1px solid var(--line);padding-bottom:8px}.mz-tabs button{border:0;background:transparent;padding:8px 13px;border-radius:10px;font-weight:700;color:var(--mute);cursor:pointer}.mz-tabs button.on{background:var(--brand);color:#fff}
+.mz-prod{display:flex;flex-direction:column;gap:10px;padding:0;overflow:hidden;transition:transform .2s,box-shadow .2s}.mz-prod:hover{transform:translateY(-2px);box-shadow:0 10px 26px rgba(10,18,54,.1)}
+.mz-cover{height:104px;display:flex;align-items:flex-end;justify-content:space-between;padding:12px 14px;color:#fff;background:linear-gradient(135deg,#0f1a2e,#2b59ff)}
+.mz-cover span{font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;opacity:.9}.mz-cover svg{width:34px;height:34px;opacity:.9}
+.mz-cover.c1{background:linear-gradient(135deg,#0f1a2e,#2b59ff)}.mz-cover.c2{background:linear-gradient(135deg,#1b1464,#7c4dff)}.mz-cover.c3{background:linear-gradient(135deg,#064e5a,#06b6d4)}
+.mz-cover.c4{background:linear-gradient(135deg,#5b2a00,#f59e0b)}.mz-cover.c5{background:linear-gradient(135deg,#3b0a45,#d946ef)}.mz-cover.c6{background:linear-gradient(135deg,#0b3d2e,#22c55e)}
+.mz-prod .bd{padding:0 16px 16px;display:flex;flex-direction:column;gap:8px;flex:1}.mz-prod .bd p{margin:0;font-size:13.5px;color:var(--mute)}.mz-prod ul{font-size:12.5px}.mz-prod li:before{content:"• ";color:var(--brand)}
+.mz-price{font-size:20px;font-weight:800}.mz-price s{font-size:13px;color:var(--mute);font-weight:500;margin-right:6px}.mz-foot{margin-top:auto;display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap}
+.mz-kpis{display:grid;gap:12px;grid-template-columns:repeat(auto-fill,minmax(160px,1fr))}.mz-kpi{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px}.mz-kpi b{display:block;font-size:22px}.mz-kpi span{font-size:12px;color:var(--mute)}
+.mz-tw{overflow-x:auto;border:1px solid var(--line);border-radius:12px}.mz-t{width:100%;border-collapse:collapse;font-size:13px}.mz-t th,.mz-t td{padding:9px 11px;text-align:left;border-bottom:1px solid var(--line);white-space:nowrap}.mz-t th{background:rgba(127,140,170,.1);font-size:11.5px;text-transform:uppercase;letter-spacing:.04em;color:var(--mute)}
+.mz-f{display:grid;gap:10px;grid-template-columns:repeat(auto-fit,minmax(200px,1fr))}.mz-f label{display:grid;gap:4px;font-size:12.5px;font-weight:600}.mz-f .full{grid-column:1/-1}
+.mz-f input,.mz-f select,.mz-f textarea,.mz-row input,.mz-row select{padding:9px 11px;border:1px solid var(--line);border-radius:10px;background:var(--card);color:var(--ink);font:inherit}.mz-f textarea{min-height:84px}
+.mz-row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}.mz-bank{display:grid;gap:8px;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));margin:10px 0}.mz-bank div{border:1px dashed var(--line);border-radius:12px;padding:10px 12px;font-size:13px}.mz-bank b{display:block;font-size:16px;letter-spacing:.03em}
+.mz-steps{margin:8px 0 0;padding-left:18px;font-size:13px;color:var(--mute)}.mz-msg{font-size:13px;margin:8px 0 0}.mz-msg.err{color:#c53030}.mz-msg.ok{color:#13794a}
+.mz-co{border:2px solid var(--brand);background:linear-gradient(180deg,rgba(43,89,255,.05),transparent)}
+.mz-months{display:flex;gap:10px;align-items:flex-end;height:120px;margin-top:10px}.mz-months div{flex:1;display:flex;flex-direction:column;justify-content:flex-end;align-items:center;gap:4px;font-size:11px;color:var(--mute);height:100%}.mz-months i{display:block;width:100%;max-width:46px;background:linear-gradient(180deg,#2b59ff,#06b6d4);border-radius:6px 6px 0 0;min-height:3px}
+.mz-hero>div{flex:1 1 260px;min-width:0}.mz-page,.mz-card{min-width:0;max-width:100%}.mz-f input,.mz-f select,.mz-f textarea{width:100%;box-sizing:border-box;min-width:0}.mz-row input,.mz-row select{min-width:0;max-width:100%}.mz-card.mz-prod{padding:0}.mz-sbadge{margin-left:8px}@media(max-width:640px){.mz-card{padding:14px}.mz-hero h2{font-size:19px}.mz-grid,.mz-grid.wide{grid-template-columns:1fr}.mz-f{grid-template-columns:1fr}}
+</style>
 </head>
 <body>
 <a class="skip-link" href="#top">Skip to main content</a>
@@ -1650,6 +1689,11 @@ html[data-theme=dark] .d-kpi, html[data-theme=dark] .d-kpi b, html[data-theme=da
     <button type="button" class="sb-item admin-only hidden" data-nav="resets"><span class="ic"><svg class="svg-ic" aria-hidden="true"><use href="#i-shieldcheck"/></svg></span><span>Password resets</span></button>
     <button type="button" class="sb-item admin-only hidden" data-nav="broadcast"><span class="ic"><svg class="svg-ic" aria-hidden="true"><use href="#i-megaphone"/></svg></span><span>Broadcast</span></button>
     <button type="button" class="sb-item gate-owner" data-nav="plan"><span class="ic"><svg class="svg-ic" aria-hidden="true"><use href="#i-card"/></svg></span><span>Plan &amp; Billing</span></button>
+    <button type="button" class="sb-item" data-nav="membership"><span class="ic"><svg class="svg-ic" aria-hidden="true"><use href="#i-card"/></svg></span><span>Membership</span></button>
+    <button type="button" class="sb-item" data-nav="market"><span class="ic"><svg class="svg-ic" aria-hidden="true"><use href="#i-store"/></svg></span><span>Marketplace</span></button>
+    <button type="button" class="sb-item" data-nav="studio"><span class="ic"><svg class="svg-ic" aria-hidden="true"><use href="#i-file"/></svg></span><span>Report Studio</span></button>
+    <button type="button" class="sb-item" data-nav="business"><span class="ic"><svg class="svg-ic" aria-hidden="true"><use href="#i-layers"/></svg></span><span>Business Services</span></button>
+    <button type="button" class="sb-item admin-only hidden" data-nav="revenue"><span class="ic"><svg class="svg-ic" aria-hidden="true"><use href="#i-chart"/></svg></span><span>Revenue</span></button>
     <button type="button" class="sb-item" data-nav="donations"><span class="ic"><svg class="svg-ic" aria-hidden="true"><use href="#i-heart"/></svg></span><span>Donations</span></button>
     <button type="button" class="sb-item" data-nav="support"><span class="ic"><svg class="svg-ic" aria-hidden="true"><use href="#i-support"/></svg></span><span>Support</span></button>
     <button type="button" class="sb-item" data-nav="help"><span class="ic"><svg class="svg-ic" aria-hidden="true"><use href="#i-mess"/></svg></span><span>Help</span></button>
@@ -2047,6 +2091,12 @@ html[data-theme=dark] .d-kpi, html[data-theme=dark] .d-kpi b, html[data-theme=da
     <div class="mute" style="margin-top:6px">Transfer must be verified by an administrator before paid access is activated. Enterprise Plus is temporarily unavailable while high-value payment limits are confirmed. Never submit your bank password or PIN.</div>
   </section>
 
+  <!-- ===== Membership, Marketplace, Report Studio, Business Services, Revenue (build 36) ===== -->
+  <section class="mz-page" id="mzMembership" data-views="membership"><div class="mz-load mute">Loading membership…</div></section>
+  <section class="mz-page" id="mzMarket" data-views="market"><div class="mz-load mute">Loading the store…</div></section>
+  <section class="mz-page" id="mzStudio" data-views="studio"><div class="mz-load mute">Loading Report Studio…</div></section>
+  <section class="mz-page" id="mzBusiness" data-views="business"><div class="mz-load mute">Loading…</div></section>
+  <section class="mz-page admin-only hidden" id="mzRevenue" data-views="revenue"><div class="mz-load mute">Loading revenue…</div></section>
   <section class="card" id="guideCard" data-views="guide">
     <h2>Getting started</h2>
     <ol>
@@ -2686,7 +2736,7 @@ $("fBtn").onclick = async () => {
 };
 function renderResult(r) {
   $("resultCard").classList.remove("hidden");
-  $("title").textContent = r.title; $("download").href = `/api/download/${r.result_id}`; $("downloadPdf").href = `/api/download/${r.result_id}/pdf`; $("downloadPack").href = `/api/download/${r.result_id}/pack`;
+  S.lastResultId = r.result_id; $("title").textContent = r.title; $("download").href = `/api/download/${r.result_id}`; $("downloadPdf").href = `/api/download/${r.result_id}/pdf`; $("downloadPack").href = `/api/download/${r.result_id}/pack`;
   const ins = $("insight"), full = r.insight || "", cut = full.indexOf("\n\nHOW THIS WAS WORKED OUT:");
   ins.textContent = cut >= 0 ? full.slice(0, cut) : full; ins.classList.toggle("hidden", !full);
   let lab = $("insLabel"); if (!lab) { lab = document.createElement("div"); lab.id = "insLabel"; lab.className = "ans-label"; ins.before(lab); }
@@ -2734,7 +2784,7 @@ $("rBtn").onclick = async () => {
     const r = await jpost("/api/reconcile", { company_id: Number($("company").value), report_a: Number($("rA").value), report_b: Number($("rB").value), instruction: $("rNote").value });
     if (r.clarify) $("rErr").textContent = " " + r.clarify;
     else {
-      S.reconResultId = r.result_id; $("rOut").classList.remove("hidden"); $("rText").textContent = r.text; $("rDownload").href = `/api/download/${r.result_id}`; $("rPdf").href = `/api/download/${r.result_id}/pdf`; $("rPack").href = `/api/download/${r.result_id}/pack`; $("rCases").classList.toggle("hidden", !r.cases_created);
+      S.reconResultId = S.lastResultId = r.result_id; $("rOut").classList.remove("hidden"); $("rText").textContent = r.text; $("rDownload").href = `/api/download/${r.result_id}`; $("rPdf").href = `/api/download/${r.result_id}/pdf`; $("rPack").href = `/api/download/${r.result_id}/pack`; $("rCases").classList.toggle("hidden", !r.cases_created);
       { const qb = $("rQuality"); qb.replaceChildren(); qb.classList.toggle("hidden", !r.quality);
         if (r.quality) { const col = r.quality.score >= 90 ? "#10b981" : r.quality.score >= 75 ? "#22a6b3" : r.quality.score >= 50 ? "#f59e0b" : "#ef4444";
           const big = el("b", `${r.quality.score}/100`); big.style.background = col; const t = el("div"); t.append(el("b", `Reconciliation quality: ${r.quality.grade}`));
@@ -3757,7 +3807,7 @@ api("/api/me").then(start).catch(showLanding);
         $("ssFcNote").textContent = fc.note;
       }
     }
-    S.ssResultId = r.result_id; $("ssSharePanel").classList.add("hidden"); $("ssShareOut").classList.add("hidden");
+    S.ssResultId = S.lastResultId = r.result_id; $("ssSharePanel").classList.add("hidden"); $("ssShareOut").classList.add("hidden");
     $("ssSimple").textContent = r.simple || ""; $("ssSimple").classList.toggle("hidden", !r.simple);
     $("ssXlsx").href = `/api/download/${r.result_id}`; $("ssPdf").href = `/api/download/${r.result_id}/pdf`; $("ssDisc").textContent = r.disclaimer;
     ["ssFrom", "ssTo"].forEach((id, n) => { const sel = $(id), keep = sel.value;
@@ -4666,6 +4716,312 @@ $("aiCheckBtn").onclick = async () => {
     const email = $("regEmail").value.trim(), code = $("regEmailCode").value.trim(); if (!email || !code) { msg("Enter the email and the code."); return; }
     try { await jpost("/api/register/verify-email", { email, code }); V.verified = email.toLowerCase(); msg("Email verified. You can request access now."); } catch (e) { msg(e.message); }
   };
+})();
+</script>
+<script id="mz36js">
+(function () {
+  const NGN = n => "₦" + Number(n || 0).toLocaleString("en-NG");
+  const cid = () => $("company") && $("company").value;
+  const isAdmin = () => S.user && S.user.role === "admin";
+  const D = s => s ? String(s).slice(0, 10) : "–";
+  const SVG = {
+    starter: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2 4 14h7l-1 8 9-12h-7z"/></svg>',
+    professional: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3 4 6v6c0 5 3.4 8 8 9 4.6-1 8-4 8-9V6z"/><path d="m9 12 2 2 4-4"/></svg>',
+    business: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8l4 4 5-8 5 8 4-4-2 11H5z"/></svg>',
+    regular: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21c1-4 4-6 8-6s7 2 8 6"/></svg>'
+  };
+  const LABEL = { starter: "Starter Member", professional: "Professional Member", business: "Business Member", regular: "Regular" };
+  function h(tag, cls, ...kids) {
+    const e = document.createElement(tag); if (cls) e.className = cls;
+    kids.flat().forEach(k => { if (k == null || k === false) return; e.append(k.nodeType ? k : document.createTextNode(String(k))); });
+    return e;
+  }
+  function badge(tier, big) {
+    const b = h("span", `mz-b mz-b-${tier}${big ? " lg" : ""}`); b.innerHTML = SVG[tier] || SVG.regular; b.append(document.createTextNode(LABEL[tier] || "Regular")); return b;
+  }
+  const chip = s => { const m = { paid: ["mz-ok", "Paid"], active: ["mz-ok", "Active"], pending: ["mz-wait", "Pending verification"], awaiting_payment: ["mz-gray", "Awaiting payment"], failed: ["mz-bad", "Failed"], cancelled: ["mz-gray", "Cancelled"],
+      grace: ["mz-wait", "Grace period"], expired: ["mz-bad", "Expired"], revoked: ["mz-bad", "Revoked"], new: ["mz-wait", "New"], contacted: ["mz-gray", "Contacted"], quoted: ["mz-gray", "Quoted"], won: ["mz-ok", "Won"], closed: ["mz-gray", "Closed"] }[s] || ["mz-gray", s];
+    return h("span", "mz-chip " + m[0], m[1]); };
+  const msg = (box, text, ok) => { box.className = "mz-msg " + (ok ? "ok" : "err"); box.textContent = text; };
+  const daysLeft = d => { if (!d) return null; const t = new Date(d.replace(" ", "T") + "Z") - new Date(); return Math.ceil(t / 864e5); };
+  function table(cols, rows, cell) {
+    const t = h("table", "mz-t"), hr = h("tr"); cols.forEach(c => hr.append(h("th", "", c))); t.append(hr);
+    rows.forEach(r => { const tr = h("tr"); cell(r).forEach(c => tr.append(h("td", "", c))); t.append(tr); });
+    return h("div", "mz-tw", t);
+  }
+  const empty = t => h("p", "mute", t);
+  const M = { cache: {} };
+  async function mem(force) {
+    const c = cid(); if (!c || isAdmin()) return null;
+    const hit = M.cache[c]; if (!force && hit && Date.now() - hit.t < 45000) return hit.d;
+    const d = await api("/api/membership?company_id=" + c); M.cache[c] = { t: Date.now(), d }; return d;
+  }
+
+  /* ---------- badge beside the name, on the account page and in report history ---------- */
+  async function paintBadges() {
+    try {
+      const who = $("who"); if (!who) return;
+      let b = $("mzWho"); if (!b) { b = h("span", "mz-sbadge"); b.id = "mzWho"; who.after(b); }
+      b.replaceChildren();
+      const m = await mem(); if (!m) return;
+      if (m.badge) b.append(badge(m.tier));
+      const acc = $("accountCard");
+      if (acc) {
+        let a = $("mzAcc"); if (!a) { a = h("div", "urow"); a.id = "mzAcc"; acc.append(a); }
+        a.replaceChildren(h("strong", "", "Membership "), m.badge ? badge(m.tier) : h("span", "mute", "Regular (free)"),
+          h("span", "mute", " · " + m.plan_name + (m.expires_at && m.status !== "expired" ? " · until " + D(m.expires_at) : "")));
+      }
+      const rc = $("rptCount");
+      if (rc) { let r = $("mzRpt"); if (!r) { r = h("span", ""); r.id = "mzRpt"; rc.after(r); } r.replaceChildren(m.badge ? badge(m.tier) : ""); }
+    } catch (e) { /* the badge is decoration: never block the page */ }
+  }
+
+  /* ---------- shared checkout (inline, no pop-ups) ---------- */
+  async function checkout(box, kind, key, after) {
+    box.replaceChildren(h("p", "mute", "Preparing your order…")); box.scrollIntoView({ behavior: "smooth", block: "nearest" });
+    let r;
+    try { r = await jpost("/api/market/orders", { company_id: Number(cid()), kind, item_key: String(key) }); }
+    catch (e) { box.replaceChildren(h("div", "mz-card", h("div", "mz-msg err", e.message))); return; }
+    const o = r.order, out = h("div", "mz-card mz-co"), m = h("div", "mz-msg");
+    out.append(h("h3", "", "Checkout"), h("p", "mz-sub", "You are paying for: " + o.title),
+      h("div", "mz-price", NGN(o.amount_ngn), o.list_price_ngn > o.amount_ngn ? h("span", "mute", "  (member price, list " + NGN(o.list_price_ngn) + ")") : ""),
+      h("p", "mz-sub", "Order " + o.order_ref + " · Status: " + (o.status === "pending" ? "waiting for verification" : "awaiting your payment")));
+    const bank = h("div", "mz-bank"); (r.banks || []).forEach(b => bank.append(h("div", "", h("span", "mute", b.name + " · " + b.account_name), h("b", "", b.account_number)))); out.append(bank);
+    out.append(h("ol", "mz-steps", h("li", "", "Transfer exactly " + NGN(o.amount_ngn) + " to one of the accounts above."), h("li", "", "Enter your bank transfer reference below (and attach a screenshot if you can)."),
+      h("li", "", "We verify it in our bank. Your purchase unlocks only after that, never on this page's say-so.")));
+    const ref = h("input"); ref.placeholder = "Bank transfer reference"; ref.value = o.transfer_reference || "";
+    const file = h("input"); file.type = "file"; file.accept = "image/*";
+    const go = h("button", "mz-btn", o.status === "pending" ? "Update reference" : "I have paid"), cancel = h("button", "mz-btn ghost", "Cancel order");
+    go.onclick = async () => {
+      go.disabled = true;
+      try {
+        const x = await jpost(`/api/market/orders/${o.order_ref}/reference`, { company_id: Number(cid()), transfer_reference: ref.value });
+        if (file.files[0]) { const fd = new FormData(); fd.append("company_id", cid()); fd.append("file", file.files[0]); await api(`/api/market/orders/${o.order_ref}/proof`, { method: "POST", body: fd }); }
+        msg(m, "Received. Status: pending verification. We will confirm shortly and you will be notified. Nothing is unlocked until then.", true); go.textContent = "Update reference";
+      } catch (e) { msg(m, e.message); } finally { go.disabled = false; }
+    };
+    cancel.onclick = async () => { try { await api(`/api/market/orders/${o.order_ref}/cancel?company_id=${cid()}`, { method: "POST" }); } catch (e) {} box.replaceChildren(); if (after) after(); };
+    out.append(h("div", "mz-row", ref, file), h("div", "mz-row", go, cancel), m); box.replaceChildren(out);
+  }
+
+  /* ---------- Membership ---------- */
+  async function viewMembership() {
+    const root = $("mzMembership");
+    if (isAdmin()) { root.replaceChildren(h("div", "mz-card", "Site admin: use Revenue to manage customer memberships.")); return; }
+    let m; try { m = await mem(true); } catch (e) { root.replaceChildren(h("div", "mz-card", e.message)); return; }
+    const left = daysLeft(m.expires_at), pct = m.limit ? Math.min(100, Math.round(m.used / m.limit * 100)) : 0;
+    const hero = h("div", "mz-card mz-hero", h("div", "", m.badge ? badge(m.tier, true) : badge("regular", true), h("h2", "", m.plan_name),
+      h("p", "mz-sub", m.status === "active" ? (m.tier === "regular" ? (left != null && left >= 0 ? `Free trial · ${left} day(s) left` : "Free plan") : `Active · ${left != null ? left + " day(s) left · " : ""}ends ${D(m.expires_at)}`) :
+        m.status === "grace" ? `Your membership ended. You have a short grace period (until ${D(m.grace_ends_at)}). Renew to keep paid features.` :
+          m.last_membership === "revoked" ? "Your membership was ended by an administrator." : "Your membership has expired. Renew to unlock paid features again.")),
+      h("div", "", h("div", "", `${m.used} of ${m.limit} analyses used this month`), h("div", "mz-bar", h("i")), h("div", "mute", `${m.remaining} left · ${m.members} of ${m.team_limit} team seat(s)` + (m.market_discount ? ` · ${m.market_discount}% off the Marketplace` : ""))));
+    hero.querySelector(".mz-bar i").style.width = pct + "%";
+    const feat = h("div", "mz-card", h("h3", "", "What you can do"), h("p", "mz-sub", "Premium reports in Report Studio."));
+    const fl = h("ul", "mz-list"); (m.catalogue.features).forEach(f => fl.append(h("li", "", (m.features[f.key] ? "✅ " : "🔒 ") + f.name + (m.features[f.key] ? "" : "  – from " + (f.tier[0].toUpperCase() + f.tier.slice(1)) + ", or " + NGN(f.price_ngn) + " once")))); feat.append(fl, h("div", "mz-row", h("button", "mz-btn sm", "Open Report Studio"))); feat.querySelector("button").onclick = () => navigate("studio");
+    const plans = h("div", "mz-grid");
+    m.catalogue.tiers.forEach(t => {
+      const cur = t.key === m.tier, c = h("div", "mz-card mz-plan" + (cur ? " cur" : ""), badge(t.key), h("div", "pr", t.price_ngn ? NGN(t.price_ngn) : "Free", h("small", "", t.price_ngn ? " / 30 days" : " · " + t.term)), h("div", "mute", t.tagline));
+      const ul = h("ul", ""); [`${t.analyses} analyses a month`, `${t.team} team member${t.team > 1 ? "s" : ""}`, t.market_discount ? `${t.market_discount}% off the Marketplace` : null].filter(Boolean).forEach(x => ul.append(h("li", "", x)));
+      m.catalogue.features.forEach(f => ul.append(h("li", t.features[f.key] ? "" : "no", f.name)));
+      c.append(ul);
+      const b = h("button", "mz-btn" + (cur ? " ghost" : ""), cur ? "Your plan" : t.key === "regular" ? "Free plan" : t.key === "business" ? "Talk to us" : "Upgrade");
+      b.disabled = cur || t.key === "regular";
+      b.onclick = () => navigate(t.key === "business" ? "business" : "plan"); c.append(h("div", "mz-foot", b)); plans.append(c);
+    });
+    const hist = h("div", "mz-card", h("h3", "", "Purchase history"), h("p", "mz-sub", "Memberships, templates and single reports. A purchase is only 'Paid' after we verify it."));
+    const rows = [...m.payments.map(p => ({ t: (db_plan(p.plan)) + " membership", a: p.amount_ngn, s: p.status === "approved" ? "paid" : p.status === "rejected" ? "failed" : "pending", r: p.transfer_reference, d: p.created_at })),
+      ...m.orders.map(o => ({ t: o.title, a: o.amount_ngn, s: o.status, r: o.transfer_reference || o.order_ref, d: o.created_at }))].sort((a, b) => (b.d || "").localeCompare(a.d || ""));
+    hist.append(rows.length ? table(["Date", "Item", "Amount", "Reference", "Status"], rows, r => [D(r.d), r.t, NGN(r.a), r.r || "–", chip(r.s)]) : empty("No purchases yet."));
+    root.replaceChildren(hero, plans, feat, hist);
+  }
+  const db_plan = p => (p || "").replace(/^./, c => c.toUpperCase());
+
+  /* ---------- Marketplace ---------- */
+  const COVER = { Reconciliation: "c1", Reporting: "c2", "Cash flow": "c3", Expenses: "c4", Monitoring: "c5", Audit: "c6" };
+  async function viewMarket(tab) {
+    const root = $("mzMarket"); tab = tab || root.dataset.tab || "store"; root.dataset.tab = tab;
+    if (isAdmin()) { root.replaceChildren(h("div", "mz-card", "Site admin: manage products under Revenue > Products.")); return; }
+    let d, m, orders; try { [d, m, orders] = await Promise.all([api("/api/market/products?company_id=" + cid()), mem(), api("/api/market/orders?company_id=" + cid())]); } catch (e) { root.replaceChildren(h("div", "mz-card", e.message)); return; }
+    const tabs = h("div", "mz-tabs"); [["store", "Store"], ["library", "My library"], ["orders", "Purchases"]].forEach(([k, l]) => { const b = h("button", k === tab ? "on" : "", l); b.onclick = () => viewMarket(k); tabs.append(b); });
+    const head = h("div", "mz-card mz-hero", h("div", "", h("h2", "", "RECONZA Marketplace"), h("p", "mz-sub", "Professional finance templates, ready to use. Pay once, download any time." + (d.discount ? ` Your membership gives you ${d.discount}% off.` : ""))));
+    const co = h("div"); const body = h("div");
+    const pcard = p => {
+      const c = h("div", "mz-card mz-prod", h("div", "mz-cover " + (COVER[p.category] || "c1"), h("span", "", p.category), h("span", "", p.file_name ? "XLSX" : "")), null);
+      const bd = h("div", "bd", h("h3", "", p.name), h("p", "", p.description)); const ul = h("ul", "mz-list"); p.details.forEach(x => ul.append(h("li", "", x))); bd.append(ul);
+      const foot = h("div", "mz-foot", h("div", "mz-price", p.your_price_ngn < p.price_ngn ? h("s", "", NGN(p.price_ngn)) : "", NGN(p.your_price_ngn)));
+      if (p.owned) { const b = h("button", "mz-btn sm", "Download"); b.onclick = () => dl(p); foot.append(b); }
+      else { const b = h("button", "mz-btn sm", "Buy now"); b.onclick = () => checkout(co, "product", p.id, () => viewMarket(tab)); foot.append(b); }
+      bd.append(foot); c.append(bd); return c;
+    };
+    if (tab === "store") {
+      const q = h("input"); q.placeholder = "Search templates"; const cat = h("select"); ["All categories", ...d.categories].forEach(c => cat.append(h("option", "", c)));
+      const grid = h("div", "mz-grid wide"); const draw = () => { grid.replaceChildren(); const k = q.value.toLowerCase(); const list = d.products.filter(p => (cat.selectedIndex === 0 || p.category === cat.value) && (!k || (p.name + p.description).toLowerCase().includes(k)));
+        list.forEach(p => grid.append(pcard(p))); if (!list.length) grid.append(empty("Nothing matches your search.")); };
+      q.oninput = draw; cat.onchange = draw; draw(); body.append(h("div", "mz-row", q, cat), grid);
+    } else if (tab === "library") {
+      const mine = d.products.filter(p => p.owned);
+      body.append(mine.length ? h("div", "mz-grid wide", mine.map(pcard)) : empty("Nothing here yet. Templates you buy appear here once your payment is verified."));
+    } else {
+      body.append(orders.length ? table(["Date", "Item", "Amount", "Reference", "Status"], orders, o => [D(o.created_at), o.title, NGN(o.amount_ngn), o.transfer_reference || o.order_ref, chip(o.status)]) : empty("No purchases yet."));
+    }
+    root.replaceChildren(head, tabs, co, body);
+  }
+  async function dl(p) {
+    try { const r = await fetch(`/api/market/download/${p.id}?company_id=${cid()}`); if (!r.ok) { let j = {}; try { j = await r.json(); } catch (e) {} throw new Error(j.detail || "Download failed"); } save(await r.blob(), p.file_name || "download"); }
+    catch (e) { alert(e.message); }
+  }
+  function save(blob, name) { const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = name; document.body.append(a); a.click(); setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 500); }
+
+  /* ---------- Report Studio ---------- */
+  async function viewStudio() {
+    const root = $("mzStudio");
+    if (isAdmin()) { root.replaceChildren(h("div", "mz-card", "Site admin: customers use Report Studio. Test with a customer account.")); return; }
+    let st; try { st = await api("/api/studio?company_id=" + cid()); } catch (e) { root.replaceChildren(h("div", "mz-card", e.message)); return; }
+    const hero = h("div", "mz-card mz-hero", h("div", "", h("h2", "", "Premium Report Studio"), h("p", "mz-sub", "Board-ready reports built from the same verified figures as your analysis. Your plan: " + st.tier_name + ". Included reports are free; others can be bought one at a time.")));
+    const co = h("div"), out = h("div", "mz-msg"), grid = h("div", "mz-grid wide");
+    const rid = S.lastResultId;
+    hero.append(h("div", "mute", rid ? "Exporting from your latest result." : "Run Statement Score or Ask & Analytics on a transactions file, then come back to export."));
+    st.features.forEach(f => {
+      const c = h("div", "mz-card mz-plan", h("h3", "", f.name), h("p", "mz-sub", f.desc), h("div", "", f.included ? chip("active") : h("span", "mz-chip mz-gray", "Included from " + f.tier_name),
+        f.included ? h("span", "mute", "  Included in your plan") : (f.credits ? h("span", "mz-chip mz-ok", f.credits + " paid report(s) ready") : "")));
+      const foot = h("div", "mz-foot"); const b = h("button", "mz-btn sm", f.included || f.credits ? "Download" : "Buy for " + NGN(f.price_ngn)); b.disabled = !rid && (f.included || f.credits);
+      b.onclick = async () => {
+        if (!(f.included || f.credits)) return checkout(co, "feature", f.key, viewStudio);
+        try { b.disabled = true; const r = await fetch(`/api/studio/export/${rid}/${f.key}`);
+          if (!r.ok) { let j = {}; try { j = await r.json(); } catch (e) {} const dt = j.detail; if (r.status === 402 && dt && dt.code) { checkout(co, "feature", f.key, viewStudio); throw new Error(dt.name + " is not in your plan. Buy it for " + NGN(dt.price_ngn) + " to continue."); } throw new Error(typeof dt === "string" ? dt : "Export failed"); }
+          const cd = r.headers.get("Content-Disposition") || ""; save(await r.blob(), (cd.match(/filename="([^"]+)"/) || [])[1] || f.key); msg(out, "Downloaded.", true); }
+        catch (e) { msg(out, e.message); } finally { b.disabled = false; }
+      };
+      foot.append(b); if (f.pending_order) foot.append(chip("pending")); c.append(foot); grid.append(c);
+    });
+    root.replaceChildren(hero, out, co, grid);
+  }
+
+  /* ---------- Business Services ---------- */
+  async function viewBusiness() {
+    const root = $("mzBusiness"); let m = null, mine = [];
+    try { if (!isAdmin()) { m = await mem(); mine = await api("/api/enquiries/mine"); } } catch (e) {}
+    const hero = h("div", "mz-card mz-hero", h("div", "", h("h2", "", "RECONZA Business Services"), h("p", "mz-sub", "Reconciliation for accounting firms, fintechs, SMEs and finance teams: shared workspaces, controlled access and reports under your own brand.")));
+    const caps = [["Business packages", "Business, Corporate and Enterprise tiers with higher monthly analyses and more seats."], ["Company-based reporting", "One workspace per company with its own history and verified reports."],
+      ["Team members", "Invite your finance team to the company; seats depend on your package."], ["Role-based permissions", "Owner, Admin, Analyst and Viewer: each person sees and does only what they should."],
+      ["Branded reports", "Your logo, name and colour on PDF reports and management reports."], ["Advanced reconciliation support", "Help setting up statements, ledgers, schedules and month-end close."]];
+    const g = h("div", "mz-grid"); caps.forEach(c => g.append(h("div", "mz-card", h("h3", "", c[0]), h("p", "mz-sub", c[1]))));
+    const pk = h("div", "mz-grid"); const PK = {}; ((m && m.catalogue.packages) || []).forEach(x => PK[x.key] = x);
+    [["business", "Business", "Teams and growing companies", "business"], ["corporate", "Corporate", "Larger finance departments", null], ["enterprise", "Enterprise", "Banks, fintechs and groups", null]].forEach(([k, n, t, tk]) => {
+      const c = h("div", "mz-card mz-plan", tk ? badge(tk) : h("b", "", n), h("div", "mute", t)); const info = PK[k];
+      if (info) { c.append(h("div", "pr", NGN(info.price_ngn), h("small", "", " / 30 days")), h("ul", "", h("li", "", info.analyses.toLocaleString() + " analyses a month"), h("li", "", info.team + " team members"), h("li", "", "Branded and management reports"))); }
+      const b = h("button", "mz-btn sm", "Request this package"); b.onclick = () => { form.querySelector("[name=interest]").value = n + " package"; form.scrollIntoView({ behavior: "smooth" }); }; c.append(h("div", "mz-foot", b)); pk.append(c);
+    });
+    const form = h("div", "mz-card", h("h3", "", "Talk to us about a custom package"), h("p", "mz-sub", "Tell us about your team. We reply by email, usually within one working day. Business packages are arranged first, then activated after your payment is verified."));
+    const f = h("div", "mz-f"); const inp = (n, l, ph, full) => { const i = n === "message" ? h("textarea") : h("input"); i.name = n; i.placeholder = ph || ""; const lab = h("label", full ? "full" : "", l, i); f.append(lab); return i; };
+    inp("name", "Your name"); inp("email", "Work email"); inp("company_name", "Company"); inp("phone", "Phone (optional)");
+    const ts = h("select"); ts.name = "team_size"; ["1-5", "6-10", "11-25", "26-75", "75+"].forEach(x => ts.append(h("option", "", x))); f.append(h("label", "", "Team size", ts));
+    inp("interest", "Interested in", "e.g. Business package, branded reports"); inp("message", "What do you need?", "Tell us about your volumes, team and reporting needs", true);
+    const send = h("button", "mz-btn", "Send enquiry"), res = h("div", "mz-msg"); form.append(f, h("div", "mz-row", send), res);
+    send.onclick = async () => { const v = n => (form.querySelector(`[name=${n}]`) || {}).value; send.disabled = true;
+      try { await jpost("/api/enquiries", { company_id: cid() ? Number(cid()) : null, name: v("name"), email: v("email"), company_name: v("company_name"), phone: v("phone"), team_size: v("team_size"), interest: v("interest"), message: v("message") });
+        msg(res, "Thank you. Your enquiry has been received and we will be in touch.", true); viewBusiness(); } catch (e) { msg(res, e.message); } finally { send.disabled = false; } };
+    const prev = mine.length ? h("div", "mz-card", h("h3", "", "Your enquiries"), table(["Date", "Interest", "Status"], mine, r => [D(r.created_at), r.interest || "–", chip(r.status)])) : "";
+    root.replaceChildren(hero, g, pk, form, prev);
+  }
+
+  /* ---------- Revenue (site admin) ---------- */
+  async function viewRevenue(tab) {
+    const root = $("mzRevenue"); tab = tab || root.dataset.tab || "overview"; root.dataset.tab = tab;
+    const tabs = h("div", "mz-tabs"); [["overview", "Overview"], ["customers", "Customers"], ["tx", "Transactions"], ["products", "Products"], ["enq", "Enquiries"]].forEach(([k, l]) => { const b = h("button", k === tab ? "on" : "", l); b.onclick = () => viewRevenue(k); tabs.append(b); });
+    const body = h("div", "mz-page"); root.replaceChildren(h("div", "mz-card mz-hero", h("div", "", h("h2", "", "Revenue & memberships"), h("p", "mz-sub", "Memberships, Marketplace, Report Studio and enquiries in one place."))), tabs, body);
+    try { await ({ overview: rvOverview, customers: rvCustomers, tx: rvTx, products: rvProducts, enq: rvEnq }[tab])(body); } catch (e) { body.append(h("div", "mz-card mz-msg err", e.message)); }
+  }
+  async function rvOverview(body) {
+    const o = await api("/api/admin/money/overview");
+    const k = (v, l) => h("div", "mz-kpi", h("b", "", v), h("span", "", l));
+    body.append(h("div", "mz-kpis", k(NGN(o.revenue_this_month), "Revenue this month"), k(NGN(o.revenue_total), "Revenue, all time"), k(o.paying, "Paying companies"), k(o.free, "Free companies"),
+      k(o.pending_total, "Pending to verify"), k(o.failed_total, "Failed payments"), k(o.new_enquiries, "New enquiries")));
+    const s = o.revenue_by_stream; body.append(h("div", "mz-card", h("h3", "", "Revenue by stream"), h("div", "mz-kpis", k(NGN(s.membership), "Memberships"), k(NGN(s.marketplace), "Marketplace"), k(NGN(s.studio), "Report Studio"))));
+    const mx = Math.max(1, ...o.series.map(x => x.total)); const mo = h("div", "mz-months");
+    o.series.forEach(x => { const i = h("i"); i.style.height = Math.max(3, Math.round(x.total / mx * 90)) + "%"; i.title = NGN(x.total); mo.append(h("div", "", h("span", "", NGN(x.total)), i, h("span", "", x.month))); });
+    body.append(h("div", "mz-card", h("h3", "", "Last months"), o.series.length ? mo : empty("No verified revenue yet.")));
+    body.append(h("div", "mz-card", h("h3", "", "Members by level"), h("div", "mz-row", ["regular", "starter", "professional", "business"].map(t => h("span", "", badge(t), " ", o.tiers[t] + "  ")))));
+  }
+  async function rvCustomers(body) {
+    const q = h("input"); q.placeholder = "Search company, owner or email"; const t = h("select"); [["all", "All levels"], ["regular", "Regular"], ["starter", "Starter"], ["professional", "Professional"], ["business", "Business"]].forEach(([v, l]) => { const op = h("option", "", l); op.value = v; t.append(op); });
+    const list = h("div"), panel = h("div");
+    const load = async () => {
+      const rows = await api(`/api/admin/money/customers?q=${encodeURIComponent(q.value)}&tier=${t.value}`);
+      list.replaceChildren(rows.length ? table(["Company", "Owner", "Level", "Status", "Expires", "Usage", "Paid", ""], rows, r => [r.company, r.owner || "–", r.badge ? badge(r.tier) : "Regular", chip(r.status === "active" && r.tier === "regular" ? "active" : r.status), D(r.expires_at), `${r.used}/${r.limit}`, NGN(r.paid_membership_ngn + r.paid_store_ngn), (() => { const b = h("button", "mz-btn sm ghost", "Manage"); b.onclick = () => manage(r); return b; })()]) : empty("No customers match."));
+    };
+    const manage = r => {
+      const p = h("div", "mz-card mz-co", h("h3", "", "Manage " + r.company), h("p", "mz-sub", `Now: ${r.tier_name} (${r.plan}). Every change is saved in the audit log.`)); const m = h("div", "mz-msg");
+      const plan = h("select"); ["starter", "growth", "professional", "business", "corporate", "enterprise"].forEach(x => plan.append(h("option", "", x))); const days = h("input"); days.type = "number"; days.placeholder = "Days (default 30)"; const note = h("input"); note.placeholder = "Reason / payment reference (required)";
+      const grant = h("button", "mz-btn sm", "Grant / approve membership"), rev = h("button", "mz-btn sm danger", "Revoke membership");
+      grant.onclick = async () => { if (!note.value.trim()) return msg(m, "Write the reason or payment reference first."); try { await jpost("/api/admin/billing/grant", { company_id: r.company_id, plan: plan.value, days: days.value ? Number(days.value) : null, note: note.value }); msg(m, "Membership granted and logged.", true); load(); } catch (e) { msg(m, e.message); } };
+      rev.onclick = async () => { try { await jpost("/api/admin/money/revoke", { company_id: r.company_id, note: note.value }); msg(m, "Membership revoked and logged.", true); load(); } catch (e) { msg(m, e.message); } };
+      p.append(h("div", "mz-row", plan, days, note), h("div", "mz-row", grant, rev), m); panel.replaceChildren(p); p.scrollIntoView({ behavior: "smooth", block: "nearest" });
+    };
+    q.oninput = () => { clearTimeout(q._t); q._t = setTimeout(load, 300); }; t.onchange = load; body.append(h("div", "mz-card", h("div", "mz-row", q, t)), panel, list); await load();
+  }
+  async function rvTx(body) {
+    const q = h("input"); q.placeholder = "Search company, reference or item"; const st = h("select"), kd = h("select");
+    [["all", "All statuses"], ["pending", "Pending"], ["paid", "Paid"], ["failed", "Failed"], ["awaiting_payment", "Awaiting payment"]].forEach(([v, l]) => { const o = h("option", "", l); o.value = v; st.append(o); });
+    [["all", "All types"], ["membership", "Memberships"], ["product", "Marketplace"], ["feature", "Report Studio"]].forEach(([v, l]) => { const o = h("option", "", l); o.value = v; kd.append(o); });
+    const list = h("div"), m = h("div", "mz-msg");
+    const load = async () => {
+      const rows = await api(`/api/admin/money/orders?status=${st.value}&kind=${kd.value}&q=${encodeURIComponent(q.value)}`);
+      list.replaceChildren(rows.length ? table(["Date", "Company", "Item", "Amount", "Reference", "Status", ""], rows, r => [D(r.created_at), r.company, r.title, NGN(r.amount_ngn), r.transfer_reference || r.order_ref, chip(r.status), (() => {
+        const w = h("div", "mz-row"); if (r.has_proof) { const a = h("button", "mz-btn sm ghost", "Proof"); a.onclick = async () => { const x = await fetch(`/api/admin/money/orders/${r.id}/proof`); if (x.ok) window.open(URL.createObjectURL(await x.blob())); }; w.append(a); }
+        if (r.status === "pending") ["approve", "reject"].forEach(dc => { const b = h("button", "mz-btn sm" + (dc === "reject" ? " danger" : ""), dc === "approve" ? "Verify & approve" : "Reject");
+          b.onclick = async () => { b.disabled = true; try { await jpost(r.kind === "membership" ? `/api/admin/billing/payments/${r.id}/decision` : `/api/admin/money/orders/${r.id}/decision`, { decision: dc, note: dc === "approve" ? "checked in bank" : "not found in bank" }); msg(m, "Done and logged.", true); load(); } catch (e) { msg(m, e.message); b.disabled = false; } }; w.append(b); });
+        return w; })()]) : empty("No transactions match."));
+    };
+    q.oninput = () => { clearTimeout(q._t); q._t = setTimeout(load, 300); }; st.onchange = kd.onchange = load; body.append(h("div", "mz-card", h("div", "mz-row", q, st, kd), m), list); await load();
+  }
+  async function rvProducts(body) {
+    const form = h("div", "mz-card"), list = h("div"), m = h("div", "mz-msg"); let editing = null;
+    const f = h("div", "mz-f"); const F = {}; const add = (n, l, el, full) => { F[n] = el; f.append(h("label", full ? "full" : "", l, el)); };
+    add("name", "Name", h("input")); const cat = h("select"); ["Reconciliation", "Reporting", "Cash flow", "Expenses", "Monitoring", "Audit"].forEach(c => cat.append(h("option", "", c))); add("category", "Category", cat);
+    const pr = h("input"); pr.type = "number"; add("price_ngn", "Price (₦)", pr); const act = h("select"); [["1", "Visible in store"], ["0", "Hidden"]].forEach(([v, l]) => { const o = h("option", "", l); o.value = v; act.append(o); }); add("active", "Status", act);
+    add("description", "Description", h("textarea"), true); add("details", "Preview points (one per line)", h("textarea"), true); const fi = h("input"); fi.type = "file"; add("file", "Product file (xlsx, pdf, zip, up to 3 MB)", fi, true);
+    const save = h("button", "mz-btn", "Save product"), reset = h("button", "mz-btn ghost", "Clear");
+    const clear = () => { editing = null; Object.values(F).forEach(x => { if (x.type !== "file") x.value = ""; }); cat.selectedIndex = 0; act.value = "1"; fi.value = ""; ttl.textContent = "Add a product"; };
+    const ttl = h("h3", "", "Add a product"); form.append(ttl, f, h("div", "mz-row", save, reset), m); reset.onclick = clear;
+    save.onclick = async () => {
+      const body = { name: F.name.value, category: F.category.value, description: F.description.value, details: F.details.value, price_ngn: Number(F.price_ngn.value || 0), active: F.active.value === "1" };
+      try {
+        const file = fi.files[0]; if (file) { if (file.size > 3 * 1024 * 1024) throw new Error("File is over 3 MB."); const buf = new Uint8Array(await file.arrayBuffer()); let s = ""; for (let i = 0; i < buf.length; i += 8192) s += String.fromCharCode.apply(null, buf.subarray(i, i + 8192)); body.file_b64 = btoa(s); body.file_name = file.name; body.file_mime = file.type || "application/octet-stream"; }
+        await jsend(editing ? "PUT" : "POST", editing ? `/api/admin/money/products/${editing}` : "/api/admin/money/products", body); msg(m, "Saved.", true); clear(); load();
+      } catch (e) { msg(m, e.message); }
+    };
+    const load = async () => {
+      const rows = await api("/api/admin/money/products");
+      list.replaceChildren(table(["Product", "Category", "Price", "Status", "File", ""], rows, r => [r.name, r.category, NGN(r.price_ngn), chip(r.active ? "active" : "closed"), r.file_name || "none", (() => { const w = h("div", "mz-row"), e = h("button", "mz-btn sm ghost", "Edit"), d = h("button", "mz-btn sm danger", "Remove");
+        e.onclick = () => { editing = r.id; F.name.value = r.name; F.category.value = r.category; F.price_ngn.value = r.price_ngn; F.active.value = r.active ? "1" : "0"; F.description.value = r.description; F.details.value = r.details.join("\n"); ttl.textContent = "Edit: " + r.name; form.scrollIntoView({ behavior: "smooth" }); };
+        d.onclick = async () => { try { const x = await api(`/api/admin/money/products/${r.id}`, { method: "DELETE" }); msg(m, x.result === "hidden" ? "Customers already bought it, so it is hidden instead of deleted." : "Deleted.", true); load(); } catch (er) { msg(m, er.message); } };
+        w.append(e, d); return w; })()]));
+    };
+    body.append(form, list); await load();
+  }
+  async function rvEnq(body) {
+    const st = h("select"); [["all", "All"], ["new", "New"], ["contacted", "Contacted"], ["quoted", "Quoted"], ["won", "Won"], ["closed", "Closed"]].forEach(([v, l]) => { const o = h("option", "", l); o.value = v; st.append(o); });
+    const q = h("input"); q.placeholder = "Search name, email, company"; const list = h("div", "mz-page");
+    const load = async () => {
+      const rows = await api(`/api/admin/money/enquiries?status=${st.value}&q=${encodeURIComponent(q.value)}`); list.replaceChildren();
+      rows.forEach(r => { const s = h("select"); ["new", "contacted", "quoted", "won", "closed"].forEach(x => s.append(h("option", "", x))); s.value = r.status; const n = h("input"); n.placeholder = "Internal note"; n.value = r.admin_note || ""; const b = h("button", "mz-btn sm", "Save"), m = h("span", "mute");
+        b.onclick = async () => { try { await jpost(`/api/admin/money/enquiries/${r.id}`, { status: s.value, note: n.value }); m.textContent = " Saved"; } catch (e) { m.textContent = " " + e.message; } };
+        list.append(h("div", "mz-card", h("div", "mz-row", h("b", "", r.name), chip(r.status), h("span", "mute", `${r.email} · ${r.company_name || "-"} · team ${r.team_size || "-"} · ${r.interest || "-"} · ${D(r.created_at)}`)), h("p", "", r.message), h("div", "mz-row", s, n, b, m))); });
+      if (!rows.length) list.append(empty("No enquiries."));
+    };
+    q.oninput = () => { clearTimeout(q._t); q._t = setTimeout(load, 300); }; st.onchange = load; body.append(h("div", "mz-card", h("div", "mz-row", q, st)), list); await load();
+  }
+
+  /* ---------- wiring ---------- */
+  const LOAD = { membership: viewMembership, market: () => viewMarket(), studio: viewStudio, business: viewBusiness, revenue: () => viewRevenue() };
+  const app = $("app");
+  new MutationObserver(() => { const v = app.getAttribute("data-view"); if (LOAD[v] && S.user && !S.user.needs_2fa_setup) LOAD[v](); }).observe(app, { attributes: true, attributeFilter: ["data-view"] });
+  $("company").addEventListener("change", () => { M.cache = {}; paintBadges(); const v = app.getAttribute("data-view"); if (LOAD[v]) LOAD[v](); });
+  new MutationObserver(() => { paintBadges(); setTimeout(paintBadges, 900); }).observe($("who"), { childList: true, characterData: true, subtree: true });
+  document.addEventListener("click", e => { if (e.target.closest && e.target.closest('[data-nav="reports"],[data-nav="settings"]')) setTimeout(paintBadges, 300); });
+  setInterval(() => { M.cache = {}; }, 120000);
+  window.mzRefreshBadge = () => { M.cache = {}; return paintBadges(); };
 })();
 </script>
 </body>
