@@ -317,6 +317,8 @@ def _init_schema(_con) -> None:
     _ensure_column(_con, "broadcasts", "target_user_id", "INTEGER")   # NULL = announcement for everyone
     _ensure_column(_con, "sessions", "user_agent", "TEXT")            # shown in "devices signed in"
     _ensure_column(_con, "sessions", "ip", "TEXT")
+    import monetize                      # membership store: products, orders, feature credits, enquiries (additive tables only)
+    monetize.schema(_con)
 
 
 run_startup_migration(_init_schema)
@@ -1173,7 +1175,7 @@ def _grace_subscription(con, company_id: int):
     now = _now()
     since = (dt.datetime.now(dt.timezone.utc) - dt.timedelta(hours=GRACE_HOURS)).strftime(FMT)
     return con.execute(
-        "SELECT * FROM subscriptions WHERE company_id=? AND plan NOT IN ('free','expired') AND expires_at<=? AND expires_at>? "
+        "SELECT * FROM subscriptions WHERE company_id=? AND plan NOT IN ('free','expired') AND status!='revoked' AND expires_at<=? AND expires_at>? "
         "ORDER BY id DESC LIMIT 1", (company_id, now, since)).fetchone()
 
 

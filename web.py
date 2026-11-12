@@ -71,6 +71,11 @@ REGISTRATION_OK_MAX_PER_IP, REGISTRATION_OK_MAX_TOTAL = 10, 60  # per hour
 async def lifespan(app: FastAPI):
     db.check_encryption()
     db.bootstrap_admin()
+    try:
+        import monetize
+        monetize.seed_products()
+    except Exception:  # noqa: BLE001  the store must never stop the site starting
+        logging.getLogger("web").exception("could not seed the marketplace")
     tasks = scheduler.start()
     yield
     for t in tasks:
@@ -2924,6 +2929,11 @@ def delete_saved_question(saved_id: int, user: dict = Depends(current_user)):
         raise HTTPException(404, "Saved question not found.")
     return {"ok": True}
 
+
+
+import sys as _sys
+import monetize_api
+monetize_api.register(app, _sys.modules[__name__])      # membership tiers, Marketplace, Report Studio, Business Services, revenue admin
 
 
 if __name__ == "__main__":
