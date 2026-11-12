@@ -263,6 +263,60 @@ class AdminAndEnquiries(Base):
         self.assertEqual(len(M.my_enquiries(u["id"])), 1)
 
 
+class PacksAndAnnual(Base):
+    def approve(self, cid, uid, kind, key):
+        o = M.create_order(cid, uid, kind, key); M.submit_reference(o["order_ref"], cid, "PA-" + o["order_ref"])
+        return M.decide_order(o["id"], "approve", self.admin["id"])
+
+    def test_pack_covers_use_after_allowance_and_refunds_failures(self):
+        import core
+        u, cid = mk("Pack Co " + os.urandom(2).hex(), "pk_" + os.urandom(2).hex())
+        limit = db.get_plan_status(cid)["monthly_limit"]
+        ids = [db.reserve_monthly_usage(cid, u["id"], "t") for _ in range(limit)]
+        for i in ids:
+            db.finish_monthly_usage(i, True)
+        with self.assertRaises(core.LimitReached):
+            db.reserve_monthly_usage(cid, u["id"], "t")                       # allowance used up and no pack: blocked
+        o = M.create_order(cid, u["id"], "pack", "10"); self.assertEqual(o["amount_ngn"], 7000)
+        with self.assertRaises(core.LimitReached):
+            db.reserve_monthly_usage(cid, u["id"], "t")                       # an unpaid order gives nothing
+        self.approve(cid, u["id"], "pack", "10") if False else None
+        M.submit_reference(o["order_ref"], cid, "PK-" + o["order_ref"]); M.decide_order(o["id"], "approve", self.admin["id"])
+        self.assertEqual(db.get_plan_status(cid)["pack_remaining"], 10)
+        r = db.reserve_monthly_usage(cid, u["id"], "t")
+        self.assertEqual(db.get_plan_status(cid)["pack_remaining"], 9)
+        db.finish_monthly_usage(r, False)                                     # the analysis failed: credit comes back
+        self.assertEqual(db.get_plan_status(cid)["pack_remaining"], 10)
+        for _ in range(10):
+            db.finish_monthly_usage(db.reserve_monthly_usage(cid, u["id"], "t"), True)
+        with self.assertRaises(core.LimitReached):
+            db.reserve_monthly_usage(cid, u["id"], "t")                       # pack used up
+        with db._db() as con:
+            con.execute("UPDATE analysis_packs SET used=0, expires_at='2000-01-01 00:00:00' WHERE company_id=?", (cid,))
+        self.assertEqual(db.get_plan_status(cid)["pack_remaining"], 0)         # expired packs do not count
+
+    def test_annual_plan(self):
+        u, cid = mk("Year Co " + os.urandom(2).hex(), "yr_" + os.urandom(2).hex())
+        o = M.create_order(cid, u["id"], "annual", "starter")
+        self.assertEqual(o["amount_ngn"], db.PLANS["starter"]["price_ngn"] * 10)
+        self.assertEqual(M.membership(cid)["tier"], "regular")                 # unpaid: nothing changes
+        self.approve(cid, u["id"], "annual", "starter")
+        m = M.membership(cid)
+        self.assertEqual((m["tier"], m["badge"]), ("starter", "Starter Member"))
+        self.assertGreater(daysleft(m["expires_at"]), 360)
+        o2 = M.create_order(cid, u["id"], "annual", "professional")           # upgrade path allowed
+        M.submit_reference(o2["order_ref"], cid, "YR2-" + o2["order_ref"]); M.decide_order(o2["id"], "approve", self.admin["id"])
+        self.assertEqual(M.membership(cid)["tier"], "professional")
+        with self.assertRaises(ValueError):
+            M.create_order(cid, u["id"], "annual", "starter")                  # cannot buy a lower tier by mistake
+        with self.assertRaises(LookupError):
+            M.create_order(cid, u["id"], "annual", "business")
+
+
+def daysleft(ts):
+    return (dt.datetime.strptime(ts, FMT) - dt.datetime.utcnow()).days
+
+
 class Routes(Base):
     """The HTTP layer: ownership and role rules, called without a web server."""
     @classmethod
