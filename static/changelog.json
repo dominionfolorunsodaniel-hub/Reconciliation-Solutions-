@@ -1,13 +1,24 @@
 [
   {
     "date": "2026-11-12",
+    "title": "Pay-as-you-go packs, yearly plans and a savings calculator",
+    "changes": [
+      "Buy extra analyses without a subscription (10, 25 or 60, valid 90 days)",
+      "Yearly Starter and Professional plans: 12 months for the price of 10",
+      "Savings calculator on the home page",
+      "2-step sign-in reminder for owners and admins on payment pages"
+    ]
+  },
+  {
+    "date": "2026-11-12",
     "title": "Membership levels, Marketplace and Report Studio",
     "changes": [
       "Starter, Professional and Business memberships with verified badges, allowances and different report permissions",
       "RECONZA Marketplace: finance templates with member discounts, verified purchase and private downloads",
       "Premium Report Studio: professional, branded and management reports, included by plan or bought one at a time",
       "Business Services page with an enquiry form",
-      "Admin Revenue area: customers, transactions, products, enquiries and revenue summary"
+      "Admin Revenue area: customers, transactions, products, enquiries and revenue summary",
+      "Step-by-step 'How it works' guides on Membership, Marketplace, Report Studio, Business Services and Revenue pages"
     ]
   },
   {

@@ -1307,7 +1307,7 @@ html[data-theme=dark] .d-kpi, html[data-theme=dark] .d-kpi b, html[data-theme=da
 .mz-steps{margin:8px 0 0;padding-left:18px;font-size:13px;color:var(--mute)}.mz-msg{font-size:13px;margin:8px 0 0}.mz-msg.err{color:#c53030}.mz-msg.ok{color:#13794a}
 .mz-co{border:2px solid var(--brand);background:linear-gradient(180deg,rgba(43,89,255,.05),transparent)}
 .mz-months{display:flex;gap:10px;align-items:flex-end;height:120px;margin-top:10px}.mz-months div{flex:1;display:flex;flex-direction:column;justify-content:flex-end;align-items:center;gap:4px;font-size:11px;color:var(--mute);height:100%}.mz-months i{display:block;width:100%;max-width:46px;background:linear-gradient(180deg,#2b59ff,#06b6d4);border-radius:6px 6px 0 0;min-height:3px}
-.mz-hero>div{flex:1 1 260px;min-width:0}.mz-page,.mz-card{min-width:0;max-width:100%}.mz-f input,.mz-f select,.mz-f textarea{width:100%;box-sizing:border-box;min-width:0}.mz-row input,.mz-row select{min-width:0;max-width:100%}.mz-card.mz-prod{padding:0}.mz-sbadge{margin-left:8px}@media(max-width:640px){.mz-card{padding:14px}.mz-hero h2{font-size:19px}.mz-grid,.mz-grid.wide{grid-template-columns:1fr}.mz-f{grid-template-columns:1fr}}
+.mz-hero>div{flex:1 1 260px;min-width:0}.mz-page,.mz-card{min-width:0;max-width:100%}.mz-f input,.mz-f select,.mz-f textarea{width:100%;box-sizing:border-box;min-width:0}.mz-row input,.mz-row select{min-width:0;max-width:100%}.mz-card.mz-prod{padding:0}.mz-guide{background:var(--card);border:1px solid var(--line);border-left:4px solid var(--brand);border-radius:14px;padding:12px 16px;font-size:13.5px}.mz-guide summary{cursor:pointer;font-weight:700}.mz-guide ol{margin:10px 0 2px;padding-left:20px;display:grid;gap:6px;color:var(--mute)}.mz-sbadge{margin-left:8px}@media(max-width:640px){.mz-card{padding:14px}.mz-hero h2{font-size:19px}.mz-grid,.mz-grid.wide{grid-template-columns:1fr}.mz-f{grid-template-columns:1fr}}
 </style>
 </head>
 <body>
@@ -1533,6 +1533,20 @@ html[data-theme=dark] .d-kpi, html[data-theme=dark] .d-kpi b, html[data-theme=da
     </div>
   </section>
 
+  <section class="lp-sec" id="savings">
+    <div class="lp-wrap">
+      <div class="lp-head"><h2>See what you could save</h2><p>An estimate you can adjust. Change the numbers to match your team.</p></div>
+      <div class="lp-plans" style="grid-template-columns:repeat(auto-fit,minmax(260px,1fr))">
+        <article class="lp-plan"><h3>Your reconciliation work</h3>
+          <p class="lp-per">Hours spent each week matching statements and ledgers</p><input id="calcHours" type="number" min="0" value="10" style="width:100%;padding:10px;border-radius:10px;border:1px solid #cbd5e1;box-sizing:border-box">
+          <p class="lp-per">Cost of one hour of that work (₦)</p><input id="calcRate" type="number" min="0" value="3000" style="width:100%;padding:10px;border-radius:10px;border:1px solid #cbd5e1;box-sizing:border-box">
+          <p class="lp-per">Share of that time RECONZA can save (%)</p><input id="calcPct" type="number" min="0" max="100" value="70" style="width:100%;padding:10px;border-radius:10px;border:1px solid #cbd5e1;box-sizing:border-box"></article>
+        <article class="lp-plan"><h3>Estimated saving</h3><p class="lp-price" id="calcOut">₦0</p><p class="lp-per" id="calcSub"></p>
+          <p class="lp-per">This is an estimate from the numbers you enter, not a guarantee. Results depend on your files and process.</p></article>
+      </div>
+    </div>
+  </section>
+  <script>(function(){var h=document.getElementById("calcHours"),r=document.getElementById("calcRate"),p=document.getElementById("calcPct");if(!h)return;function go(){var hrs=Math.max(0,+h.value||0),rate=Math.max(0,+r.value||0),pc=Math.min(100,Math.max(0,+p.value||0))/100;var saved=hrs*4.33*pc,money=saved*rate;document.getElementById("calcOut").textContent="₦"+Math.round(money).toLocaleString("en-NG")+" / month";document.getElementById("calcSub").textContent="About "+saved.toFixed(1)+" hours saved a month, "+Math.round(saved*12)+" hours a year.";}[h,r,p].forEach(function(e){e.addEventListener("input",go)});go();})();</script>
   <section class="lp-sec lp-alt" id="pricing">
     <div class="lp-wrap">
       <div class="lp-head"><h2>Pricing</h2><p>Start free and upgrade when your team grows. Monthly prices in Naira, no hidden fees.</p></div>
@@ -4750,6 +4764,28 @@ $("aiCheckBtn").onclick = async () => {
     return h("div", "mz-tw", t);
   }
   const empty = t => h("p", "mute", t);
+  const GUIDES = {
+    membership: ["How Membership works", ["Your badge, plan and expiry are at the top. The bar shows how many analyses you have used this month.", "Compare the four levels below. Each one adds analyses, team seats, report types and Marketplace discounts.", "Click Upgrade to go to Plan & Billing: pick a plan, transfer the exact amount, enter your transfer reference. Your badge appears only after we confirm the money in our bank.", "Business is arranged with us first. Click Talk to us.", "Out of analyses? Buy a pay-as-you-go pack, or pay yearly and get 2 months free.", "Purchase history shows every payment and whether it is Pending, Paid or Failed."]],
+    market: ["How the Marketplace works", ["Browse Store and open a template. Members see a discounted price.", "Click Buy now. Check the amount, transfer it to the account shown, then type your bank reference and press I have paid. A screenshot helps us confirm faster.", "Status becomes Pending. After we verify the payment it becomes Paid and the template moves to My library.", "Open My library and press Download whenever you need it. Purchases tab shows every order.", "Only company owners and admins can buy. Everyone in the company can download."]],
+    studio: ["How Report Studio works", ["First run Statement Score or Ask & Analytics on a bank statement or ledger. Reports are made from that latest result.", "Each card is a premium report. Included means your plan already covers it: press Download.", "Not included? Press Buy, pay once for that single report, and after we verify it the button changes to Download.", "A paid report works for the result you used it on. A different result needs another purchase, unless your plan includes it.", "You are never charged for something your plan already includes."]],
+    business: ["How Business Services works", ["Read what a Business package gives a team: more analyses, seats, roles, branded reports.", "Fill the enquiry form (team size and what you need) and press Send enquiry.", "We reply by email, agree a package and price, you pay by transfer, we verify and activate it.", "Then invite your team under My Team and set Owner, Admin, Analyst or Viewer roles.", "Your branding (logo and colour) is set under Settings > Branding."]],
+    revenue: ["How Revenue works (admin)", ["Overview: money received, paying vs free companies, pending items.", "Transactions: when a customer says they paid, check your bank, then press Verify & approve. Reject if you cannot see the money. Both are logged.", "Customers: press Manage to grant a membership (reason required) or revoke one.", "Products: add or edit templates, set prices, hide or remove them. Products already bought are hidden, not deleted.", "Enquiries: update the status and add a note as you talk to each company."]]
+  };
+  function twofaWarn() {
+    try {
+      const u = S.user, needs = u && !u.totp_enabled && (u.role === "admin" || ["owner", "admin"].includes(u.company_role));
+      if (!needs) return "";
+      const b = h("button", "mz-btn sm", "Turn on 2FA"); b.onclick = () => { const t = $("twofaBtn"); if (t) t.click(); };
+      return h("div", "mz-guide", h("b", "", "Protect your money pages. "), "Payments and memberships are managed from this account. Turn on 2-step sign-in so nobody else can use it. ", b);
+    } catch (e) { return ""; }
+  }
+  function guide(k) {
+    const g = GUIDES[k]; let closed = false; try { closed = localStorage.getItem("mzg_" + k) === "1"; } catch (e) {}
+    const d = h("details", "mz-guide"); if (!closed) d.open = true;
+    d.append(h("summary", "", "📘 " + g[0]), h("ol", "", g[1].map(x => h("li", "", x))));
+    d.addEventListener("toggle", () => { try { localStorage.setItem("mzg_" + k, d.open ? "0" : "1"); } catch (e) {} });
+    return d;
+  }
   const M = { cache: {} };
   async function mem(force) {
     const c = cid(); if (!c || isAdmin()) return null;
@@ -4810,11 +4846,12 @@ $("aiCheckBtn").onclick = async () => {
     if (isAdmin()) { root.replaceChildren(h("div", "mz-card", "Site admin: use Revenue to manage customer memberships.")); return; }
     let m; try { m = await mem(true); } catch (e) { root.replaceChildren(h("div", "mz-card", e.message)); return; }
     const left = daysLeft(m.expires_at), pct = m.limit ? Math.min(100, Math.round(m.used / m.limit * 100)) : 0;
+    const co = h("div");
     const hero = h("div", "mz-card mz-hero", h("div", "", m.badge ? badge(m.tier, true) : badge("regular", true), h("h2", "", m.plan_name),
       h("p", "mz-sub", m.status === "active" ? (m.tier === "regular" ? (left != null && left >= 0 ? `Free trial · ${left} day(s) left` : "Free plan") : `Active · ${left != null ? left + " day(s) left · " : ""}ends ${D(m.expires_at)}`) :
         m.status === "grace" ? `Your membership ended. You have a short grace period (until ${D(m.grace_ends_at)}). Renew to keep paid features.` :
           m.last_membership === "revoked" ? "Your membership was ended by an administrator." : "Your membership has expired. Renew to unlock paid features again.")),
-      h("div", "", h("div", "", `${m.used} of ${m.limit} analyses used this month`), h("div", "mz-bar", h("i")), h("div", "mute", `${m.remaining} left · ${m.members} of ${m.team_limit} team seat(s)` + (m.market_discount ? ` · ${m.market_discount}% off the Marketplace` : ""))));
+      h("div", "", h("div", "", `${m.used} of ${m.limit} analyses used this month`), h("div", "mz-bar", h("i")), h("div", "mute", `${m.remaining} left${m.pack_remaining ? " (incl. " + m.pack_remaining + " from analysis packs)" : ""} · ${m.members} of ${m.team_limit} team seat(s)` + (m.market_discount ? ` · ${m.market_discount}% off the Marketplace` : ""))));
     hero.querySelector(".mz-bar i").style.width = pct + "%";
     const feat = h("div", "mz-card", h("h3", "", "What you can do"), h("p", "mz-sub", "Premium reports in Report Studio."));
     const fl = h("ul", "mz-list"); (m.catalogue.features).forEach(f => fl.append(h("li", "", (m.features[f.key] ? "✅ " : "🔒 ") + f.name + (m.features[f.key] ? "" : "  – from " + (f.tier[0].toUpperCase() + f.tier.slice(1)) + ", or " + NGN(f.price_ngn) + " once")))); feat.append(fl, h("div", "mz-row", h("button", "mz-btn sm", "Open Report Studio"))); feat.querySelector("button").onclick = () => navigate("studio");
@@ -4826,13 +4863,18 @@ $("aiCheckBtn").onclick = async () => {
       c.append(ul);
       const b = h("button", "mz-btn" + (cur ? " ghost" : ""), cur ? "Your plan" : t.key === "regular" ? "Free plan" : t.key === "business" ? "Talk to us" : "Upgrade");
       b.disabled = cur || t.key === "regular";
-      b.onclick = () => navigate(t.key === "business" ? "business" : "plan"); c.append(h("div", "mz-foot", b)); plans.append(c);
+      b.onclick = () => navigate(t.key === "business" ? "business" : "plan"); const ft = h("div", "mz-foot", b);
+      const an = m.catalogue.annual[t.key];
+      if (an) { const y = h("button", "mz-btn sm ghost", "Pay yearly " + NGN(an.price_ngn)); y.title = "12 months for the price of 10"; y.onclick = () => checkout(co, "annual", t.key, viewMembership); ft.append(y); c.append(h("div", "mute", "Yearly: save " + NGN(an.saves_ngn) + " (2 months free)")); }
+      c.append(ft); plans.append(c);
     });
+    const packs = h("div", "mz-card", h("h3", "", "Need more analyses? Pay as you go"), h("p", "mz-sub", "Extra analyses are used after your monthly allowance and stay valid for 90 days. No subscription needed."));
+    const pg = h("div", "mz-grid"); m.catalogue.packs.forEach(k => { const b = h("button", "mz-btn", k.size + " analyses · " + NGN(k.price_ngn)); b.onclick = () => checkout(co, "pack", k.key, viewMembership); pg.append(h("div", "", b, h("div", "mute", NGN(Math.round(k.price_ngn / k.size)) + " each"))); }); packs.append(pg);
     const hist = h("div", "mz-card", h("h3", "", "Purchase history"), h("p", "mz-sub", "Memberships, templates and single reports. A purchase is only 'Paid' after we verify it."));
     const rows = [...m.payments.map(p => ({ t: (db_plan(p.plan)) + " membership", a: p.amount_ngn, s: p.status === "approved" ? "paid" : p.status === "rejected" ? "failed" : "pending", r: p.transfer_reference, d: p.created_at })),
       ...m.orders.map(o => ({ t: o.title, a: o.amount_ngn, s: o.status, r: o.transfer_reference || o.order_ref, d: o.created_at }))].sort((a, b) => (b.d || "").localeCompare(a.d || ""));
     hist.append(rows.length ? table(["Date", "Item", "Amount", "Reference", "Status"], rows, r => [D(r.d), r.t, NGN(r.a), r.r || "–", chip(r.s)]) : empty("No purchases yet."));
-    root.replaceChildren(hero, plans, feat, hist);
+    root.replaceChildren(hero, guide("membership"), twofaWarn(), co, plans, packs, feat, hist);
   }
   const db_plan = p => (p || "").replace(/^./, c => c.toUpperCase());
 
@@ -4864,7 +4906,7 @@ $("aiCheckBtn").onclick = async () => {
     } else {
       body.append(orders.length ? table(["Date", "Item", "Amount", "Reference", "Status"], orders, o => [D(o.created_at), o.title, NGN(o.amount_ngn), o.transfer_reference || o.order_ref, chip(o.status)]) : empty("No purchases yet."));
     }
-    root.replaceChildren(head, tabs, co, body);
+    root.replaceChildren(head, guide("market"), twofaWarn(), tabs, co, body);
   }
   async function dl(p) {
     try { const r = await fetch(`/api/market/download/${p.id}?company_id=${cid()}`); if (!r.ok) { let j = {}; try { j = await r.json(); } catch (e) {} throw new Error(j.detail || "Download failed"); } save(await r.blob(), p.file_name || "download"); }
@@ -4894,7 +4936,7 @@ $("aiCheckBtn").onclick = async () => {
       };
       foot.append(b); if (f.pending_order) foot.append(chip("pending")); c.append(foot); grid.append(c);
     });
-    root.replaceChildren(hero, out, co, grid);
+    root.replaceChildren(hero, guide("studio"), out, co, grid);
   }
 
   /* ---------- Business Services ---------- */
@@ -4922,14 +4964,14 @@ $("aiCheckBtn").onclick = async () => {
       try { await jpost("/api/enquiries", { company_id: cid() ? Number(cid()) : null, name: v("name"), email: v("email"), company_name: v("company_name"), phone: v("phone"), team_size: v("team_size"), interest: v("interest"), message: v("message") });
         msg(res, "Thank you. Your enquiry has been received and we will be in touch.", true); viewBusiness(); } catch (e) { msg(res, e.message); } finally { send.disabled = false; } };
     const prev = mine.length ? h("div", "mz-card", h("h3", "", "Your enquiries"), table(["Date", "Interest", "Status"], mine, r => [D(r.created_at), r.interest || "–", chip(r.status)])) : "";
-    root.replaceChildren(hero, g, pk, form, prev);
+    root.replaceChildren(hero, guide("business"), g, pk, form, prev);
   }
 
   /* ---------- Revenue (site admin) ---------- */
   async function viewRevenue(tab) {
     const root = $("mzRevenue"); tab = tab || root.dataset.tab || "overview"; root.dataset.tab = tab;
     const tabs = h("div", "mz-tabs"); [["overview", "Overview"], ["customers", "Customers"], ["tx", "Transactions"], ["products", "Products"], ["enq", "Enquiries"]].forEach(([k, l]) => { const b = h("button", k === tab ? "on" : "", l); b.onclick = () => viewRevenue(k); tabs.append(b); });
-    const body = h("div", "mz-page"); root.replaceChildren(h("div", "mz-card mz-hero", h("div", "", h("h2", "", "Revenue & memberships"), h("p", "mz-sub", "Memberships, Marketplace, Report Studio and enquiries in one place."))), tabs, body);
+    const body = h("div", "mz-page"); root.replaceChildren(h("div", "mz-card mz-hero", h("div", "", h("h2", "", "Revenue & memberships"), h("p", "mz-sub", "Memberships, Marketplace, Report Studio and enquiries in one place."))), tabs, guide("revenue"), twofaWarn(), body);
     try { await ({ overview: rvOverview, customers: rvCustomers, tx: rvTx, products: rvProducts, enq: rvEnq }[tab])(body); } catch (e) { body.append(h("div", "mz-card mz-msg err", e.message)); }
   }
   async function rvOverview(body) {
@@ -4937,7 +4979,7 @@ $("aiCheckBtn").onclick = async () => {
     const k = (v, l) => h("div", "mz-kpi", h("b", "", v), h("span", "", l));
     body.append(h("div", "mz-kpis", k(NGN(o.revenue_this_month), "Revenue this month"), k(NGN(o.revenue_total), "Revenue, all time"), k(o.paying, "Paying companies"), k(o.free, "Free companies"),
       k(o.pending_total, "Pending to verify"), k(o.failed_total, "Failed payments"), k(o.new_enquiries, "New enquiries")));
-    const s = o.revenue_by_stream; body.append(h("div", "mz-card", h("h3", "", "Revenue by stream"), h("div", "mz-kpis", k(NGN(s.membership), "Memberships"), k(NGN(s.marketplace), "Marketplace"), k(NGN(s.studio), "Report Studio"))));
+    const s = o.revenue_by_stream; body.append(h("div", "mz-card", h("h3", "", "Revenue by stream"), h("div", "mz-kpis", k(NGN(s.membership), "Memberships"), k(NGN(s.marketplace), "Marketplace"), k(NGN(s.studio), "Report Studio"), k(NGN(s.packs), "Analysis packs"))));
     const mx = Math.max(1, ...o.series.map(x => x.total)); const mo = h("div", "mz-months");
     o.series.forEach(x => { const i = h("i"); i.style.height = Math.max(3, Math.round(x.total / mx * 90)) + "%"; i.title = NGN(x.total); mo.append(h("div", "", h("span", "", NGN(x.total)), i, h("span", "", x.month))); });
     body.append(h("div", "mz-card", h("h3", "", "Last months"), o.series.length ? mo : empty("No verified revenue yet.")));
@@ -4963,7 +5005,7 @@ $("aiCheckBtn").onclick = async () => {
   async function rvTx(body) {
     const q = h("input"); q.placeholder = "Search company, reference or item"; const st = h("select"), kd = h("select");
     [["all", "All statuses"], ["pending", "Pending"], ["paid", "Paid"], ["failed", "Failed"], ["awaiting_payment", "Awaiting payment"]].forEach(([v, l]) => { const o = h("option", "", l); o.value = v; st.append(o); });
-    [["all", "All types"], ["membership", "Memberships"], ["product", "Marketplace"], ["feature", "Report Studio"]].forEach(([v, l]) => { const o = h("option", "", l); o.value = v; kd.append(o); });
+    [["all", "All types"], ["membership", "Memberships"], ["product", "Marketplace"], ["feature", "Report Studio"], ["pack", "Analysis packs"], ["annual", "Yearly plans"]].forEach(([v, l]) => { const o = h("option", "", l); o.value = v; kd.append(o); });
     const list = h("div"), m = h("div", "mz-msg");
     const load = async () => {
       const rows = await api(`/api/admin/money/orders?status=${st.value}&kind=${kd.value}&q=${encodeURIComponent(q.value)}`);
