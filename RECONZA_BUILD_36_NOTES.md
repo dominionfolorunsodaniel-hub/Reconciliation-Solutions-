@@ -38,3 +38,11 @@ New tables: products, orders, feature_credits, enquiries. Only change to an exis
 - Exports use the latest result in your session; results live in memory (last 50), so re-run if the site restarted.
 - No live Paystack or Postgres test was possible here; FastAPI routes were tested by calling them directly, not over HTTP. Please smoke-test once after deploy.
 - Marketplace files are stored encrypted in the database (3 MB max each).
+
+## Build 38 additions
+- Analysis packs (pay as you go): 10 for ₦7,000, 25 for ₦16,000, 60 for ₦36,000, valid 90 days, used only after the monthly allowance (works even when the plan has expired). A failed analysis returns the credit. New table analysis_packs and column monthly_usage.pack_id (db.reserve_monthly_usage / finish_monthly_usage / get_plan_status changed minimally).
+- Yearly plans for Starter and Professional: 12 months for the price of 10, same order and verification flow; renewing the same plan keeps unused days; buying a lower tier is blocked.
+- 2FA reminder for owners/admins on money pages (a reminder, not forced: forcing it could lock people out).
+- Landing-page savings calculator (an adjustable estimate, labelled as such).
+- Already existed, so not rebuilt: referral rewards (extras.py) and a hidden demo-video section on the landing page.
+- NOT built yet: approval workflow and comments on transactions (large, needs its own release); automatic Paystack confirmation (hook `mark_order_paid` is ready; needs your Paystack keys and a test).

@@ -317,6 +317,7 @@ def _init_schema(_con) -> None:
     _ensure_column(_con, "broadcasts", "target_user_id", "INTEGER")   # NULL = announcement for everyone
     _ensure_column(_con, "sessions", "user_agent", "TEXT")            # shown in "devices signed in"
     _ensure_column(_con, "sessions", "ip", "TEXT")
+    _ensure_column(_con, "monthly_usage", "pack_id", "INTEGER")
     import monetize                      # membership store: products, orders, feature credits, enquiries (additive tables only)
     monetize.schema(_con)
 
@@ -1198,8 +1199,10 @@ def get_plan_status(company_id: int) -> dict:
             "SELECT COUNT(*) AS n FROM payment_requests WHERE company_id=? AND status='pending'",
             (company_id,)).fetchone()["n"]
         last_sub = con.execute("SELECT expires_at FROM subscriptions WHERE company_id=? ORDER BY id DESC LIMIT 1", (company_id,)).fetchone()
-        return {"company_id": company_id, "plan": plan_key, **plan, "used": count,
-                "remaining": max(0, plan["monthly_limit"]-count),
+        import monetize
+        packs = monetize.pack_remaining(con, company_id)
+        return {"company_id": company_id, "plan": plan_key, **plan, "used": count, "pack_remaining": packs,
+                "remaining": max(0, plan["monthly_limit"]-count) + packs,
                 "expires_at": sub["expires_at"] if sub else (last_sub["expires_at"] if last_sub else None),
                 "term_label": duration_label(plan_key),
                 "subscription_source": sub["grant_source"] if sub else None,
@@ -1222,7 +1225,11 @@ def reserve_monthly_usage(company_id: int, user_id: int, operation: str) -> int:
         used = con.execute(
             "SELECT COUNT(*) AS n FROM monthly_usage WHERE company_id=? AND month=? AND status IN ('reserved','used')",
             (company_id, month)).fetchone()["n"]
+        pack_id = None
         if used >= limit:
+            import monetize                  # pay-as-you-go analysis packs cover use beyond the plan allowance
+            pack_id = monetize.take_pack(con, company_id)
+        if used >= limit and pack_id is None:
             if plan_key == "expired":
                 raise core.LimitReached("Your free trial or subscription has expired. Choose a paid plan or contact your company administrator.")
             raise core.LimitReached(
@@ -1230,8 +1237,8 @@ def reserve_monthly_usage(company_id: int, user_id: int, operation: str) -> int:
                 "Upgrade your plan or ask the administrator about an eligible temporary plan grant."
             )
         cur = con.execute(
-            "INSERT INTO monthly_usage(month, company_id, user_id, operation, status, created_at) "
-            "VALUES (?, ?, ?, ?, 'reserved', ?)", (month, company_id, user_id, operation[:40], _now()))
+            "INSERT INTO monthly_usage(month, company_id, user_id, operation, status, created_at, pack_id) "
+            "VALUES (?, ?, ?, ?, 'reserved', ?, ?)", (month, company_id, user_id, operation[:40], _now(), pack_id))
         return int(cur.lastrowid)
 
 
@@ -1240,6 +1247,9 @@ def finish_monthly_usage(reservation_id: int, success: bool) -> None:
         if success:
             con.execute("UPDATE monthly_usage SET status='used' WHERE id=? AND status='reserved'", (reservation_id,))
         else:
+            r = con.execute("SELECT pack_id FROM monthly_usage WHERE id=? AND status='reserved'", (reservation_id,)).fetchone()
+            if r and r["pack_id"]:                     # a failed analysis gives the pack credit back
+                con.execute("UPDATE analysis_packs SET used=used-1 WHERE id=? AND used>0", (r["pack_id"],))
             con.execute("DELETE FROM monthly_usage WHERE id=? AND status='reserved'", (reservation_id,))
 
 

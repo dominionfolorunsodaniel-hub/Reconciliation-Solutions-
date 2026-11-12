@@ -56,6 +56,10 @@ FEATURES = {
 }
 for _k, _f in FEATURES.items():
     _f["key"] = _k
+# Pay-as-you-go analysis packs: dearer per analysis than a subscription on purpose, valid 90 days, used only after the monthly allowance.
+PACKS = {"10": {"size": 10, "price_ngn": 7000}, "25": {"size": 25, "price_ngn": 16000}, "60": {"size": 60, "price_ngn": 36000}}
+PACK_DAYS = 90
+ANNUAL_PLANS = ("starter", "professional")     # 12 months for the price of 10
 CATEGORIES = ["Reconciliation", "Reporting", "Cash flow", "Expenses", "Monitoring", "Audit"]
 ORDER_STATUSES = ("awaiting_payment", "pending", "paid", "failed", "cancelled")
 MAX_FILE = 3 * 1024 * 1024
@@ -124,6 +128,16 @@ CREATE TABLE IF NOT EXISTS feature_credits (
     created_at TEXT NOT NULL
 );
 CREATE UNIQUE INDEX IF NOT EXISTS idx_credits_order ON feature_credits(order_id);
+CREATE TABLE IF NOT EXISTS analysis_packs (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    company_id INTEGER NOT NULL,
+    order_id INTEGER NOT NULL,
+    size INTEGER NOT NULL,
+    used INTEGER NOT NULL DEFAULT 0,
+    expires_at TEXT NOT NULL,
+    created_at TEXT NOT NULL
+);
+CREATE UNIQUE INDEX IF NOT EXISTS idx_packs_order ON analysis_packs(order_id);
 CREATE TABLE IF NOT EXISTS enquiries (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     company_id INTEGER,
@@ -146,6 +160,21 @@ CREATE TABLE IF NOT EXISTS enquiries (
 def schema(con) -> None:
     """Additive only: no existing table is touched. To undo, drop products, orders, feature_credits and enquiries."""
     con.executescript(SCHEMA)
+
+
+# ----------------------------------------------------------------------------------------------- analysis packs
+def pack_remaining(con, company_id: int) -> int:
+    r = con.execute("SELECT COALESCE(SUM(size-used),0) AS n FROM analysis_packs WHERE company_id=? AND expires_at>? AND used<size", (company_id, _now())).fetchone()
+    return int(r["n"] or 0)
+
+
+def take_pack(con, company_id: int):
+    """Inside the caller's transaction: use one credit from the oldest live pack. Returns the pack id, or None."""
+    r = con.execute("SELECT id FROM analysis_packs WHERE company_id=? AND expires_at>? AND used<size ORDER BY expires_at LIMIT 1", (company_id, _now())).fetchone()
+    if not r:
+        return None
+    cur = con.execute("UPDATE analysis_packs SET used=used+1 WHERE id=? AND used<size", (r["id"],))
+    return r["id"] if cur.rowcount else None
 
 
 # ----------------------------------------------------------------------------------------------- membership
@@ -172,7 +201,7 @@ def membership(company_id: int) -> dict:
         "company_id": company_id, "tier": tier_eff, "tier_name": t["name"], "badge": t["badge"] if tier_eff != "regular" else None,
         "plan": plan, "plan_name": st["name"], "status": status, "last_membership": last_state,
         "expires_at": st.get("expires_at"), "in_grace": st.get("in_grace"), "grace_ends_at": st.get("grace_ends_at"),
-        "used": st["used"], "limit": st["monthly_limit"], "remaining": st["remaining"], "team_limit": st["team_limit"],
+        "used": st["used"], "limit": st["monthly_limit"], "remaining": st["remaining"], "pack_remaining": st.get("pack_remaining", 0), "team_limit": st["team_limit"],
         "members": db.list_company_members(company_id), "market_discount": t["market_discount"],
         "features": entitlements(tier_eff), "pending_payment_requests": st.get("pending_payment_requests", 0),
     }
@@ -195,7 +224,9 @@ def catalogue() -> dict:
                     "features": entitlements(key)})
     pk = [{"key": k, "name": db.PLANS[k]["name"], "price_ngn": db.PLANS[k]["price_ngn"], "analyses": db.PLANS[k]["monthly_limit"], "team": db.PLANS[k]["team_limit"]}
           for k in ("business", "corporate", "enterprise")]
-    return {"tiers": out, "features": [dict(f) for f in FEATURES.values()], "packages": pk}
+    annual = {k: {"price_ngn": db.PLANS[k]["price_ngn"] * 10, "monthly_price_ngn": db.PLANS[k]["price_ngn"], "saves_ngn": db.PLANS[k]["price_ngn"] * 2} for k in ANNUAL_PLANS}
+    packs = [{"key": k, **v, "days": PACK_DAYS} for k, v in PACKS.items()]
+    return {"tiers": out, "features": [dict(f) for f in FEATURES.values()], "packages": pk, "annual": annual, "packs": packs}
 
 
 # ----------------------------------------------------------------------------------------------- products
@@ -434,6 +465,19 @@ def create_order(company_id: int, user_id: int, kind: str, item_key: str) -> dic
         if m["features"].get(item_key):
             raise ValueError(f"{f['name']} is already included in your {m['tier_name']} membership, so there is nothing to buy.")
         title, list_price, amount = f["name"] + " (one report)", f["price_ngn"], f["price_ngn"]
+    elif kind == "pack":
+        pk = PACKS.get(str(item_key))
+        if not pk:
+            raise LookupError("Unknown analysis pack.")
+        title, list_price, amount, item_key = f"{pk['size']} extra analyses (valid {PACK_DAYS} days)", pk["price_ngn"], pk["price_ngn"], str(item_key)
+    elif kind == "annual":
+        if item_key not in ANNUAL_PLANS:
+            raise LookupError("Yearly billing is available for Starter and Professional.")
+        if TIERS[m["tier"]]["rank"] > TIERS[PLAN_TIER[item_key]]["rank"]:
+            raise ValueError(f"You already have a higher membership ({m['tier_name']}).")
+        list_price = db.PLANS[item_key]["price_ngn"] * 12
+        amount = db.PLANS[item_key]["price_ngn"] * 10
+        title = f"{db.PLANS[item_key]['name']} membership, 12 months (2 months free)"
     else:
         raise ValueError("Unknown purchase type.")
     if amount <= 0:
@@ -503,9 +547,21 @@ def order_proof(order_id: int):
     return base64.b64decode(db._dec_text(r["proof_data"])), r["proof_mime"] or "image/jpeg"
 
 
-def _fulfil(con, o) -> None:
+def _fulfil(con, o, admin_id=None) -> None:
     """Runs inside the transaction that flips the order to paid, so it can only ever happen once."""
-    if o["kind"] == "feature":
+    if o["kind"] == "pack":
+        con.execute("INSERT INTO analysis_packs(company_id,order_id,size,used,expires_at,created_at) VALUES (?,?,?,0,?,?)",
+                    (o["company_id"], o["id"], PACKS[o["item_key"]]["size"], (_utc_now() + dt.timedelta(days=PACK_DAYS)).strftime(db.FMT), _now()))
+    elif o["kind"] == "annual":
+        now = _utc_now()
+        cur = con.execute("SELECT plan, expires_at FROM subscriptions WHERE company_id=? AND status='active' ORDER BY id DESC LIMIT 1", (o["company_id"],)).fetchone()
+        start = now
+        if cur and cur["plan"] == o["item_key"] and cur["expires_at"] > now.strftime(db.FMT):      # renewing the same plan keeps the days already paid for
+            start = dt.datetime.strptime(cur["expires_at"], db.FMT).replace(tzinfo=dt.timezone.utc)
+        con.execute("UPDATE subscriptions SET status='superseded' WHERE company_id=? AND status='active'", (o["company_id"],))
+        con.execute("INSERT INTO subscriptions(company_id,plan,status,starts_at,expires_at,grant_source,granted_by,note,created_at) VALUES (?,?,'active',?,?,'payment',?,?,?)",
+                    (o["company_id"], o["item_key"], now.strftime(db.FMT), (start + dt.timedelta(days=365)).strftime(db.FMT), admin_id, f"Yearly plan, order {o['order_ref']}", _now()))
+    elif o["kind"] == "feature":
         con.execute("INSERT INTO feature_credits(company_id,feature,order_id,created_at) VALUES (?,?,?,?)", (o["company_id"], o["item_key"], o["id"], _now()))
 
 
@@ -523,7 +579,7 @@ def decide_order(order_id: int, decision: str, admin_id: int, note: str = "") ->
         if decision == "approve":
             con.execute("UPDATE orders SET status='paid', verified_at=?, verified_by=?, provider=COALESCE(provider,'bank_transfer'), note=? WHERE id=?",
                         (_now(), admin_id, (note or "")[:300], order_id))
-            _fulfil(con, o)
+            _fulfil(con, o, admin_id)
         else:
             con.execute("UPDATE orders SET status='failed', verified_at=?, verified_by=?, note=? WHERE id=?", (_now(), admin_id, (note or "")[:300], order_id))
         r = con.execute("SELECT order_ref FROM orders WHERE id=?", (order_id,)).fetchone()
@@ -747,16 +803,16 @@ def overview() -> dict:
         mstat = {r["status"]: r["n"] for r in con.execute("SELECT status, COUNT(*) AS n FROM payment_requests GROUP BY status").fetchall()}
         months = {}
         for r in con.execute("SELECT SUBSTR(COALESCE(reviewed_at, created_at),1,7) AS m, SUM(amount_ngn) AS s FROM payment_requests WHERE status='approved' GROUP BY 1").fetchall():
-            months.setdefault(r["m"], {"membership": 0, "marketplace": 0, "studio": 0})["membership"] += int(r["s"] or 0)
+            months.setdefault(r["m"], {"membership": 0, "marketplace": 0, "studio": 0, "packs": 0})["membership"] += int(r["s"] or 0)
         for r in con.execute("SELECT SUBSTR(COALESCE(verified_at, created_at),1,7) AS m, kind, SUM(amount_ngn) AS s FROM orders WHERE status='paid' GROUP BY 1, 2").fetchall():
-            months.setdefault(r["m"], {"membership": 0, "marketplace": 0, "studio": 0})["marketplace" if r["kind"] == "product" else "studio"] += int(r["s"] or 0)
+            months.setdefault(r["m"], {"membership": 0, "marketplace": 0, "studio": 0, "packs": 0})[{"product": "marketplace", "pack": "packs", "annual": "membership"}.get(r["kind"], "studio")] += int(r["s"] or 0)
         enq = {r["status"]: r["n"] for r in con.execute("SELECT status, COUNT(*) AS n FROM enquiries GROUP BY status").fetchall()}
     custs = list_customers()
     tiers = {k: 0 for k in TIERS}
     for c in custs:
         tiers[c["tier"]] += 1
     this_month = _utc_now().strftime("%Y-%m")
-    tot = {"membership": 0, "marketplace": 0, "studio": 0}
+    tot = {"membership": 0, "marketplace": 0, "studio": 0, "packs": 0}
     for v in months.values():
         for k in tot:
             tot[k] += v[k]
