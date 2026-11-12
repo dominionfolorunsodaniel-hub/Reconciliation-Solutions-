@@ -1347,6 +1347,132 @@ html[data-theme=dark] .d-kpi, html[data-theme=dark] .d-kpi b, html[data-theme=da
     </defs>
   </svg>
 
+<style id="lp-premium">
+/* ===== RECONZA landing: premium layer (build 39). Loaded last on purpose so it replaces earlier overrides. ===== */
+#landing.lp {
+  --lp-brand:#0b5ce6; --lp-brand-dark:#0847b8; --lp-navy:#0a1636; --lp-ink:#0b1b3f; --lp-mute:#475569; --lp-line:#e2e8f0; --lp-alt:#f6f8fc;
+  --r-btn:10px; --r-card:16px; --r-hero:20px;
+  --sh-1:0 1px 2px rgba(10,22,54,.06);
+  --sh-2:0 12px 32px -12px rgba(10,22,54,.18);
+  --sh-3:0 24px 56px -16px rgba(11,92,230,.30);
+  --ring:0 0 0 3px rgba(11,92,230,.35);
+  font-family:"Inter",system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+  font-size:17px; line-height:1.65; color:var(--lp-ink);
+}
+/* rhythm */
+#landing.lp .lp-sec { padding-block:clamp(64px,8vw,104px); }
+#landing.lp .lp-hero { padding:clamp(40px,6vw,88px) 0 clamp(32px,4vw,56px); background:radial-gradient(1100px 420px at 78% -10%,#e4eeff 0%,rgba(228,238,255,0) 60%),linear-gradient(180deg,#f6f9ff 0%,#fff 100%); }
+#landing.lp .lp-hero-in { gap:clamp(24px,4vw,56px); }
+@media (min-width:961px){ #landing.lp .lp-hero-in { grid-template-columns:minmax(0,1.06fr) minmax(0,.94fr); } }
+@media (max-width:960px){ #landing.lp .lp-hero-in { grid-template-columns:minmax(0,1fr); } }
+#landing.lp .lp-hero h1 { font-size:clamp(2rem,3.9vw,3.25rem); line-height:1.08; letter-spacing:-.03em; font-weight:800; color:#08153a; text-wrap:balance; }
+#landing.lp .lp-lead { font-size:clamp(1.05rem,1.35vw,1.2rem); color:var(--lp-mute); max-width:54ch; }
+#landing.lp .lp-head { margin-bottom:clamp(28px,4vw,48px); }
+#landing.lp .lp-head h2 { font-size:clamp(1.75rem,3vw,2.25rem); line-height:1.15; letter-spacing:-.025em; font-weight:800; text-wrap:balance; }
+#landing.lp .lp-head p { color:var(--lp-mute); max-width:60ch; margin-inline:auto; }
+#landing.lp .lp-alt { background:var(--lp-alt); }
+
+/* buttons */
+#landing.lp button, #landing.lp .lp-btn { border-radius:var(--r-btn); min-height:48px; padding:12px 22px; font-weight:600; letter-spacing:-.005em; transition:background-color .15s,border-color .15s,box-shadow .2s,transform .2s; }
+#landing.lp .lp-nav .lp-btn { min-height:42px; padding:9px 18px; }
+#landing.lp .lp-btn-primary { box-shadow:var(--sh-1),0 6px 16px -6px rgba(11,92,230,.55); }
+#landing.lp .lp-btn-primary:hover { transform:translateY(-1px); box-shadow:var(--sh-3); }
+#landing.lp .lp-btn-outline:hover { border-color:var(--lp-brand); color:var(--lp-brand); background:#fff; }
+#landing.lp .lp-btn:focus-visible, #landing.lp a:focus-visible, #landing.lp button:focus-visible, #landing.lp summary:focus-visible { outline:none; box-shadow:var(--ring); }
+#landing.lp input:focus-visible, #landing.lp textarea:focus-visible { outline:none; border-color:var(--lp-brand); box-shadow:var(--ring); }
+
+/* cards */
+#landing.lp .lp-card, #landing.lp .lp-plan, #landing.lp .lp-biz, #landing.lp .lp-form {
+  background:#fff; border:1px solid var(--lp-line); border-radius:var(--r-card); box-shadow:var(--sh-1);
+  transition:box-shadow .2s ease,transform .2s ease,border-color .2s ease;
+}
+#landing.lp .lp-card { padding:26px; }
+#landing.lp .lp-card:hover, #landing.lp .lp-plan:hover { box-shadow:var(--sh-2); transform:translateY(-2px); border-color:#cbd5e1; }
+#landing.lp .lp-ic-l { width:44px; height:44px; padding:10px; background:var(--lp-tint); border-radius:12px; margin-bottom:16px; }
+#landing.lp .lp-card h3 { font-size:1.05rem; font-weight:700; letter-spacing:-.01em; margin-bottom:6px; }
+#landing.lp .lp-card p { color:var(--lp-mute); font-size:.97rem; }
+#landing.lp .lp-grid-4 { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:20px; }
+@media (max-width:1000px){ #landing.lp .lp-grid-4 { grid-template-columns:repeat(2,minmax(0,1fr)); } }
+@media (max-width:560px){ #landing.lp .lp-grid-4 { grid-template-columns:minmax(0,1fr); } }
+#landing.lp .lp-trust-note { text-align:center; margin-top:28px; font-size:.95rem; color:var(--lp-mute); }
+
+/* proof bar (replaces the three generic claims) */
+#landing.lp .lp-proof { padding:0 0 clamp(32px,5vw,56px); background:#fff; }
+#landing.lp .lp-proof-in { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:1px; margin:0; background:var(--lp-line); border:1px solid var(--lp-line); border-radius:var(--r-card); overflow:hidden; box-shadow:var(--sh-1); }
+#landing.lp .lp-proof-in > div { background:#fff; padding:18px 22px; }
+#landing.lp .lp-proof-in dt { font-size:12px; font-weight:600; letter-spacing:.07em; text-transform:uppercase; color:var(--lp-mute); }
+#landing.lp .lp-proof-in dd { margin:4px 0 0; font-size:1rem; font-weight:700; color:var(--lp-ink); }
+@media (max-width:900px){ #landing.lp .lp-proof-in { grid-template-columns:repeat(2,minmax(0,1fr)); } }
+@media (max-width:420px){ #landing.lp .lp-proof-in { grid-template-columns:minmax(0,1fr); } }
+
+/* hero picture: a real-looking result */
+#landing.lp .lp-hero-art { min-height:400px; border-radius:var(--r-hero); }
+#landing.lp .lp-device { left:5%; right:5%; top:16%; border-radius:20px; background:#0a1636; box-shadow:0 36px 70px -20px rgba(8,21,58,.45); transform:rotateY(-9deg) rotateX(4deg) rotateZ(-1.5deg); }
+#landing.lp .lp-screen { padding:14px; border-radius:12px; }
+#landing.lp .lp-mock-kpis { display:grid; grid-template-columns:repeat(3,1fr); gap:8px; margin:8px 0 10px; }
+#landing.lp .lp-mock-kpis > div { border-radius:10px; padding:8px 10px; border:1px solid var(--lp-line); }
+#landing.lp .lp-mock-kpis small { display:block; font-size:10.5px; color:var(--lp-mute); font-weight:600; }
+#landing.lp .lp-mock-kpis b { font-size:20px; font-weight:800; letter-spacing:-.02em; font-variant-numeric:tabular-nums; }
+#landing.lp .k-ok { background:#e7f7ee; border-color:#bde8cf; } #landing.lp .k-ok b { color:#0f7a45; }
+#landing.lp .k-warn { background:#fff5dc; border-color:#f5dfa3; } #landing.lp .k-warn b { color:#8a5a00; }
+#landing.lp .k-bad { background:#fde9e7; border-color:#f6c6c1; } #landing.lp .k-bad b { color:#b42318; }
+#landing.lp .lp-mock-t { width:100%; border-collapse:collapse; font-size:11px; font-variant-numeric:tabular-nums; }
+#landing.lp .lp-mock-t th { text-align:left; font-weight:600; color:var(--lp-mute); padding:4px 4px; border-bottom:1px solid var(--lp-line); }
+#landing.lp .lp-mock-t td { padding:6px 4px; border-bottom:1px solid #eef2f8; color:var(--lp-ink); white-space:nowrap; }
+#landing.lp .lp-mock-t td:first-child { font-weight:600; }
+#landing.lp .lp-mock-t i { font-style:normal; font-weight:600; font-size:10px; padding:2px 7px; border-radius:999px; }
+#landing.lp .s-warn { background:#fff3d6; color:#8a5a00; } #landing.lp .s-bad { background:#fde6e6; color:#b42318; }
+#landing.lp .lp-float { border-radius:14px; background:#0a1636; box-shadow:0 18px 38px -12px rgba(8,21,58,.45); }
+@media (max-width:960px){ #landing.lp .lp-hero-art { min-height:0; padding-top:44px; } #landing.lp .lp-device { position:relative; transform:none; left:auto; right:auto; top:auto; } #landing.lp .lp-glass { display:none; } #landing.lp .lp-float { top:0; right:0; } }
+#landing.lp .lp-hero-art, #landing.lp .lp-device, #landing.lp .lp-screen, #landing.lp .lp-mock { min-width:0; max-width:100%; }
+#landing.lp .lp-screen { overflow:hidden; }
+#landing.lp .lp-mock-kpis > div { min-width:0; }
+@media (max-width:560px){ #landing.lp .lp-mock-t { table-layout:fixed; } #landing.lp .lp-mock-t td, #landing.lp .lp-mock-t th { white-space:normal; overflow-wrap:anywhere; } #landing.lp .lp-mock-t i { white-space:normal; display:inline-block; } #landing.lp .lp-mock-kpis b { font-size:17px; } #landing.lp .lp-mock-t th:nth-child(3), #landing.lp .lp-mock-t td:nth-child(3) { display:none; } }
+
+/* pricing: clear leader + membership badges */
+#landing.lp .lp-plan { padding:28px 22px 24px; }
+#landing.lp .lp-plan-hot { border:1px solid var(--lp-brand); box-shadow:var(--sh-3),0 0 0 1px var(--lp-brand); background:linear-gradient(180deg,#f3f8ff 0%,#fff 40%); padding:28px 22px 24px; }
+@media (min-width:1001px){ #landing.lp .lp-plan-hot { transform:translateY(-10px); } #landing.lp .lp-plan-hot:hover { transform:translateY(-12px); } }
+#landing.lp .lp-tag { top:-13px; left:50%; translate:-50% 0; font-size:12px; font-weight:700; letter-spacing:.05em; text-transform:uppercase; padding:5px 14px; }
+#landing.lp .lp-price small { white-space:nowrap; }
+#landing.lp .lp-price { font-size:1.85rem; font-weight:800; letter-spacing:-.03em; font-variant-numeric:tabular-nums; }
+#landing.lp .lp-plan h3 { font-size:1.1rem; font-weight:700; margin-top:10px; }
+#landing.lp .lp-lvl { display:inline-flex; align-items:center; gap:6px; padding:4px 10px 4px 8px; border-radius:999px; font-size:12px; font-weight:700; line-height:1.2; white-space:nowrap; align-self:flex-start; }
+#landing.lp .lp-lvl svg { width:14px; height:14px; fill:none; stroke:currentColor; stroke-width:2.2; stroke-linecap:round; stroke-linejoin:round; flex:0 0 14px; }
+#landing.lp .lp-lvl-regular { background:#eef1f7; color:#5a6479; border:1px solid #dbe1ee; }
+#landing.lp .lp-lvl-starter { background:#e0f7f3; color:#0b7a6c; border:1px solid #9be0d4; }
+#landing.lp .lp-lvl-professional { background:#ece9ff; color:#4a3fc4; border:1px solid #c3bbf7; }
+#landing.lp .lp-lvl-business { background:linear-gradient(135deg,#fdf2c9,#f5d56b); color:#6b4e00; border:1px solid #e3be4b; }
+#landing.lp .lp-biz > div > .lp-lvl { margin-bottom:8px; }
+@media (max-width:760px){
+  #landing.lp .lp-plans { display:flex; gap:14px; overflow-x:auto; scroll-snap-type:x mandatory; padding:16px 4px 18px; margin-inline:-4px; -webkit-overflow-scrolling:touch; }
+  #landing.lp .lp-plan { flex:0 0 82%; scroll-snap-align:center; }
+  #landing.lp .lp-plan-hot { transform:none; }
+}
+
+/* faq + closing band + footer */
+#landing.lp .lp-faq summary { font-weight:600; }
+#landing.lp .lp-cta-in { border-radius:24px; padding:clamp(28px,4vw,44px); background:radial-gradient(700px 260px at 90% 0%,#14307a 0%,rgba(20,48,122,0) 70%),#0a1636; box-shadow:var(--sh-2); }
+#landing.lp .lp-foot { background:#0a1636; }
+
+/* reveal: content is only hidden when JS has promised to reveal it */
+#landing.lp .rv { opacity:1; transform:none; }
+html.js-rv #landing.lp .rv { opacity:0; transform:translateY(14px); transition:opacity .5s ease-out var(--rv-d,0ms),transform .5s ease-out var(--rv-d,0ms); }
+html.js-rv #landing.lp .rv.rv-in { opacity:1; transform:none; }
+@media (prefers-reduced-motion:reduce){
+  html.js-rv #landing.lp .rv { opacity:1; transform:none; transition:none; }
+  #landing.lp .lp-device { transform:none; } #landing.lp .lp-card:hover, #landing.lp .lp-plan:hover, #landing.lp .lp-btn-primary:hover { transform:none; }
+}
+@media print { html.js-rv #landing.lp .rv { opacity:1 !important; transform:none !important; } }
+
+/* loading skeletons */
+.lp-skel { position:relative; overflow:hidden; background:#eef2f8; border-radius:12px; min-height:96px; margin-top:12px; }
+.lp-skel::after { content:""; position:absolute; inset:0; transform:translateX(-100%); background:linear-gradient(90deg,transparent,rgba(255,255,255,.75),transparent); animation:lp-shimmer 1.2s infinite; }
+@keyframes lp-shimmer { to { transform:translateX(100%); } }
+@media (prefers-reduced-motion:reduce){ .lp-skel::after { animation:none; } }
+
+</style>
+
 <!-- ======================= LANDING + LOGIN ======================= -->
 <div id="landing" class="lp">
 
@@ -1365,11 +1491,11 @@ html[data-theme=dark] .d-kpi, html[data-theme=dark] .d-kpi b, html[data-theme=da
     <div class="lp-wrap lp-hero-in">
       <div class="lp-hero-copy">
         <p class="lp-eyebrow"><svg class="lp-ic" aria-hidden="true"><use href="#i-bolt"/></svg>We don&rsquo;t guess, we uncover.</p>
-        <h1>Turn Complex Financial Reports into <span class="lp-hl">Clear Results</span></h1>
-        <p class="lp-lead">Analyze, compare and reconcile your ATM, POS and bank reports with ease. Find discrepancies, ensure accuracy and make better financial decisions.</p>
+        <h1>Reconcile bank, POS and ATM reports <span class="lp-hl">in minutes, not days.</span></h1>
+        <p class="lp-lead">Upload your reports and get exact matches, differences and a finished PDF or Excel summary. Every figure comes from your own data, with no guesses.</p>
         <div class="lp-actions">
-          <a class="lp-btn lp-btn-primary" href="#lpLogin" data-goto-login data-mode="register">Start Analyzing <span aria-hidden="true">&rarr;</span></a>
-          <a class="lp-btn lp-btn-outline" href="#features"><svg class="lp-ic" aria-hidden="true"><use href="#i-play"/></svg>Learn More</a>
+          <a class="lp-btn lp-btn-primary" href="#statement">Try a sample check <span aria-hidden="true">&rarr;</span></a>
+          <a class="lp-btn lp-btn-outline" href="#lpLogin" data-goto-login data-mode="register">Create free account</a>
         </div>
         <ul class="lp-facts">
           <li><svg class="lp-ic"><use href="#i-file"/></svg>CSV, Excel and PDF files</li>
@@ -1382,15 +1508,17 @@ html[data-theme=dark] .d-kpi, html[data-theme=dark] .d-kpi b, html[data-theme=da
         <i class="lp-glass g1"></i><i class="lp-glass g2"></i>
         <div class="lp-device"><div class="lp-screen">
           <div class="lp-scr-top"><b>Reconciliation overview</b><span>Sample view</span></div>
-          <svg viewBox="0 0 320 150" role="img" focusable="false">
-            <g stroke="#dbe3f2" stroke-width="1"><path d="M30 20h280M30 55h280M30 90h280M30 125h280"/></g>
-            <g fill="#8a98b8" font-size="9" font-family="Inter,sans-serif"><text x="2" y="23">100%</text><text x="6" y="58">75%</text><text x="6" y="93">50%</text><text x="6" y="128">25%</text></g>
-            <path d="M30 118 L70 92 L110 98 L150 70 L190 78 L230 48 L270 40 L310 24 L310 125 L30 125Z" fill="#0b5ce6" opacity=".10"/>
-            <polyline points="30,118 70,92 110,98 150,70 190,78 230,48 270,40 310,24" fill="none" stroke="#0b5ce6" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/>
-            <g fill="#fff" stroke="#0b5ce6" stroke-width="2.4"><circle cx="70" cy="92" r="4"/><circle cx="110" cy="98" r="4"/><circle cx="150" cy="70" r="4"/><circle cx="190" cy="78" r="4"/><circle cx="230" cy="48" r="4"/><circle cx="270" cy="40" r="4"/><circle cx="310" cy="24" r="4"/></g>
-          </svg>
+          <div class="lp-mock">
+            <div class="lp-mock-kpis"><div class="k-ok"><small>Matched</small><b>8</b></div><div class="k-warn"><small>Amount differs</small><b>2</b></div><div class="k-bad"><small>Unmatched</small><b>2</b></div></div>
+            <table class="lp-mock-t"><thead><tr><th>Reference</th><th>Bank</th><th>Ledger</th><th>Result</th></tr></thead><tbody>
+              <tr><td>RA2009</td><td>&#8358;65,000</td><td>&#8358;61,000</td><td><i class="s-warn">Differs by &#8358;4,000</i></td></tr>
+              <tr><td>RA2010</td><td>&#8358;14,000</td><td>&#8358;16,000</td><td><i class="s-warn">Differs by &#8358;2,000</i></td></tr>
+              <tr><td>RA2011</td><td>&#8358;33,000</td><td>&ndash;</td><td><i class="s-bad">Bank only</i></td></tr>
+              <tr><td>RA2012</td><td>&ndash;</td><td>&#8358;9,500</td><td><i class="s-bad">Ledger only</i></td></tr>
+            </tbody></table>
+          </div>
         </div></div>
-        <div class="lp-float"><span class="ok"><svg class="lp-ic"><use href="#i-checkc"/></svg></span><div><b>Matched</b><small>Sample result</small></div></div>
+        <div class="lp-float"><span class="ok"><svg class="lp-ic"><use href="#i-checkc"/></svg></span><div><b>8 of 12 matched</b><small>Sample result</small></div></div>
       </div>
 
       <div class="lp-back" id="lpBack"></div>
@@ -1442,12 +1570,15 @@ html[data-theme=dark] .d-kpi, html[data-theme=dark] .d-kpi b, html[data-theme=da
     </div>
   </section>
 
-  <section class="lp-badges" aria-label="Why teams use us">
-    <div class="lp-wrap"><div class="lp-badges-in">
-      <span><svg class="lp-ic" aria-hidden="true"><use href="#i-shieldcheck"/></svg>Secure &amp; Reliable</span>
-      <span><svg class="lp-ic" aria-hidden="true"><use href="#i-bolt"/></svg>Fast &amp; Accurate</span>
-      <span><svg class="lp-ic" aria-hidden="true"><use href="#i-bars"/></svg>Built for Businesses</span>
-    </div></div>
+  <section class="lp-proof" aria-label="At a glance">
+    <div class="lp-wrap">
+      <dl class="lp-proof-in">
+        <div><dt>File types</dt><dd>CSV &middot; Excel &middot; PDF</dd></div>
+        <div><dt>Sign-in security</dt><dd>Email check + 2-step</dd></div>
+        <div><dt>Audit trail</dt><dd>Every action logged</dd></div>
+        <div><dt>Team access</dt><dd>Owner, Admin, Analyst, Viewer</dd></div>
+      </dl>
+    </div>
   </section>
 
   <section class="lp-sec lp-problem" id="problem">
@@ -1551,21 +1682,21 @@ html[data-theme=dark] .d-kpi, html[data-theme=dark] .d-kpi b, html[data-theme=da
     <div class="lp-wrap">
       <div class="lp-head"><h2>Pricing</h2><p>Start free and upgrade when your team grows. Monthly prices in Naira, no hidden fees.</p></div>
       <div class="lp-plans">
-        <article class="lp-plan"><h3>Free Trial</h3><p class="lp-price">₦0</p><p class="lp-per">2 days to try everything</p>
+        <article class="lp-plan"><span class="lp-lvl lp-lvl-regular"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 21c1-4 4-6 8-6s7 2 8 6"/></svg>Regular</span><h3>Free Trial</h3><p class="lp-price">₦0</p><p class="lp-per">2 days to try everything</p>
           <ul><li>5 analyses</li><li>1 team member</li><li>Reconciliation, charts, Excel and PDF exports</li></ul>
           <button type="button" class="lp-btn lp-btn-outline lp-full" data-goto-login data-mode="register">Start free</button></article>
-        <article class="lp-plan"><h3>Starter</h3><p class="lp-price">₦25,000<small> / month</small></p><p class="lp-per">30 days of access</p>
+        <article class="lp-plan"><span class="lp-lvl lp-lvl-starter"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M13 2 4 14h7l-1 8 9-12h-7z"/></svg>Starter Member</span><h3>Starter</h3><p class="lp-price">₦25,000<small> / month</small></p><p class="lp-per">30 days of access</p>
           <ul><li>50 analyses per month</li><li>Up to 3 team members</li><li>Everything in the trial</li></ul>
           <button type="button" class="lp-btn lp-btn-outline lp-full" data-goto-login data-mode="register">Get Starter</button></article>
-        <article class="lp-plan lp-plan-hot"><p class="lp-tag">Recommended</p><h3>Growth</h3><p class="lp-price">₦60,000<small> / month</small></p><p class="lp-per">30 days of access</p>
+        <article class="lp-plan lp-plan-hot"><p class="lp-tag">Recommended</p><span class="lp-lvl lp-lvl-starter"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M13 2 4 14h7l-1 8 9-12h-7z"/></svg>Starter Member</span><h3>Growth</h3><p class="lp-price">₦60,000<small> / month</small></p><p class="lp-per">30 days of access</p>
           <ul><li>200 analyses per month</li><li>Up to 5 team members</li><li>Everything in Starter</li></ul>
           <button type="button" class="lp-btn lp-btn-primary lp-full" data-goto-login data-mode="register">Get Growth</button></article>
-        <article class="lp-plan"><h3>Professional</h3><p class="lp-price">₦150,000<small> / month</small></p><p class="lp-per">30 days of access</p>
+        <article class="lp-plan"><span class="lp-lvl lp-lvl-professional"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3 4 6v6c0 5 3.4 8 8 9 4.6-1 8-4 8-9V6z"/><path d="m9 12 2 2 4-4"/></svg>Professional Member</span><h3>Professional</h3><p class="lp-price">₦150,000<small> / month</small></p><p class="lp-per">30 days of access</p>
           <ul><li>750 analyses per month</li><li>Up to 10 team members</li><li>Everything in Growth</li></ul>
           <button type="button" class="lp-btn lp-btn-outline lp-full" data-goto-login data-mode="register">Get Professional</button></article>
       </div>
       <div class="lp-biz">
-        <div><h3>Business and above</h3><p>Need 1,500 or more analyses a month, 15 or more team members, or a setup built around your team? We agree the plan and price with you first.</p></div>
+        <div><span class="lp-lvl lp-lvl-business"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 8l4 4 5-8 5 8 4-4-2 11H5z"/></svg>Business Member</span><h3>Business and above</h3><p>Need 1,500 or more analyses a month, 15 or more team members, or a setup built around your team? We agree the plan and price with you first.</p></div>
         <a class="lp-btn lp-btn-outline" href="#contact">Get a custom quote</a>
       </div>
       <p class="lp-fine">Each paid plan gives 30 days of access from the day we confirm your payment. Payment is by bank transfer for now. Card payment is coming soon.</p>
@@ -1622,6 +1753,19 @@ html[data-theme=dark] .d-kpi, html[data-theme=dark] .d-kpi b, html[data-theme=da
     <div class="lp-wrap">
       <div class="lp-head"><p class="lp-kicker">Customers</p><h2>What our customers say</h2></div>
       <div id="reviewGrid" class="lp-reviews"></div>
+    </div>
+  </section>
+
+  <section class="lp-sec lp-alt" id="trust">
+    <div class="lp-wrap">
+      <div class="lp-head"><p class="lp-kicker">Security</p><h2>Built for sensitive financial data</h2><p>Controls that protect your reports, and that you can check for yourself.</p></div>
+      <div class="lp-grid lp-grid-4 lp-trust">
+        <article class="lp-card"><svg class="lp-ic lp-ic-l"><use href="#i-lock"/></svg><h3>Encrypted storage</h3><p>Your uploads and messages are stored encrypted.</p></article>
+        <article class="lp-card"><svg class="lp-ic lp-ic-l"><use href="#i-mail"/></svg><h3>Verified sign-in</h3><p>Email verification at sign-up and a code when you log in from a new device.</p></article>
+        <article class="lp-card"><svg class="lp-ic lp-ic-l"><use href="#i-users"/></svg><h3>Role-based access</h3><p>Owner, Admin, Analyst and Viewer, so people only see and do what they should.</p></article>
+        <article class="lp-card"><svg class="lp-ic lp-ic-l"><use href="#i-receipt"/></svg><h3>Full audit trail</h3><p>Every important action is logged and can be exported by the owner.</p></article>
+      </div>
+      <p class="lp-trust-note"><a href="/security">Read our security page</a> &middot; <a href="/privacy">Privacy policy</a> &middot; <a href="/status">Service status</a></p>
     </div>
   </section>
 
@@ -4320,7 +4464,7 @@ api("/api/me").then(start).catch(showLanding);
   const sampleBtn = document.getElementById("sampleBtn");
   if (sampleBtn) sampleBtn.onclick = async () => {
     const out = document.getElementById("sampleOut"); sampleBtn.disabled = true;
-    out.classList.remove("hidden"); out.textContent = "Checking the sample statement...";
+    out.classList.remove("hidden"); out.setAttribute("aria-busy", "true"); out.innerHTML = '<div class="lp-skel" aria-hidden="true"></div><div class="lp-skel" aria-hidden="true"></div>';
     try {
       const r = await (await fetch("/api/public/sample-statement")).json();
       if (!r || r.score === undefined) throw new Error("The sample is not available right now.");
@@ -4343,7 +4487,7 @@ api("/api/me").then(start).catch(showLanding);
       go.onclick = () => { const l = document.getElementById("lpLogin"); if (l) l.scrollIntoView({ behavior: "smooth", block: "center" }); };
       out.append(go);
     } catch (e) { out.textContent = (e.message || "Could not load the sample."); }
-    finally { sampleBtn.disabled = false; }
+    finally { sampleBtn.disabled = false; out.removeAttribute("aria-busy"); }
   };
 
   const form = document.getElementById("contactForm");
@@ -4497,11 +4641,18 @@ api("/api/me").then(start).catch(showLanding);
   var nav = document.querySelector("#landing .lp-nav");
   if (nav) { var f = function () { nav.classList.toggle("is-scrolled", window.scrollY > 8); }; f(); window.addEventListener("scroll", f, { passive: true }); }
   if (!reduce && "IntersectionObserver" in window) {
-    var els = document.querySelectorAll("#landing .lp-head, #landing .lp-card, #landing .lp-plan, #landing .lp-steps li, #landing .lp-pillar, #landing .lp-demo, #landing .lp-faq, #landing .lp-form, #landing .lp-biz, #landing .lp-tags");
-    var io = new IntersectionObserver(function (list) { list.forEach(function (e) { if (e.isIntersecting) { e.target.classList.add("rv-in"); io.unobserve(e.target); } }); }, { threshold: 0.08, rootMargin: "0px 0px -30px 0px" });
-    els.forEach(function (el) { el.classList.add("rv"); io.observe(el); });
-    setTimeout(function () { els.forEach(function (el) { el.classList.add("rv-in"); }); }, 6000);   /* safety: never leave anything hidden */
+    document.documentElement.classList.add("js-rv");
+    var els = document.querySelectorAll("#landing .lp-head, #landing .lp-card, #landing .lp-plan, #landing .lp-steps li, #landing .lp-pillar, #landing .lp-demo, #landing .lp-faq, #landing .lp-form, #landing .lp-biz, #landing .lp-tags, #landing .lp-proof-in");
+    var io = new IntersectionObserver(function (list) { list.forEach(function (e) { if (e.isIntersecting) { e.target.classList.add("rv-in"); io.unobserve(e.target); } }); }, { threshold: 0.01, rootMargin: "0px 0px -6% 0px" });
+    els.forEach(function (el, i) { el.classList.add("rv"); el.style.setProperty("--rv-d", ((i % 4) * 60) + "ms"); io.observe(el); });
+    els.forEach(function (el) { if (el.getBoundingClientRect().top < window.innerHeight * 1.5) el.classList.add("rv-in"); });
+    setTimeout(function () { els.forEach(function (el) { el.classList.add("rv-in"); }); }, 1200);   /* safety: never leave anything hidden */
+    window.addEventListener("beforeprint", function () { els.forEach(function (el) { el.classList.add("rv-in"); }); });
   }
+  /* keep aria-current in step with the visible "is-on" nav link */
+  (function () { var links = document.querySelectorAll("#landing .lp-links a"); if (!links.length || !window.MutationObserver) return;
+    var sync = function () { links.forEach(function (a) { if (a.classList.contains("is-on")) a.setAttribute("aria-current", "true"); else a.removeAttribute("aria-current"); }); };
+    sync(); links.forEach(function (a) { new MutationObserver(sync).observe(a, { attributes: true, attributeFilter: ["class"] }); }); })();
   var SR = window.SpeechRecognition || window.webkitSpeechRecognition, q = document.getElementById("question"), ask = document.getElementById("ask");
   if (SR && q && ask) {
     var b = document.createElement("button"); b.type = "button"; b.className = "ghost mic-btn"; b.setAttribute("aria-label", "Speak your question"); b.title = "Speak your question";
