@@ -248,10 +248,18 @@ def build_analytics_pdf(company_name: str, title: str, question: str, answer: st
     story += [P(name, s_name), P(title, s_title), P(f"Prepared {today}   |   {question}", s_sub), Spacer(1, 6)]
 
     # verification banner
-    ok_col = colors.HexColor("#e7f6ec") if v["ok"] else colors.HexColor("#fdecec")
-    banner = Table([[Paragraph(escape(("VERIFIED: " if v["ok"] else "NOT FULLY VERIFIED: ") + f"{v['passed']} of {v['total']} cross-checks passed. "
-                    + ("Every figure in this report comes from the same verified dataset, and the totals were recounted a second way." if v["ok"]
-                       else "At least one cross-check failed. Do not rely on the figures until the cause is found (see section 7).")), s_body)]], colWidths=[avail])
+    n_issues = len(v.get("issues") or [])
+    ok_col = colors.HexColor("#fdecec") if not v["ok"] else (colors.HexColor("#fff4e0") if n_issues else colors.HexColor("#e7f6ec"))
+    if not v["ok"]:
+        banner_txt = (f"NOT FULLY VERIFIED: {v['passed']} of {v['total']} cross-checks passed. At least one cross-check failed. "
+                      "Do not rely on the figures until the cause is found (see section 8).")
+    elif n_issues:
+        banner_txt = (f"CALCULATIONS VERIFIED, DATA-QUALITY ISSUES REMAIN: {v['passed']} of {v['total']} arithmetic and row cross-checks passed. "
+                      f"This does not mean the data is clean: {n_issues} unresolved data-quality issue(s) are listed in sections 5 and 6.")
+    else:
+        banner_txt = (f"VERIFIED: {v['passed']} of {v['total']} cross-checks passed, and no data-quality issue was found. "
+                      "Every figure in this report comes from the same verified dataset, and the totals were recounted a second way.")
+    banner = Table([[Paragraph(escape(banner_txt), s_body)]], colWidths=[avail])
     banner.setStyle(TableStyle([("BACKGROUND", (0, 0), (-1, -1), ok_col), ("BOX", (0, 0), (-1, -1), 0.6, line), ("TOPPADDING", (0, 0), (-1, -1), 6), ("BOTTOMPADDING", (0, 0), (-1, -1), 6)]))
     story += [banner]
 
@@ -269,12 +277,34 @@ def build_analytics_pdf(company_name: str, title: str, question: str, answer: st
     for key, nm in (("highest_in", "Highest credit"), ("highest_out", "Highest debit")):
         r = t.get(key)
         if r:
-            story.append(P(f"{nm}: {_money(r['Amount'])} on {r['Date']} (reference {r['Reference']}, No.{r['No.']}). Averages are over each direction's own transactions only.", s_sub))
+            story.append(P(f"{nm}: {_money(r['Amount'])} on {r['Date']} (reference {r['Reference']}, row {r.get('Row', r['No.'])}).", s_sub))
+    story.append(P("Averages are over each direction's own transactions only. Highest and lowest are among counted transactions.", s_sub))
     if chart_png:
         story += [Spacer(1, 8), Image(io.BytesIO(chart_png), width=16 * cm, height=8.9 * cm)]
 
-    # 3. daily activity
-    story += [CondPageBreak(5 * cm), P("3. Daily activity", s_h)]
+    # 3. transaction status (kept apart from credit/debit direction)
+    stt = F.get("status") or {}
+    story += [CondPageBreak(5 * cm), P("3. Transaction status", s_h)]
+    story += [P(f"Rows: {F['rows_uploaded']:,} uploaded = {F['rows_analysed']:,} analysed + {F['rows_excluded']:,} excluded (every excluded row is listed in section 5.3).", s_sub), Spacer(1, 3)]
+    if stt.get("column_found"):
+        story += [tbl(["Status", "Count", "Credits", "Debits", "Net", "In gross totals", "In settled totals"],
+                      [[r["status"], f"{r['count']:,}", f"{_money(r['credits'])} ({r['credit_count']:,})", f"{_money(r['debits'])} ({r['debit_count']:,})", _money(r["net"]), "Yes", "Yes" if r["in_settled_totals"] else "No"] for r in stt["rows"]],
+                      [1.3, 0.7, 1.9, 1.9, 1.5, 1.0, 1.1], right=(1, 2, 3, 4)),
+                  P(f"Gross totals include every status: in {_money(t['money_in'])}, out {_money(t['money_out'])}, net {_money(t['net_movement'])}. Settled (Completed only): in {_money(t['settled_money_in'])}, "
+                    f"out {_money(t['settled_money_out'])}, net {_money(t['settled_net_movement'])}. Excluded rows are not in any total.", s_sub)]
+        for r_ in stt["rows"]:
+            if r_.get("note"):
+                story.append(P(r_["note"], s_sub))
+        odd = [(r_["status"], x) for r_ in stt["rows"] if r_["status"] != "Completed" for x in r_["transactions"]]
+        if odd:
+            story += [Spacer(1, 4), tbl(["Status", "Row", "Reference", "Date", "Type", "Amount", "Counterparty"],
+                                        [[sname, x["Row"], x["Reference"], x["Date"] or "no date", x["Type"], _money(x["Amount"]), x["Counterparty"] or "no counterparty"] for sname, x in odd],
+                                        [1.0, 0.6, 1.3, 1.1, 0.8, 1.4, 1.7], right=(5,))]
+    else:
+        story += [P("No status column was found in the file, so transaction status could not be analysed.", s_body)]
+
+    # 4. daily activity
+    story += [CondPageBreak(5 * cm), P("4. Daily activity", s_h)]
     if F["daily"]:
         hl = [i for i, x in enumerate(F["daily"]) if x["unusual"]]
         story += [tbl(["Date", "Txns", "Credits", "Debits", "Credit total", "Debit total", "Net", "Note"],
@@ -284,54 +314,80 @@ def build_analytics_pdf(company_name: str, title: str, question: str, answer: st
                   P(f"{len(F['daily']):,} active day(s) listed. Shaded rows are unusual days.", s_sub)]
         for u in F["unusual_days"]:
             story += [Spacer(1, 4), P(f"Unusual day {u['date']}: " + " ".join(u["reasons"]), s_body)]
-            story += [tbl(["No.", "Reference", "Type", "Amount", "Description"], [[r["No."], r["Reference"], r["Type"], _money(r["Amount"]), r["Narration"] or "no description"] for r in u["largest"]],
-                          [0.6, 1.6, 0.8, 1.4, 3.6], right=(3,))]
+            story += [tbl(["Row", "Reference", "Type", "Amount", "Description"], [[r.get("Row", r["No."]), r["Reference"], r["Type"], _money(r["Amount"]), r["Narration"] or "no description"] for r in u["largest"]],
+                          [0.7, 1.6, 0.9, 1.4, 3.4], right=(3,))]
     else:
         story += [P("No usable date column was found, so a daily summary could not be produced.", s_body)]
 
     # 4. findings
-    story += [CondPageBreak(5 * cm), P("4. Transaction-level findings", s_h)]
+    story += [CondPageBreak(5 * cm), P("5. Transaction-level findings", s_h)]
     d = F["duplicates"]
-    story += [P("4.1 Duplicate references", ParagraphStyle("h2", parent=s_body, fontName=f_bold, spaceBefore=4, spaceAfter=3, keepWithNext=1))]
+    story += [P("5.1 Duplicate references", ParagraphStyle("h2", parent=s_body, fontName=f_bold, spaceBefore=4, spaceAfter=3, keepWithNext=1))]
     if not F["fields"]["reference"]:
         story += [P("No reference column was found in the file, so duplicate references could not be checked.", s_body)]
     elif not d["groups"]:
         story += [P(f"No reference is repeated among the {d['references_checked']:,} transaction(s) that carry one.", s_body)]
     else:
         story += [P(f"{len(d['groups']):,} reference(s) appear more than once: {d['groups_same']:,} with an identical amount and direction (most likely posted twice) and {d['groups_different']:,} with different amounts or directions (a reversal, part-payment, or a reused reference).", s_body)]
-        rows = [[g["reference"], "Identical" if g["kind"].startswith("same") else "Differs", r["No."], r["Date"], r["Type"], _money(r["Amount"]), r["Narration"] or "no description"]
+        rows = [[g["reference"], "Identical" if g["kind"].startswith("same") else "Differs", r.get("Row", r["No."]), r["Date"], r["Type"], _money(r["Amount"]), r["Narration"] or "no description"]
                 for g in d["groups"] for r in g["rows"]]
-        story += [tbl(["Reference", "Kind", "No.", "Date", "Type", "Amount", "Description"], rows, [1.6, 0.8, 0.5, 1.1, 0.7, 1.4, 2.6], right=(5,))]
-    story += [Spacer(1, 6), P("4.2 Unusually large transactions", ParagraphStyle("h2b", parent=s_body, fontName=f_bold, spaceBefore=4, spaceAfter=3, keepWithNext=1))]
+        story += [tbl(["Reference", "Kind", "Row", "Date", "Type", "Amount", "Description"], rows, [1.5, 0.8, 0.7, 1.1, 0.8, 1.4, 2.4], right=(5,))]
+    # 5.2 missing fields, 5.3 excluded rows (listed in full, from the same row ledger as the Excel file)
+    h2 = ParagraphStyle("h2m", parent=s_body, fontName=f_bold, spaceBefore=4, spaceAfter=3, keepWithNext=1)
+    if d.get("with_excluded"):
+        story += [Spacer(1, 4), P("References also used on rows left out of the totals", h2),
+                  tbl(["Reference", "Row", "Date", "Type", "Amount", "Used in totals"],
+                      [[g["reference"], r["Row"], r["Date"], r["Type"], _money(r["Amount"]) if r["Amount"] is not None else "(none)", r["Used in totals"]] for g in d["with_excluded"] for r in g["rows"]],
+                      [1.6, 0.7, 1.1, 0.9, 1.4, 1.4], right=(4,))]
+    story += [Spacer(1, 6), P("5.2 Missing fields (a cell holding only spaces counts as missing)", h2)]
+    mf = F.get("missing") or {}
+    story += [tbl(["Field", "Missing", "Note"], [[fld, f"{m['count']:,}" if m["column_found"] else "-", "" if m["column_found"] else "no such column in the file"] for fld, m in mf.items()], [1.5, 0.8, 3.0])]
+    mrows = [[fld, r["Row"], r["Reference"], r["Date"], r["Type"], _money(r["Amount"]) if r["Amount"] is not None else "(none)", r["Counterparty"], r["Used in totals"]] for fld, m in mf.items() for r in m["rows"]]
+    if mrows:
+        story += [Spacer(1, 4), tbl(["Field", "Row", "Reference", "Date", "Type", "Amount", "Counterparty", "In totals"], mrows, [1.1, 0.6, 1.2, 1.0, 0.8, 1.2, 1.4, 1.0], right=(5,))]
+    story += [Spacer(1, 6), P(f"5.3 Excluded rows ({len(F.get('excluded') or []):,}) and rows counted with a warning ({len(F.get('warned') or []):,})", h2)]
+    if F.get("excluded"):
+        story += [tbl(["Row", "Reference", "Date", "Type", "Amount as uploaded", "Reason it is not in the totals"],
+                      [[r["Row"], r["Reference"], r["Date"], r["Type"], _money(r["Amount"]) if r["Amount"] is not None else "(none)", r["Reason"]] for r in F["excluded"]], [0.6, 1.2, 1.0, 1.0, 1.3, 3.4], right=(4,))]
+    else:
+        story += [P("No row was excluded: every uploaded row is in the totals.", s_body)]
+    if F.get("warned"):
+        story += [Spacer(1, 4), tbl(["Row", "Reference", "Type", "Amount", "Warning (the row IS in the totals)"],
+                                    [[r["Row"], r["Reference"], r["Type"], _money(r["Amount"]), r["Warnings"]] for r in F["warned"]], [0.6, 1.2, 0.9, 1.3, 3.5], right=(3,))]
+    story += [Spacer(1, 6), P("5.4 Unusually large transactions", ParagraphStyle("h2b", parent=s_body, fontName=f_bold, spaceBefore=4, spaceAfter=3, keepWithNext=1))]
     if F["unusual"]:
-        story += [tbl(["No.", "Date", "Reference", "Type", "Amount", "Why it stands out"], [[r["No."], r["Date"], r["Reference"], r["Type"], _money(r["Amount"]), r["why"]] for r in F["unusual"]],
-                      [0.5, 1.0, 1.3, 0.7, 1.3, 4.0], right=(4,))]
+        story += [tbl(["Row", "Date", "Reference", "Type", "Amount", "Why it stands out"], [[r.get("Row", r["No."]), r["Date"], r["Reference"], r["Type"], _money(r["Amount"]), r["why"]] for r in F["unusual"]],
+                      [0.7, 1.0, 1.3, 0.8, 1.3, 3.8], right=(4,))]
     else:
         story += [P("No transaction is far above the normal range of its direction (or there are too few transactions to judge).", s_body)]
     if F["patterns"]:
-        story += [Spacer(1, 6), P("4.3 Other patterns", ParagraphStyle("h2c", parent=s_body, fontName=f_bold, spaceBefore=4, spaceAfter=3, keepWithNext=1))]
+        story += [Spacer(1, 6), P("5.5 Other patterns", ParagraphStyle("h2c", parent=s_body, fontName=f_bold, spaceBefore=4, spaceAfter=3, keepWithNext=1))]
         for p in F["patterns"]:
             story += [KeepTogether([P(f"[{p['severity'].upper()}] {p['title']} - {p['count']} row(s), total {_money(p['value'])}", ParagraphStyle("pt", parent=s_body, fontName=f_bold)), P(p["why"], s_sub), P("How it was found: " + p["method"], s_sub)])]
-            story += [tbl(["No.", "Date", "Reference", "Type", "Amount", "Description"], [[r["No."], r["Date"], r["Reference"], r["Type"], _money(r["Amount"]), r["Narration"] or "no description"] for r in p["rows"]],
-                          [0.5, 1.0, 1.4, 0.7, 1.3, 3.2], right=(4,)), Spacer(1, 5)]
+            story += [tbl(["Row", "Date", "Reference", "Type", "Amount", "Description"], [[r.get("Row", r["No."]), r["Date"], r["Reference"], r["Type"], _money(r["Amount"]), r["Narration"] or "no description"] for r in p["rows"]],
+                          [0.7, 1.0, 1.4, 0.8, 1.3, 3.0], right=(4,)), Spacer(1, 5)]
 
     # 5. data quality
-    story += [CondPageBreak(4 * cm), P("5. Data quality", s_h),
+    story += [CondPageBreak(4 * cm), P("6. Data quality", s_h),
               tbl(["Check", "Status", "Detail"], [[q["check"], {"ok": "OK", "warn": "Attention", "info": "Note"}[q["status"]], q["detail"]] for q in F["quality"]] + [["Note", "Note", n] for n in F["notes"]], [1.6, 0.8, 5.6],
                   hl_rows=[i for i, q in enumerate(F["quality"]) if q["status"] == "warn"])]
 
+    story += [Spacer(1, 6), P("How rows are treated", ParagraphStyle("h2t", parent=s_body, fontName=f_bold, spaceBefore=4, spaceAfter=3, keepWithNext=1))]
+    for x_ in F.get("treatment", []):
+        story.append(Paragraph(escape(x_), s_bul, bulletText="•"))
+
     # 6. recommendations
-    story += [CondPageBreak(4 * cm), P("6. Recommendations", s_h)]
+    story += [CondPageBreak(4 * cm), P("7. Recommendations", s_h)]
     for i, r in enumerate(F["recommendations"], 1):
         story.append(Paragraph(escape(r), s_bul, bulletText=f"{i}."))
 
     # 7. verification
-    story += [CondPageBreak(4 * cm), P("7. Verification (cross-checks run before this report was produced)", s_h),
+    story += [CondPageBreak(4 * cm), P("8. Verification (cross-checks run before this report was produced)", s_h),
               tbl(["Check", "Result", "Detail"], [[c["check"], "PASS" if c["ok"] else "FAIL", c["detail"]] for c in v["checks"]], [3.2, 0.7, 4.1], hl_rows=[i for i, c in enumerate(v["checks"]) if not c["ok"]])]
 
     # 8. the question that was asked
     if answer or (table is not None and len(table.columns)):
-        story += [PageBreak(), P("8. Your question and the answer", s_h), P(question, s_sub), Spacer(1, 4)]
+        story += [PageBreak(), P("9. Your question and the answer", s_h), P(question, s_sub), Spacer(1, 4)]
         for line_ in (answer or "").splitlines():
             line_ = line_.strip()
             if line_:
@@ -373,7 +429,7 @@ def build_analytics_pdf(company_name: str, title: str, question: str, answer: st
                 self.rect(0, A4[1] - 0.35 * cm, A4[0], 0.35 * cm, stroke=0, fill=1)
                 self.setFont(f_reg, 8)
                 self.setFillColor(mute)
-                self.drawString(1.6 * cm, 1.0 * cm, f"{name}  |  {today}  |  {'Verified: ' + str(v['passed']) + '/' + str(v['total']) + ' checks passed' if v['ok'] else 'NOT FULLY VERIFIED'}")
+                self.drawString(1.6 * cm, 1.0 * cm, f"{name}  |  {today}  |  {(str(v['passed']) + '/' + str(v['total']) + ' checks passed' + (', data-quality issues remain' if n_issues else ', no data-quality issues')) if v['ok'] else 'NOT FULLY VERIFIED'}")
                 self.drawRightString(A4[0] - 1.6 * cm, 1.0 * cm, f"Page {self._pageNumber} of {total}")
                 self.restoreState()
                 super().showPage()

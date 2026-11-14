@@ -1002,7 +1002,7 @@ def _apply_facts(out: dict, F: dict, n_rows: int) -> dict:
     cut = insight.find("\n\nHOW THIS WAS WORKED OUT:")
     head, tail = (insight[:cut], insight[cut:]) if cut >= 0 else (insight, "")
     whole = out.get("filtered") is not None and len(out["filtered"]) >= n_rows
-    issues = [] if out.get("full") else facts.check_narrative(head, F, whole)
+    issues = [] if (out.get("full") or out.get("fallback")) else facts.check_narrative(head, F, whole)
     if issues:
         try:
             figs = core.key_figures(out["res"], out.get("keys") or [], out.get("metric"))
@@ -1031,6 +1031,31 @@ def _make_pdf(company: dict, p: dict) -> bytes:
 
 
 
+AI_DOWN_WORDS = ("slow right now", "rate limit", "could not connect", "no answer", "empty answer", "time budget", "timed out", "timeout", "429", "quota",
+                 "connection", "unavailable", "503", "overloaded", "invalid response")
+
+
+def _no_ai_answer(df, F, question: str, err) -> dict:
+    """The AI could not be used. Answer the question that was asked from the verified data when it is a supported kind of question
+    (labelled as calculated, not AI); otherwise say plainly that it could not be answered. Never swap in an unrelated report."""
+    import qa
+    kind, reason = qa.classify_error(err)
+    det = qa.answer(question, F, df) if F else None
+    how = ("\n\nHOW THIS WAS WORKED OUT:\n- Calculated directly from the verified rows of your file"
+           + (f" ({F['rows_analysed']:,} counted of {F['rows_uploaded']:,} uploaded rows)" if F else "")
+           + "; no AI was involved.\n- Money is summed in whole kobo; credits and debits are never added together.")
+    if det is not None:
+        text = ("CALCULATED BY RECONZA (no AI was used for this answer because " + reason + ").\nANSWER: " + det["text"][0]
+                + ("\nDETAILS:\n" + "\n".join("- " + x for x in det["text"][1:]) if len(det["text"]) > 1 else ""))
+        return {"plan": {"intent": "calculated", "mode": "rows", "chart": "none", "title": det["title"]}, "res": det["table"], "filtered": df, "keys": [], "metric": "",
+                "title": det["title"], "insight": text + how, "fallback": True, "answer_source": "calculated", "ai_problem": kind, "retry": True}
+    res = qa.headline_table(F) if F else core.explain_table(df)
+    text = "NOT ANSWERED (the AI is unavailable: " + reason + ").\nANSWER: " + "\n".join(qa.unavailable_message(reason))
+    return {"plan": {"intent": "unavailable", "mode": "rows", "chart": "none", "title": "Question not answered"}, "res": res, "filtered": df, "keys": [], "metric": "",
+            "title": "Question not answered (AI unavailable)", "insight": text + "\n\nThe table shows verified headline figures that are available without the AI; it is not an answer to your question.",
+            "fallback": True, "answer_source": "unavailable", "ai_problem": kind, "retry": True}
+
+
 @app.post("/api/analyze")
 async def analyze(body: AnalyzeIn, user: dict = Depends(current_user)):
     need_company(user, body.company_id)
@@ -1048,32 +1073,36 @@ async def analyze(body: AnalyzeIn, user: dict = Depends(current_user)):
             df = await asyncio.to_thread(db.resolve_frame, body.company_id, body.report_id)
             F = await asyncio.to_thread(_facts_for, body.company_id, body.report_id, df)
             facts.CURRENT.set(F)          # the AI is given these verified facts, and may not contradict them
+            facts.AI_WORDED.set(None)
             import fullread
+            qdf = facts.question_frame(df, F) if F else df      # the planner sees the SAME row decisions as the verified analysis
             if fullread.wants_everything(body.question) and not body.prev_plan:
                 full = df.drop(columns=["_rows"], errors="ignore").reset_index(drop=True)
                 out = {"plan": {"intent": "everything"}, "res": full, "filtered": df, "keys": [], "metric": "", "title": "Everything in this file",
-                       "insight": fullread.describe(df), "full": True}
+                       "insight": fullread.describe(df, F), "full": True, "answer_source": "calculated"}
             else:
                 import deepdive
                 try:
-                    out = await core.analyze(df, body.question, body.prev_plan, INSIGHTS)
+                    out = await core.analyze(qdf, body.question, body.prev_plan, INSIGHTS)
                 except Exception as ai_err:  # noqa: BLE001
                     AI_EVENTS.append({"time": time.strftime("%Y-%m-%d %H:%M:%S"), "problem": str(ai_err)[:300]})
                     del AI_EVENTS[:-30]
                     msg = str(ai_err).lower()
-                    if not any(k in msg for k in ("slow right now", "rate limit", "could not connect", "no answer", "empty answer", "time budget")):
+                    if not any(k in msg for k in AI_DOWN_WORDS):
                         raise
-                    # The AI is busy: do not leave the person with an error. Give the exact, complete analysis of the file now.
-                    full = df.drop(columns=["_rows"], errors="ignore").reset_index(drop=True)
-                    out = {"plan": {"intent": "everything"}, "res": full, "filtered": df, "keys": [], "metric": "", "title": "Exact analysis of your file", "fallback": True,
-                           "insight": ("The AI is busy right now, so the written explanation of your question is not available. Below is the exact analysis of your whole file, "
-                                       "calculated by the application. Ask again in a minute for the AI explanation.\n\n" + fullread.describe(df))}
-                dd = deepdive.detail(out, len(df), whole_file_verified=bool(F)) if out.get("res") is not None and not out.get("clarify") and out.get("keys") is not None else ""
+                    out = _no_ai_answer(df, F, body.question, ai_err)
+                else:
+                    worded = facts.AI_WORDED.get()
+                    out["answer_source"] = "ai" if worded else "calculated"
+                    if INSIGHTS and worded is False and not out.get("clarify"):
+                        out["retry"] = True
+                        out["insight"] = "CALCULATED BY RECONZA (the AI could not write the explanation just now; the figures below are exact).\n" + out.get("insight", "")
+                dd = deepdive.detail(out, len(df), whole_file_verified=bool(F)) if out.get("res") is not None and not out.get("clarify") and out.get("keys") is not None and not out.get("fallback") else ""
                 if dd:
                     out["full_analysis"] = dd      # kept apart from the answer to the question that was asked
             if F and not out.get("clarify") and out.get("res") is not None:
                 out = _apply_facts(out, F, len(df))
-            if ckey and not out.get("fallback") and not out.get("clarify") and out.get("res") is not None and "could not turn this into an exact" not in out.get("insight", ""):
+            if ckey and not out.get("fallback") and not out.get("retry") and not out.get("clarify") and out.get("res") is not None and "could not turn this into an exact" not in out.get("insight", ""):
                 ANSWER_CACHE[ckey] = (time.time(), out)
                 while len(ANSWER_CACHE) > 100:
                     ANSWER_CACHE.pop(next(iter(ANSWER_CACHE)))
@@ -1109,6 +1138,9 @@ async def analyze(body: AnalyzeIn, user: dict = Depends(current_user)):
         "insight": out["insight"],
         "full_analysis": out.get("full_analysis") or "",
         "fallback": bool(out.get("fallback")),
+        "answer_source": out.get("answer_source", "ai"),      # "ai" | "calculated" | "unavailable"
+        "retry": bool(out.get("retry")),                       # the AI could not be used: offer Try again
+        "ai_problem": out.get("ai_problem"),
         "plan": out["plan"],
         "verified": facts.compact(F) if F else None,
         "result_id": _store_result(xdata, user, body.company_id, pdf),
