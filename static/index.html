@@ -1664,20 +1664,190 @@ html.js-rv #landing.lp .rv.rv-in { opacity:1; transform:none; }
     </div>
   </section>
 
+<style id="szc-css">
+#landing.lp .szc{--szc-good:#067647;--szc-good-bg:#ecfdf3;--szc-err:#b42318;--szc-err-bg:#fef3f2;}
+#landing.lp .szc *{box-sizing:border-box;min-width:0}
+#landing.lp .szc-grid{display:grid;grid-template-columns:minmax(0,5fr) minmax(0,7fr);gap:24px;align-items:start}
+#landing.lp .szc-panel{background:#fff;border:1px solid var(--lp-line);border-radius:14px;padding:26px 24px;box-shadow:0 1px 2px rgba(11,27,63,.05)}
+#landing.lp .szc-panel h3{font-size:1.1rem;font-weight:700;margin:0 0 4px}
+#landing.lp .szc-panel .szc-sub{color:var(--lp-mute);font-size:14.5px;margin:0 0 18px}
+#landing.lp .szc-field{margin-bottom:18px}
+#landing.lp .szc-field label{display:block;font-weight:650;font-size:15px;margin-bottom:2px;color:var(--lp-ink)}
+#landing.lp .szc-help{display:block;color:var(--lp-mute);font-size:13.5px;line-height:1.45;margin-bottom:8px}
+#landing.lp .szc-input{position:relative}
+#landing.lp .szc-input input[type=number]{padding-left:14px;padding-right:14px;font-variant-numeric:tabular-nums;font-weight:600;-moz-appearance:textfield}
+#landing.lp .szc-input.has-pre input[type=number]{padding-left:34px}
+#landing.lp .szc-input.has-suf input[type=number]{padding-right:44px}
+#landing.lp .szc-input input[type=number]::-webkit-outer-spin-button,#landing.lp .szc-input input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
+#landing.lp .szc-pre,#landing.lp .szc-suf{position:absolute;top:0;bottom:0;display:flex;align-items:center;color:var(--lp-mute);font-weight:600;pointer-events:none}
+#landing.lp .szc-pre{left:14px}#landing.lp .szc-suf{right:14px}
+#landing.lp .szc-input input[aria-invalid=true]{border-color:var(--szc-err);background:var(--szc-err-bg)}
+#landing.lp .szc-input input[aria-invalid=true]:focus{outline-color:rgba(180,35,24,.25)}
+#landing.lp .szc-err{display:none;color:var(--szc-err);font-size:13.5px;margin-top:6px;line-height:1.4}
+#landing.lp .szc-err.on{display:block}
+#landing.lp .szc-actions{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-top:6px}
+#landing.lp .szc-live{color:var(--lp-mute);font-size:13px}
+#landing.lp .szc-hero{background:linear-gradient(135deg,#0847b8 0%,#0b5ce6 100%);color:#fff;border-radius:14px;padding:28px 26px;margin-bottom:16px;box-shadow:0 8px 24px rgba(11,92,230,.22)}
+#landing.lp .szc-hero .szc-k{font-size:14px;font-weight:600;letter-spacing:.02em;text-transform:uppercase;opacity:.9}
+#landing.lp .szc-hero .szc-big{display:block;font-size:clamp(2rem,6.2vw,3.5rem);font-weight:800;letter-spacing:-.03em;line-height:1.1;margin:8px 0 6px;font-variant-numeric:tabular-nums;overflow-wrap:anywhere}
+#landing.lp .szc-hero .szc-words{font-size:15px;opacity:.92}
+#landing.lp .szc-pair{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px;margin-bottom:16px}
+#landing.lp .szc-card{background:#fff;border:1px solid var(--lp-line);border-radius:14px;padding:20px 20px 18px}
+#landing.lp .szc-card .szc-k{font-size:13px;font-weight:600;color:var(--lp-mute);text-transform:uppercase;letter-spacing:.03em}
+#landing.lp .szc-card .szc-val{display:block;font-size:clamp(1.5rem,3.6vw,2.1rem);font-weight:800;letter-spacing:-.02em;color:var(--lp-brand);margin:6px 0 4px;line-height:1.15;font-variant-numeric:tabular-nums;overflow-wrap:anywhere}
+#landing.lp .szc-card .szc-note{font-size:13.5px;color:var(--lp-mute);line-height:1.4}
+#landing.lp .szc-break{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin-bottom:16px}
+#landing.lp .szc-mini{background:var(--lp-alt);border:1px solid var(--lp-line);border-radius:12px;padding:14px 14px 12px}
+#landing.lp .szc-mini .szc-k{font-size:12.5px;font-weight:700;color:var(--lp-mute);text-transform:uppercase;letter-spacing:.04em;margin-bottom:8px}
+#landing.lp .szc-mini .szc-row{display:flex;justify-content:space-between;gap:8px;align-items:baseline;padding:3px 0;font-size:14px;color:var(--lp-mute)}
+#landing.lp .szc-mini .szc-row b{color:var(--lp-ink);font-size:15px;font-variant-numeric:tabular-nums;text-align:right;overflow-wrap:anywhere}
+#landing.lp .szc-bars{background:#fff;border:1px solid var(--lp-line);border-radius:14px;padding:18px 20px;margin-bottom:16px}
+#landing.lp .szc-bars .szc-k{font-size:13px;font-weight:600;color:var(--lp-mute);text-transform:uppercase;letter-spacing:.03em;margin-bottom:10px}
+#landing.lp .szc-bar{margin:8px 0}
+#landing.lp .szc-bar .szc-lab{display:flex;justify-content:space-between;gap:8px;font-size:14px;margin-bottom:4px}
+#landing.lp .szc-bar .szc-lab b{font-variant-numeric:tabular-nums}
+#landing.lp .szc-track{height:12px;border-radius:99px;background:#e7edf8;overflow:hidden}
+#landing.lp .szc-fill{height:100%;border-radius:99px;background:#98a6c3;transition:width .25s ease}
+#landing.lp .szc-fill.after{background:var(--lp-brand)}
+#landing.lp .szc-disc{font-size:13.5px;color:var(--lp-mute);line-height:1.55;border-left:3px solid var(--lp-line);padding:2px 0 2px 14px;margin:0}
+#landing.lp .szc-cta{margin-top:18px;display:flex;gap:12px;align-items:center;flex-wrap:wrap}
+#landing.lp .szc-empty .szc-big,#landing.lp .szc-empty .szc-val{opacity:.55}
+@media (max-width:1000px){#landing.lp .szc-grid{grid-template-columns:minmax(0,1fr)}}
+@media (max-width:640px){#landing.lp .szc-break{grid-template-columns:minmax(0,1fr)}#landing.lp .szc-pair{grid-template-columns:minmax(0,1fr)}#landing.lp .szc-panel{padding:20px 16px}#landing.lp .szc-hero{padding:22px 18px}}
+@media (prefers-reduced-motion:reduce){#landing.lp .szc-fill{transition:none}}
+</style>
   <section class="lp-sec" id="savings">
-    <div class="lp-wrap">
-      <div class="lp-head"><h2>See what you could save</h2><p>An estimate you can adjust. Change the numbers to match your team.</p></div>
-      <div class="lp-plans" style="grid-template-columns:repeat(auto-fit,minmax(260px,1fr))">
-        <article class="lp-plan"><h3>Your reconciliation work</h3>
-          <p class="lp-per">Hours spent each week matching statements and ledgers</p><input id="calcHours" type="number" min="0" value="10" style="width:100%;padding:10px;border-radius:10px;border:1px solid #cbd5e1;box-sizing:border-box">
-          <p class="lp-per">Cost of one hour of that work (₦)</p><input id="calcRate" type="number" min="0" value="3000" style="width:100%;padding:10px;border-radius:10px;border:1px solid #cbd5e1;box-sizing:border-box">
-          <p class="lp-per">Share of that time RECONZA can save (%)</p><input id="calcPct" type="number" min="0" max="100" value="70" style="width:100%;padding:10px;border-radius:10px;border:1px solid #cbd5e1;box-sizing:border-box"></article>
-        <article class="lp-plan"><h3>Estimated saving</h3><p class="lp-price" id="calcOut">₦0</p><p class="lp-per" id="calcSub"></p>
-          <p class="lp-per">This is an estimate from the numbers you enter, not a guarantee. Results depend on your files and process.</p></article>
+    <div class="lp-wrap szc">
+      <div class="lp-head"><h2>See what you could save</h2><p>Enter your team's numbers and see the money and time RECONZA could give back to your organisation. Results update as you type.</p></div>
+      <div class="szc-grid">
+        <form class="szc-panel" id="szcForm" novalidate onsubmit="return false" aria-label="Savings calculator inputs">
+          <h3>Your reconciliation work</h3>
+          <p class="szc-sub">Adjust the three figures to match your organisation.</p>
+          <div class="szc-field">
+            <label for="calcHours">Weekly Reconciliation Hours</label>
+            <span class="szc-help" id="calcHoursHelp">How many hours does the organisation spend reconciling transactions manually each week?</span>
+            <div class="szc-input has-suf"><input id="calcHours" type="number" inputmode="decimal" min="0" step="any" value="10" aria-describedby="calcHoursHelp calcHoursErr"><span class="szc-suf" aria-hidden="true">hrs</span></div>
+            <div class="szc-err" id="calcHoursErr" role="alert"></div>
+          </div>
+          <div class="szc-field">
+            <label for="calcRate">Average Hourly Staff Cost (₦)</label>
+            <span class="szc-help" id="calcRateHelp">How much does one hour of reconciliation work cost the organisation?</span>
+            <div class="szc-input has-pre"><span class="szc-pre" aria-hidden="true">₦</span><input id="calcRate" type="number" inputmode="decimal" min="0" step="any" value="3000" aria-describedby="calcRateHelp calcRateErr"></div>
+            <div class="szc-err" id="calcRateErr" role="alert"></div>
+          </div>
+          <div class="szc-field">
+            <label for="calcPct">Estimated Time Reduction with RECONZA (%)</label>
+            <span class="szc-help" id="calcPctHelp">What percentage of manual reconciliation time is expected to be saved using RECONZA?</span>
+            <div class="szc-input has-suf"><input id="calcPct" type="number" inputmode="decimal" min="0" max="100" step="any" value="70" aria-describedby="calcPctHelp calcPctErr"><span class="szc-suf" aria-hidden="true">%</span></div>
+            <div class="szc-err" id="calcPctErr" role="alert"></div>
+          </div>
+          <div class="szc-actions">
+            <button type="button" id="calcReset" class="lp-btn lp-btn-outline">Reset to default values</button>
+            <span class="szc-live">Updates instantly</span>
+          </div>
+        </form>
+
+        <div id="szcResults" aria-live="polite">
+          <div class="szc-hero">
+            <div class="szc-k">Annual Cost Savings</div>
+            <span class="szc-big" id="calcOut">₦0</span>
+            <div class="szc-words" id="calcSub"></div>
+          </div>
+          <div class="szc-pair">
+            <div class="szc-card"><div class="szc-k">Annual Hours Recovered</div><span class="szc-val" id="calcHrsYear">0 hrs</span><div class="szc-note" id="calcHrsYearNote"></div></div>
+            <div class="szc-card"><div class="szc-k">Estimated Reduction in Manual Workload</div><span class="szc-val" id="calcReduce">0%</span><div class="szc-note">Share of manual reconciliation effort removed</div></div>
+          </div>
+          <div class="szc-break">
+            <div class="szc-mini"><div class="szc-k">Financial savings</div>
+              <div class="szc-row"><span>Weekly</span><b id="calcMoneyWeek">₦0</b></div>
+              <div class="szc-row"><span>Monthly</span><b id="calcMoneyMonth">₦0</b></div>
+              <div class="szc-row"><span>Annual</span><b id="calcMoneyYear">₦0</b></div></div>
+            <div class="szc-mini"><div class="szc-k">Working hours recovered</div>
+              <div class="szc-row"><span>Weekly</span><b id="calcHrsWeek">0 hrs</b></div>
+              <div class="szc-row"><span>Monthly</span><b id="calcHrsMonth">0 hrs</b></div>
+              <div class="szc-row"><span>Annual</span><b id="calcHrsYear2">0 hrs</b></div></div>
+            <div class="szc-mini"><div class="szc-k">Weekly time spent</div>
+              <div class="szc-row"><span>Today</span><b id="calcBefore">0 hrs</b></div>
+              <div class="szc-row"><span>With RECONZA</span><b id="calcAfter">0 hrs</b></div>
+              <div class="szc-row"><span>Saved</span><b id="calcSaved">0 hrs</b></div></div>
+          </div>
+          <div class="szc-bars" aria-hidden="true">
+            <div class="szc-k">Weekly manual workload</div>
+            <div class="szc-bar"><div class="szc-lab"><span>Today</span><b id="calcBarBeforeLab">0 hrs</b></div><div class="szc-track"><div class="szc-fill" id="calcBarBefore" style="width:100%"></div></div></div>
+            <div class="szc-bar"><div class="szc-lab"><span>With RECONZA</span><b id="calcBarAfterLab">0 hrs</b></div><div class="szc-track"><div class="szc-fill after" id="calcBarAfter" style="width:30%"></div></div></div>
+          </div>
+          <p class="szc-disc" id="calcDisclaimer">These figures are illustrative estimates based on the information provided. Actual savings may vary depending on transaction volumes, reconciliation complexity, operational processes and usage of RECONZA.</p>
+          <div class="szc-cta"><button type="button" class="lp-btn lp-btn-primary" data-goto-login data-mode="register">Start free</button></div>
+        </div>
       </div>
     </div>
   </section>
-  <script>(function(){var h=document.getElementById("calcHours"),r=document.getElementById("calcRate"),p=document.getElementById("calcPct");if(!h)return;function go(){var hrs=Math.max(0,+h.value||0),rate=Math.max(0,+r.value||0),pc=Math.min(100,Math.max(0,+p.value||0))/100;var saved=hrs*4.33*pc,money=saved*rate;document.getElementById("calcOut").textContent="₦"+Math.round(money).toLocaleString("en-NG")+" / month";document.getElementById("calcSub").textContent="About "+saved.toFixed(1)+" hours saved a month, "+Math.round(saved*12)+" hours a year.";}[h,r,p].forEach(function(e){e.addEventListener("input",go)});go();})();</script>
+  <script>(function(){
+var $=function(i){return document.getElementById(i)};
+if(!$("calcHours"))return;
+var DEF={hours:"10",rate:"3000",pct:"70"};
+var MAX={hours:1000000,rate:100000000};
+var nf0=new Intl.NumberFormat("en-NG",{maximumFractionDigits:0});
+var nf1=new Intl.NumberFormat("en-NG",{maximumFractionDigits:1});
+function calc(hours,rate,pct){
+  var p=pct/100,weeklySave=hours*rate*p,hrsWeek=hours*p;
+  return {weeklySave:weeklySave,monthlySave:weeklySave*52/12,annualSave:weeklySave*52,
+          hrsWeek:hrsWeek,hrsMonth:hrsWeek*52/12,hrsYear:hrsWeek*52,reduction:pct,
+          remaining:hours-hrsWeek,hours:hours};
+}
+function naira(n){return "₦"+nf0.format(Math.round(n))}
+function hrs(n){return nf1.format(Math.round(n*10)/10)+" hrs"}
+function words(n){
+  var a=Math.abs(n),s=[[1e12,"trillion"],[1e9,"billion"],[1e6,"million"]];
+  for(var i=0;i<s.length;i++){if(a>=s[i][0]){var v=Math.round(n/s[i][0]*100)/100;return "About ₦"+nf1.format(v)+" "+s[i][1]+" a year"}}
+  return a>0?"Estimated yearly saving":"Enter your figures to see your estimated saving";
+}
+function days(h){var d=Math.round(h/8);return d>=1?"About "+nf0.format(d)+" working days (8-hour days)":"Less than one working day"}
+function readField(id,label,opts){
+  var el=$(id),raw=el.value,err="";
+  if(raw===""||raw===null){err=(el.validity&&el.validity.badInput)?label+" must be a valid number.":"Enter a number for "+label.toLowerCase()+"."}
+  else{
+    var v=Number(raw);
+    if(!isFinite(v))err=label+" must be a valid number.";
+    else if(v<0)err=label+" cannot be negative.";
+    else if(opts.max!==undefined&&v>opts.max)err=opts.maxMsg||(label+" is too large.");
+    else return {ok:true,v:v,err:""};
+  }
+  return {ok:false,v:0,err:err};
+}
+function setErr(id,msg){var e=$(id+"Err"),el=$(id);e.textContent=msg;e.className="szc-err"+(msg?" on":"");if(msg)el.setAttribute("aria-invalid","true");else el.removeAttribute("aria-invalid")}
+function set(id,t){$(id).textContent=t}
+function render(){
+  var h=readField("calcHours","Weekly hours",{max:MAX.hours,maxMsg:"Weekly hours looks too high. Enter a value up to "+nf0.format(MAX.hours)+"."});
+  var r=readField("calcRate","Hourly cost",{max:MAX.rate,maxMsg:"Hourly cost looks too high. Enter a value up to ₦"+nf0.format(MAX.rate)+"."});
+  var p=readField("calcPct","Time reduction",{max:100,maxMsg:"Time reduction must be between 0% and 100%."});
+  setErr("calcHours",h.err);setErr("calcRate",r.err);setErr("calcPct",p.err);
+  var box=$("szcResults");
+  if(!(h.ok&&r.ok&&p.ok)){
+    box.className="szc-empty";
+    ["calcOut","calcMoneyWeek","calcMoneyMonth","calcMoneyYear"].forEach(function(i){set(i,"₦–")});
+    ["calcHrsYear","calcHrsWeek","calcHrsMonth","calcHrsYear2","calcBefore","calcAfter","calcSaved","calcBarBeforeLab","calcBarAfterLab"].forEach(function(i){set(i,"– hrs")});
+    set("calcReduce","–%");set("calcSub","Correct the highlighted field to see your estimate.");set("calcHrsYearNote","");
+    $("calcBarBefore").style.width="0%";$("calcBarAfter").style.width="0%";
+    return;
+  }
+  box.className="";
+  var c=calc(h.v,r.v,p.v);
+  set("calcOut",naira(c.annualSave));set("calcSub",words(c.annualSave));
+  set("calcMoneyWeek",naira(c.weeklySave));set("calcMoneyMonth",naira(c.monthlySave));set("calcMoneyYear",naira(c.annualSave));
+  set("calcHrsYear",hrs(c.hrsYear));set("calcHrsYear2",hrs(c.hrsYear));set("calcHrsWeek",hrs(c.hrsWeek));set("calcHrsMonth",hrs(c.hrsMonth));
+  set("calcHrsYearNote",days(c.hrsYear));
+  set("calcReduce",nf1.format(Math.round(c.reduction*10)/10)+"%");
+  set("calcBefore",hrs(c.hours));set("calcAfter",hrs(c.remaining));set("calcSaved",hrs(c.hrsWeek));
+  set("calcBarBeforeLab",hrs(c.hours));set("calcBarAfterLab",hrs(c.remaining));
+  $("calcBarBefore").style.width=(c.hours>0?100:0)+"%";
+  $("calcBarAfter").style.width=(c.hours>0?Math.max(0,Math.min(100,c.remaining/c.hours*100)):0)+"%";
+}
+["calcHours","calcRate","calcPct"].forEach(function(i){$(i).addEventListener("input",render);$(i).addEventListener("change",render)});
+$("calcReset").addEventListener("click",function(){$("calcHours").value=DEF.hours;$("calcRate").value=DEF.rate;$("calcPct").value=DEF.pct;render()});
+window.reconzaSavings=calc;
+render();
+})();</script>
   <section class="lp-sec lp-alt" id="pricing">
     <div class="lp-wrap">
       <div class="lp-head"><h2>Pricing</h2><p>Start free and upgrade when your team grows. Monthly prices in Naira, no hidden fees.</p></div>
@@ -2879,7 +3049,7 @@ $("ask").onclick = async () => {
   try {
     const rid = $("report").value;
     const r = await jpost("/api/analyze", { company_id: Number($("company").value), report_id: rid === "all" ? null : Number(rid), question: q, prev_plan: $("followup").checked ? S.plan : null });
-    if (r.clarify) $("error").textContent = " " + r.clarify; else { S.plan = r.plan; renderResult(r); loadHistory(); }
+    if (r.clarify) $("error").textContent = " " + r.clarify; else { if (!r.fallback) S.plan = r.plan; renderResult(r); loadHistory(); }
   } catch (e) { $("error").textContent = e.message; }
   clearInterval(tick);
   $("ask").disabled = false; $("ask").textContent = "Analyze";
@@ -2898,7 +3068,13 @@ function renderResult(r) {
   const ins = $("insight"), full = r.insight || "", cut = full.indexOf("\n\nHOW THIS WAS WORKED OUT:");
   ins.textContent = cut >= 0 ? full.slice(0, cut) : full; ins.classList.toggle("hidden", !full);
   let lab = $("insLabel"); if (!lab) { lab = document.createElement("div"); lab.id = "insLabel"; lab.className = "ans-label"; ins.before(lab); }
-  lab.textContent = r.fallback ? "AI is busy: exact analysis of your whole file" : "Answer to your question"; lab.hidden = !full;
+  lab.textContent = r.answer_source === "unavailable" ? "Not answered: the AI is unavailable (nothing was charged)"
+    : (r.answer_source === "calculated" && r.fallback) ? "Calculated by RECONZA from your verified rows (no AI was used)"
+    : (r.answer_source === "calculated" && r.retry) ? "Exact figures calculated by RECONZA (the AI could not write the explanation)"
+    : r.answer_source === "ai" ? "Answer to your question (figures calculated by RECONZA, explanation written by AI)" : "Answer to your question";
+  lab.hidden = !full;
+  let rb = $("retryAsk"); if (!rb) { rb = document.createElement("button"); rb.id = "retryAsk"; rb.type = "button"; rb.className = "secondary"; rb.textContent = "Try the AI again"; rb.style.margin = "6px 0"; rb.onclick = () => { $("ask").click(); }; ins.after(rb); }
+  rb.hidden = !r.retry;
   let cp = $("calcPanel"); if (!cp) { cp = document.createElement("details"); cp.id = "calcPanel"; cp.className = "calc-panel"; ins.after(cp); }
   cp.replaceChildren(); cp.hidden = cut < 0;
   if (cut >= 0) { const sm = document.createElement("summary"); sm.textContent = "How was this calculated?"; const pre = document.createElement("div"); pre.className = "calc-body"; pre.textContent = full.slice(cut + 2).replace("HOW THIS WAS WORKED OUT:", "Steps:").trim(); cp.append(sm, pre); }
