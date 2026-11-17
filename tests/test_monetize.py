@@ -16,7 +16,7 @@ except ImportError:      # the sandbox has no FastAPI: a tiny stand-in lets the 
         def __init__(self, status_code, detail=None):
             self.status_code, self.detail = status_code, detail
     fa = types.ModuleType("fastapi"); fa.Depends = lambda f=None: f; fa.File = lambda *a, **k: None; fa.Form = lambda *a, **k: None
-    fa.HTTPException = _HTTP; fa.UploadFile = object
+    fa.HTTPException = _HTTP; fa.UploadFile = object; fa.Request = object
     fr = types.ModuleType("fastapi.responses")
     class _R:
         def __init__(self, content=None, media_type=None, headers=None):
@@ -335,6 +335,7 @@ class Routes(Base):
         W = types.SimpleNamespace(current_user=lambda: None, need=lambda u, r: (_ for _ in ()).throw(HTTPException(403, "no")) if u["role"] != "admin" else None,
                                   need_role=lambda u, r: (_ for _ in ()).throw(HTTPException(403, "role")) if db.company_rank(u) < db.COMPANY_RANK[r] else None,
                                   need_company=lambda u, c: (_ for _ in ()).throw(HTTPException(403, "co")) if not db.can_access(u, c) else None,
+                                  need_spender=lambda u: None,
                                   RESULTS={}, notify=mock.MagicMock(), extras=mock.MagicMock(), MAX_PROOF_BYTES=5_000_000, _image_kind=lambda d: None)
         cls.W = W
         monetize_api.register(App(), W)
