@@ -33,6 +33,7 @@ import db
 import forecast
 import enterprise_features as ef
 import extras
+import seats
 import landing
 import jobs
 import notify
@@ -178,6 +179,22 @@ def need_role(user: dict, role: str) -> None:
         raise HTTPException(403, f"Only {names.get(role, role)} can do that. Ask your company owner to change your role.")
 
 
+def need_admin_tools(user: dict) -> None:
+    """Company Admin tools (API keys, integrations, schedules, alerts, audit export). Owners unlock them with the Admin unlock."""
+    if db.has_admin_tools(user):
+        return
+    if db.effective_company_role(user) == "owner":
+        raise HTTPException(403, f"This is an Admin tool. Unlock Admin access (one-time ₦{seats.SEAT_PRICES['admin']:,}) under My Team to use it.")
+    raise HTTPException(403, "Only a company admin can do that. Ask your company owner to unlock Admin access for you.")
+
+
+def need_spender(user: dict) -> None:
+    """Who may spend the company's money: the owner, or a company admin."""
+    if db.effective_company_role(user) in ("platform", "owner", "admin"):
+        return
+    raise HTTPException(403, "Only the company owner or an admin can pay for the company.")
+
+
 def need_company(user: dict, company_id: int) -> None:
     if not db.can_access(user, company_id):
         raise HTTPException(403, "You don't have access to this company.")
@@ -195,6 +212,7 @@ def public(user: dict) -> dict:
     return {"id": user["id"], "username": user["username"], "role": user["role"],
             "totp_enabled": user["totp_enabled"], "email": user.get("email"),
             "company_role": db.effective_company_role(user),
+            "admin_tools": db.has_admin_tools(user),
             "needs_2fa_setup": REQUIRE_2FA_ADMINS and user["role"] == "admin" and not user["totp_enabled"]}
 
 
@@ -1525,14 +1543,14 @@ API_HITS: dict[int, list[float]] = {}
 
 @app.get("/api/api-keys")
 def list_api_keys(company_id: int, user: dict = Depends(current_user)):
-    need(user, "analyst"); need_role(user, "admin")
+    need(user, "analyst"); need_admin_tools(user)
     need_company(user, company_id)
     return apikeys.list_for_company(company_id)
 
 
 @app.post("/api/api-keys")
 def create_api_key(body: ApiKeyIn, user: dict = Depends(current_user)):
-    need(user, "analyst"); need_role(user, "admin")
+    need(user, "analyst"); need_admin_tools(user)
     need_company(user, body.company_id)
     try:
         key, meta = apikeys.create(user["id"], body.company_id, body.label)
@@ -1544,7 +1562,7 @@ def create_api_key(body: ApiKeyIn, user: dict = Depends(current_user)):
 
 @app.delete("/api/api-keys/{key_id}")
 def revoke_api_key(key_id: int, company_id: int, user: dict = Depends(current_user)):
-    need(user, "analyst"); need_role(user, "admin")
+    need(user, "analyst"); need_admin_tools(user)
     need_company(user, company_id)
     if not apikeys.revoke(key_id, company_id):
         raise HTTPException(404, "Key not found.")
@@ -1911,7 +1929,7 @@ def export_audit_csv(company_id: int | None = None, user: dict = Depends(current
     else:                                  # a company admin may export their own company's log, never the whole site's
         if not company_id:
             raise HTTPException(403, "Choose a company.")
-        need_company(user, company_id); need_role(user, "admin")
+        need_company(user, company_id); need_admin_tools(user)
     import csv
     import io
     with db._db() as con:
@@ -2125,7 +2143,7 @@ def digests(company_id: int, user: dict = Depends(current_user)):
 
 @app.post("/api/companies/{company_id}/digests")
 def add_digest(company_id: int, body: DigestIn, user: dict = Depends(current_user)):
-    need(user, "analyst"); need_role(user, "admin")
+    need(user, "analyst"); need_admin_tools(user)
     need_company(user, company_id)
     m = re.fullmatch(r"([01]?\d|2[0-3]):([0-5]\d)", body.time.strip())
     if not m or body.weekday not in range(-1, 7) or body.scope not in ("latest", "all"):
@@ -2143,7 +2161,7 @@ def delete_digest(digest_id: int, user: dict = Depends(current_user)):
     if not d:
         raise HTTPException(404, "Unknown digest")
     need_company(user, d["company_id"])
-    need(user, "analyst"); need_role(user, "admin")
+    need(user, "analyst"); need_admin_tools(user)
     if user["role"] != "admin" and d["user_id"] != user["id"]:
         raise HTTPException(403, "Only the creator or an admin can delete this.")
     db.delete_digest(digest_id)
@@ -2646,7 +2664,7 @@ def get_scheduled_reconciliations(company_id: int, user: dict = Depends(current_
 
 @app.post("/api/companies/{company_id}/scheduled-reconciliations")
 def add_scheduled_reconciliation(company_id: int, body: ScheduleIn, user: dict = Depends(current_user)):
-    need_company(user, company_id); need(user, "analyst"); need_role(user, "admin")
+    need_company(user, company_id); need(user, "analyst"); need_admin_tools(user)
     a, b = report_for(user, body.report_a), report_for(user, body.report_b)
     if a["company_id"] != company_id or b["company_id"] != company_id:
         raise HTTPException(400, "Both reports must belong to the selected company.")
@@ -2659,7 +2677,7 @@ def add_scheduled_reconciliation(company_id: int, body: ScheduleIn, user: dict =
 
 @app.delete("/api/scheduled-reconciliations/{schedule_id}")
 def remove_scheduled_reconciliation(schedule_id: int, user: dict = Depends(current_user)):
-    need(user, "analyst"); need_role(user, "admin")
+    need(user, "analyst"); need_admin_tools(user)
     with db._db() as con:
         row = con.execute("SELECT * FROM scheduled_reconciliations WHERE id=?", (schedule_id,)).fetchone()
     if not row: raise HTTPException(404, "Scheduled reconciliation not found.")
@@ -2678,7 +2696,7 @@ def get_notification_settings(company_id: int, user: dict = Depends(current_user
 
 @app.put("/api/companies/{company_id}/notification-settings")
 def put_notification_settings(company_id: int, body: NotificationSettingsIn, user: dict = Depends(current_user)):
-    need_company(user, company_id); need(user, "analyst"); need_role(user, "admin")
+    need_company(user, company_id); need(user, "analyst"); need_admin_tools(user)
     try: ef.set_notification_emails(company_id, body.emails, body.quota_threshold)
     except ValueError as e: raise HTTPException(400, str(e))
     db.audit(user, "notification_settings_update", company_id, f"emails={len(body.emails)}; quota={body.quota_threshold}%")
@@ -2766,6 +2784,8 @@ def team_list(company_id: int, user: dict = Depends(current_user)):
 @app.post("/api/companies/{company_id}/team")
 def team_add(company_id: int, body: TeamAddIn, user: dict = Depends(current_user)):
     need_company(user, company_id); need_role(user, "owner")
+    if body.role != "viewer" and user.get("role") != "admin":
+        raise HTTPException(400, "New people start as Viewer. After you add them, use Unlock to give them Analyst or Admin access.")
     try:
         m = db.add_team_member(company_id, body.username, body.password, body.role)
     except ValueError as e:
@@ -2777,6 +2797,9 @@ def team_add(company_id: int, body: TeamAddIn, user: dict = Depends(current_user
 @app.patch("/api/companies/{company_id}/team/{member_id}")
 def team_set_role(company_id: int, member_id: int, body: TeamRoleIn, user: dict = Depends(current_user)):
     need_company(user, company_id); need_role(user, "owner")
+    cur = next((x for x in db.list_team(company_id) if x["id"] == member_id), None)
+    if cur and db.COMPANY_RANK.get(body.role, 0) > db.COMPANY_RANK.get(cur["company_role"], 0) and user.get("role") != "admin":
+        raise HTTPException(400, "Moving someone up is a paid unlock. Use the Unlock button next to their name. You can still move people down for free.")
     try:
         m = db.set_team_role(company_id, member_id, body.role)
     except LookupError as e:
@@ -2821,7 +2844,7 @@ def company_activity_log(company_id: int, user: dict = Depends(current_user)):
 # ----------------------- secure generic external integration ----------------------- #
 @app.post("/api/companies/{company_id}/integrations/tokens")
 def create_integration_token(company_id: int, request: Request, user: dict = Depends(current_user)):
-    need_company(user, company_id); need_role(user, "admin")
+    need_company(user, company_id); need_admin_tools(user)
     label = request.query_params.get("label", "External accounting export")[:100]
     token = ef.create_integration_token(company_id, label, user["id"])
     db.audit(user, "integration_token_create", company_id, label)
@@ -2830,13 +2853,13 @@ def create_integration_token(company_id: int, request: Request, user: dict = Dep
 
 @app.get("/api/companies/{company_id}/integrations/tokens")
 def list_integration_tokens(company_id: int, user: dict = Depends(current_user)):
-    need_company(user, company_id); need_role(user, "admin")
+    need_company(user, company_id); need_admin_tools(user)
     return ef.list_integration_tokens(company_id)
 
 
 @app.delete("/api/companies/{company_id}/integrations/tokens/{token_id}")
 def revoke_integration_token(company_id: int, token_id: int, user: dict = Depends(current_user)):
-    need_company(user, company_id); need_role(user, "admin")
+    need_company(user, company_id); need_admin_tools(user)
     if not ef.revoke_integration_token(token_id, company_id): raise HTTPException(404, "Integration token not found.")
     db.audit(user, "integration_token_revoke", company_id, f"token={token_id}")
     return {"ok": True}
@@ -2964,6 +2987,9 @@ def delete_saved_question(saved_id: int, user: dict = Depends(current_user)):
 
 
 import sys as _sys
+import seats
+import seats_api
+seats_api.register(app, _sys.modules[__name__])          # role unlocks, join-company requests, welcome coupon
 import monetize_api
 monetize_api.register(app, _sys.modules[__name__])      # membership tiers, Marketplace, Report Studio, Business Services, revenue admin
 

@@ -160,6 +160,8 @@ CREATE TABLE IF NOT EXISTS enquiries (
 def schema(con) -> None:
     """Additive only: no existing table is touched. To undo, drop products, orders, feature_credits and enquiries."""
     con.executescript(SCHEMA)
+    db._ensure_column(con, "orders", "coupon_code", "TEXT")                         # welcome / promo coupon used on this order
+    db._ensure_column(con, "orders", "discount_ngn", "INTEGER NOT NULL DEFAULT 0")
 
 
 # ----------------------------------------------------------------------------------------------- analysis packs
@@ -478,6 +480,16 @@ def create_order(company_id: int, user_id: int, kind: str, item_key: str) -> dic
         list_price = db.PLANS[item_key]["price_ngn"] * 12
         amount = db.PLANS[item_key]["price_ngn"] * 10
         title = f"{db.PLANS[item_key]['name']} membership, 12 months (2 months free)"
+    elif kind == "seat":
+        import seats
+        try:
+            role, member_id = str(item_key).split(":", 1)
+            tgt = seats.seat_target(company_id, int(member_id), role)
+        except (ValueError, TypeError) as e:
+            raise ValueError(str(e) or "Unknown access unlock.") from e
+        title = f"Unlock {role.title()} access for {tgt['user']['username']}"
+        list_price = amount = tgt["price"]
+        item_key = f"{role}:{int(member_id)}"
     else:
         raise ValueError("Unknown purchase type.")
     if amount <= 0:
@@ -488,7 +500,7 @@ def create_order(company_id: int, user_id: int, kind: str, item_key: str) -> dic
             raise ValueError("Your company already owns this product. Find it under My library.")
         open_o = con.execute("SELECT * FROM orders WHERE company_id=? AND kind=? AND item_key=? AND status IN ('awaiting_payment','pending')", (company_id, kind, item_key)).fetchone()
         if open_o:
-            if open_o["amount_ngn"] != amount:     # price changed since it was created: reprice an unpaid order
+            if open_o["amount_ngn"] != amount and not open_o["coupon_code"]:     # price changed since it was created: reprice an unpaid order (a coupon order keeps its price)
                 con.execute("UPDATE orders SET amount_ngn=?, list_price_ngn=? WHERE id=? AND status='awaiting_payment'", (amount, list_price, open_o["id"]))
             return get_order(open_o["order_ref"], con=con)
         ref = _ref()
@@ -500,7 +512,7 @@ def create_order(company_id: int, user_id: int, kind: str, item_key: str) -> dic
 def get_order(order_ref: str, con=None) -> dict | None:
     def q(c):
         r = c.execute("SELECT id,order_ref,company_id,user_id,kind,item_key,title,list_price_ngn,amount_ngn,status,transfer_reference,provider,provider_ref,"
-                      "proof_at,created_at,submitted_at,verified_at,verified_by,note,(CASE WHEN proof_data IS NULL THEN 0 ELSE 1 END) AS has_proof "
+                      "proof_at,created_at,submitted_at,verified_at,verified_by,note,coupon_code,discount_ngn,(CASE WHEN proof_data IS NULL THEN 0 ELSE 1 END) AS has_proof "
                       "FROM orders WHERE order_ref=?", (order_ref,)).fetchone()
         return dict(r) if r else None
     if con is not None:
@@ -563,6 +575,10 @@ def _fulfil(con, o, admin_id=None) -> None:
                     (o["company_id"], o["item_key"], now.strftime(db.FMT), (start + dt.timedelta(days=365)).strftime(db.FMT), admin_id, f"Yearly plan, order {o['order_ref']}", _now()))
     elif o["kind"] == "feature":
         con.execute("INSERT INTO feature_credits(company_id,feature,order_id,created_at) VALUES (?,?,?,?)", (o["company_id"], o["item_key"], o["id"], _now()))
+    elif o["kind"] == "seat":
+        import seats
+        role, member_id = str(o["item_key"]).split(":", 1)
+        seats.apply_seat_unlock(con, o["company_id"], int(member_id), role)
 
 
 def decide_order(order_id: int, decision: str, admin_id: int, note: str = "") -> dict:
@@ -609,9 +625,35 @@ def mark_order_paid(order_ref: str, provider: str, provider_ref: str, amount_pai
     return get_order(order_ref)
 
 
+def apply_order_coupon(order_ref: str, company_id: int, user_id: int, code: str) -> dict:
+    """Use a coupon on an unpaid order. The better of the membership discount and the coupon applies (they do not stack).
+    The coupon is only consumed when it actually lowers the price, and is given back if the order is cancelled."""
+    import extras
+    o = get_order(order_ref)
+    if not o or o["company_id"] != company_id:
+        raise LookupError("Order not found.")
+    if o["status"] != "awaiting_payment":
+        raise ValueError("A coupon can only be added before you submit your payment.")
+    if o["coupon_code"]:
+        raise ValueError("A coupon is already applied to this order.")
+    code, coupon_disc = extras.percent_discount(code, company_id, int(o["list_price_ngn"]))
+    member_disc = int(o["list_price_ngn"]) - int(o["amount_ngn"])
+    if coupon_disc <= member_disc:
+        raise ValueError(f"Your membership discount (₦{member_disc:,}) is already better than this coupon, so the coupon was not used.")
+    extras.use_coupon(code, company_id, user_id)
+    with db._db() as con:
+        con.execute("UPDATE orders SET coupon_code=?, discount_ngn=?, amount_ngn=? WHERE id=? AND status='awaiting_payment'",
+                    (code, coupon_disc, max(0, int(o["list_price_ngn"]) - coupon_disc), o["id"]))
+    return get_order(order_ref)
+
+
 def cancel_order(order_ref: str, company_id: int) -> None:
+    o = get_order(order_ref)
     with db._db() as con:
         con.execute("UPDATE orders SET status='cancelled' WHERE order_ref=? AND company_id=? AND status='awaiting_payment'", (order_ref, company_id))
+    if o and o["company_id"] == company_id and o["status"] == "awaiting_payment" and o.get("coupon_code"):
+        import extras
+        extras.release_coupon(o["coupon_code"], company_id)
 
 
 def company_orders(company_id: int) -> list[dict]:
@@ -797,22 +839,31 @@ def list_orders(status: str = "all", q: str = "", kind: str = "all") -> list[dic
     return res[:300]
 
 
+def _pending_by_kind(membership_pending: int) -> dict:
+    """How many payments are waiting for the site owner, per section (shown as a number on each Revenue tab)."""
+    out = {"membership": int(membership_pending), "product": 0, "feature": 0, "pack": 0, "annual": 0, "seat": 0}
+    with db._db() as con:
+        for r in con.execute("SELECT kind, COUNT(*) AS n FROM orders WHERE status='pending' GROUP BY kind").fetchall():
+            out[r["kind"]] = int(r["n"])
+    return out
+
+
 def overview() -> dict:
     with db._db() as con:
         by_status = {r["status"]: r["n"] for r in con.execute("SELECT status, COUNT(*) AS n FROM orders GROUP BY status").fetchall()}
         mstat = {r["status"]: r["n"] for r in con.execute("SELECT status, COUNT(*) AS n FROM payment_requests GROUP BY status").fetchall()}
         months = {}
         for r in con.execute("SELECT SUBSTR(COALESCE(reviewed_at, created_at),1,7) AS m, SUM(amount_ngn) AS s FROM payment_requests WHERE status='approved' GROUP BY 1").fetchall():
-            months.setdefault(r["m"], {"membership": 0, "marketplace": 0, "studio": 0, "packs": 0})["membership"] += int(r["s"] or 0)
+            months.setdefault(r["m"], {"membership": 0, "marketplace": 0, "studio": 0, "packs": 0, "seats": 0})["membership"] += int(r["s"] or 0)
         for r in con.execute("SELECT SUBSTR(COALESCE(verified_at, created_at),1,7) AS m, kind, SUM(amount_ngn) AS s FROM orders WHERE status='paid' GROUP BY 1, 2").fetchall():
-            months.setdefault(r["m"], {"membership": 0, "marketplace": 0, "studio": 0, "packs": 0})[{"product": "marketplace", "pack": "packs", "annual": "membership"}.get(r["kind"], "studio")] += int(r["s"] or 0)
+            months.setdefault(r["m"], {"membership": 0, "marketplace": 0, "studio": 0, "packs": 0, "seats": 0})[{"product": "marketplace", "pack": "packs", "annual": "membership", "seat": "seats"}.get(r["kind"], "studio")] += int(r["s"] or 0)
         enq = {r["status"]: r["n"] for r in con.execute("SELECT status, COUNT(*) AS n FROM enquiries GROUP BY status").fetchall()}
     custs = list_customers()
     tiers = {k: 0 for k in TIERS}
     for c in custs:
         tiers[c["tier"]] += 1
     this_month = _utc_now().strftime("%Y-%m")
-    tot = {"membership": 0, "marketplace": 0, "studio": 0, "packs": 0}
+    tot = {"membership": 0, "marketplace": 0, "studio": 0, "packs": 0, "seats": 0}
     for v in months.values():
         for k in tot:
             tot[k] += v[k]
@@ -820,5 +871,6 @@ def overview() -> dict:
     return {"tiers": tiers, "paying": len(custs) - tiers["regular"], "free": tiers["regular"], "companies": len(custs),
             "revenue_total": sum(tot.values()), "revenue_by_stream": tot, "revenue_this_month": sum(months.get(this_month, {}).values()), "series": series,
             "orders": by_status, "membership_payments": {"pending": mstat.get("pending", 0), "paid": mstat.get("approved", 0), "failed": mstat.get("rejected", 0)},
-            "pending_total": by_status.get("pending", 0) + mstat.get("pending", 0), "failed_total": by_status.get("failed", 0) + mstat.get("rejected", 0),
+            "pending_total": by_status.get("pending", 0) + mstat.get("pending", 0),
+            "pending_by_kind": _pending_by_kind(mstat.get("pending", 0)), "failed_total": by_status.get("failed", 0) + mstat.get("rejected", 0),
             "enquiries": enq, "new_enquiries": enq.get("new", 0)}

@@ -129,8 +129,8 @@ def decide_registration(request_id: int, decision: str, admin: dict, note: str =
         db._insert_trial_subscription(con, company_id)
         referrer = extras.referrer_for_code(req["referral_code"]) if req["referral_code"] else None
         cur = con.execute(
-            "INSERT INTO users(username, password_hash, role, telegram_id, created_at, email, referred_by) "
-            "VALUES (?, ?, 'analyst', ?, ?, ?, ?)",
+            "INSERT INTO users(username, password_hash, role, company_role, tools_unlocked, telegram_id, created_at, email, referred_by) "
+            "VALUES (?, ?, 'analyst', 'owner', 0, ?, ?, ?, ?)",
             (req["username"], req["password_hash"], req["telegram_id"], _now(), req["email"], referrer))
         user_id = cur.lastrowid
         con.execute("INSERT INTO user_companies(user_id, company_id) VALUES (?, ?)", (user_id, company_id))
@@ -140,6 +140,11 @@ def decide_registration(request_id: int, decision: str, admin: dict, note: str =
             (_now(), admin["id"], (note or "Approved")[:300], request_id))
         result = {"id": request_id, "status": "approved", "username": req["username"],
                   "company_name": req["company_name"], "user_id": user_id, "company_id": company_id}
+    try:
+        import seats
+        seats.issue_welcome_coupon(company_id, req["username"], req["company_name"], req["email"])
+    except Exception:  # noqa: BLE001  (the welcome offer must never block an approval)
+        pass
     try:
         if req["email"]:
             extras._mail_async(req["email"], "Welcome to RECONZA",

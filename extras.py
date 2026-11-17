@@ -44,8 +44,13 @@ CREATE TABLE IF NOT EXISTS referral_rewards (
 """
 
 
+def _migrate(con) -> None:
+    con.executescript(SCHEMA)
+    db._ensure_column(con, "coupons", "company_id", "INTEGER")      # a coupon tied to one company (the welcome offer); NULL = anyone
+
+
 def init() -> None:
-    db.run_startup_migration(lambda con: con.executescript(SCHEMA))
+    db.run_startup_migration(_migrate)
 
 
 init()
@@ -183,7 +188,7 @@ def _code(c: str | None) -> str:
 
 
 def create_coupon(kind: str, value: float, max_uses: int = 1, days_valid: int | None = 30,
-                  code: str | None = None, note: str = "") -> dict:
+                  code: str | None = None, note: str = "", company_id: int | None = None) -> dict:
     if kind not in ("days", "percent"):
         raise ValueError("Coupon type must be 'days' (free days) or 'percent' (discount on a payment).")
     value = float(value)
@@ -198,8 +203,8 @@ def create_coupon(kind: str, value: float, max_uses: int = 1, days_valid: int | 
     expires = (dt.datetime.now(dt.timezone.utc) + dt.timedelta(days=int(days_valid))).strftime(FMT) if days_valid else None
     try:
         with db._db() as con:
-            con.execute("INSERT INTO coupons(code,kind,value,max_uses,used,expires_at,active,note,created_at) VALUES (?,?,?,?,0,?,1,?,?)",
-                        (code, kind, value, max_uses, expires, (note or "")[:200], _now()))
+            con.execute("INSERT INTO coupons(code,kind,value,max_uses,used,expires_at,active,note,created_at,company_id) VALUES (?,?,?,?,0,?,1,?,?,?)",
+                        (code, kind, value, max_uses, expires, (note or "")[:200], _now(), company_id))
     except db.IntegrityError as e:
         raise ValueError("That coupon code already exists.") from e
     return {"code": code, "kind": kind, "value": value, "max_uses": max_uses, "expires_at": expires}
@@ -223,6 +228,8 @@ def _usable(con, code: str, company_id: int):
     c = con.execute("SELECT * FROM coupons WHERE code = ?", (code,)).fetchone()
     if not c or not c["active"] or (c["expires_at"] and c["expires_at"] < _now()):
         raise ValueError("That coupon code isn't valid or has expired.")
+    if c["company_id"] is not None and int(c["company_id"]) != int(company_id):
+        raise ValueError("That coupon code isn't valid or has expired.")      # a welcome coupon belongs to one company
     if c["used"] >= c["max_uses"]:
         raise ValueError("That coupon has already been used up.")
     if con.execute("SELECT 1 FROM coupon_redemptions WHERE code = ? AND company_id = ?", (code, company_id)).fetchone():
@@ -264,6 +271,15 @@ def use_coupon(code: str, company_id: int, user_id: int) -> None:
     code = _code(code)
     with db._db() as con:
         _consume(con, _usable(con, code, company_id), company_id, user_id)
+
+
+def release_coupon(code: str, company_id: int) -> None:
+    """Give a coupon back (the order it was applied to was cancelled before payment)."""
+    code = _code(code)
+    with db._db() as con:
+        gone = con.execute("DELETE FROM coupon_redemptions WHERE code = ? AND company_id = ?", (code, company_id)).rowcount
+        if gone:
+            con.execute("UPDATE coupons SET used = CASE WHEN used > 0 THEN used - 1 ELSE 0 END WHERE code = ?", (code,))
 
 
 # ------------------------------------------------------------------ feedback + saved questions

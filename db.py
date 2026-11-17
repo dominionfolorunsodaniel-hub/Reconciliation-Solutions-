@@ -209,6 +209,17 @@ def effective_company_role(user: dict) -> str:
     return "viewer" if user.get("role") == "viewer" else "analyst"
 
 
+def has_admin_tools(user: dict) -> bool:
+    """API keys, integrations, schedules, alerts and audit export. Company admins always have them; an owner has them
+    once the Admin unlock is paid (owners that existed before the unlock was introduced keep them)."""
+    r = effective_company_role(user)
+    if r in ("platform", "admin"):
+        return True
+    if r == "owner":
+        return user.get("tools_unlocked") != 0
+    return False
+
+
 def company_rank(user: dict) -> int:
     r = effective_company_role(user)
     return 99 if r == "platform" else COMPANY_RANK[r]
@@ -293,6 +304,9 @@ def _init_schema(_con) -> None:
     _ensure_column(_con, "users", "referred_by", "INTEGER")
     _ensure_column(_con, "users", "company_role", "TEXT")        # owner / admin / analyst / viewer inside the customer's company
     _backfill_company_roles(_con)
+    _ensure_column(_con, "users", "tools_unlocked", "INTEGER")     # NULL or 1 = company Admin tools on; 0 = locked until the paid Admin unlock
+    _con.execute("UPDATE users SET tools_unlocked = 1 WHERE company_role = 'owner' AND tools_unlocked IS NULL")   # owners that already existed keep every tool
+    _ensure_column(_con, "companies", "join_code", "TEXT")          # code a new person enters to ask to join; the owner approves
     _con.executescript("CREATE TABLE IF NOT EXISTS reset_requests (id INTEGER PRIMARY KEY AUTOINCREMENT, user_id INTEGER NOT NULL, username TEXT NOT NULL, "
                        "note TEXT, status TEXT NOT NULL DEFAULT 'pending', created_at TEXT NOT NULL, decided_at TEXT, decided_by TEXT);")
     _con.executescript("CREATE TABLE IF NOT EXISTS password_resets (user_id INTEGER PRIMARY KEY, code_hash TEXT NOT NULL, "
@@ -381,8 +395,8 @@ def create_customer_account(company_name: str, username: str, password: str,
             company_id = cur.lastrowid
             _insert_trial_subscription(con, company_id)
             cur = con.execute(
-                "INSERT INTO users(username, password_hash, role, company_role, telegram_id, created_at) "
-                "VALUES (?, ?, 'analyst', 'owner', ?, ?)",
+                "INSERT INTO users(username, password_hash, role, company_role, telegram_id, created_at, tools_unlocked) "
+                "VALUES (?, ?, 'analyst', 'owner', ?, ?, 0)",
                 (username, password_hash, int(telegram_id) if telegram_id else None, _now()))
             user_id = cur.lastrowid
             con.execute("INSERT INTO user_companies(user_id, company_id) VALUES (?, ?)",
@@ -446,6 +460,7 @@ def _user(row) -> dict | None:
             "alerts": bool(row["alerts"]), "totp_enabled": bool(row["totp_enabled"]),
             "email": _col(row, "email"), "referral_code": _col(row, "referral_code"),
             "company_role": _col(row, "company_role"),
+            "tools_unlocked": _col(row, "tools_unlocked"),
             "created_at": row["created_at"]}
 
 
@@ -506,7 +521,8 @@ def list_team(company_id: int) -> list[dict]:
         u = _user(r)
         out.append({"id": u["id"], "username": u["username"], "email": u["email"],
                     "company_role": effective_company_role(u), "active": u["active"],
-                    "two_factor": u["totp_enabled"], "created_at": u["created_at"]})
+                    "two_factor": u["totp_enabled"], "created_at": u["created_at"],
+                    "admin_tools": has_admin_tools(u)})
     return sorted(out, key=lambda x: (-COMPANY_RANK.get(x["company_role"], 0), x["username"].lower()))
 
 

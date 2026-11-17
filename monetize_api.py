@@ -70,7 +70,7 @@ def register(app, W) -> None:
 
     def buyer(user, company_id):
         own(user, company_id)
-        W.need_role(user, "admin")      # company owner or admin may spend the company's money
+        W.need_spender(user)            # company owner or admin may spend the company's money
         if user.get("role") == "admin":
             raise HTTPException(400, "Site admin accounts do not buy. Use a customer account to test.")
 
@@ -119,7 +119,7 @@ def register(app, W) -> None:
         company = db.get_company(body.company_id)
         W.notify.alert_payment_admins(
             f"New {o['kind']} order {o['order_ref']}\nCompany: {company['name'] if company else body.company_id}\nUser: {user['username']}\n"
-            f"Item: {o['title']} · ₦{o['amount_ngn']:,}\nReference: {o['transfer_reference']}\nCheck your bank, then approve it under Revenue > Transactions.")
+            f"Item: {o['title']} · ₦{o['amount_ngn']:,}\nReference: {o['transfer_reference']}\nCheck your bank, then approve it under Revenue > " + {"product": "Marketplace", "feature": "Report Studio", "pack": "Packs & yearly", "annual": "Packs & yearly", "seat": "Team access"}.get(o["kind"], "Transactions") + ".")
         return checkout_info(o)
 
     @app.post("/api/market/orders/{order_ref}/proof")
@@ -261,8 +261,9 @@ def register(app, W) -> None:
             raise HTTPException(400, str(e))
         db.audit(user, f"order_{o['status']}", o["company_id"], f"order={o['order_ref']}; amount={o['amount_ngn']}; ref={o.get('transfer_reference')}")
         if o["status"] == "paid":
-            W.extras.tell_company(o["company_id"], "Payment confirmed",
-                                  f"We have confirmed your payment for {o['title']}." + (" It is ready under Marketplace > My library." if o["kind"] == "product" else " It is ready in Report Studio."), "success")
+            ready = {"product": " It is ready under Marketplace > My library.", "seat": " The new access is active now.",
+                     "pack": " Your extra analyses are ready to use.", "annual": " Your plan is active."}.get(o["kind"], " It is ready in Report Studio.")
+            W.extras.tell_company(o["company_id"], "Payment confirmed", f"We have confirmed your payment for {o['title']}." + ready, "success")
         else:
             W.extras.tell_company(o["company_id"], "Payment not confirmed",
                                   f"We could not confirm your payment for {o['title']}. Check the transfer reference and submit it again, or contact support.", "warning")
